@@ -7,10 +7,10 @@ namespace ZiYueBot.Harmony;
 /// <summary>
 /// 今日人品
 /// </summary>
-
 public class Jrrp : IHarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("今日人品");
+
     private static readonly Dictionary<int, string> Levels = new()
     {
         [0] = "推荐闷头睡大觉。",
@@ -19,6 +19,7 @@ public class Jrrp : IHarmonyCommand
         [60] = "太阳当头照，花儿对你笑。",
         [80] = "出门可能捡到 1 块钱。"
     };
+
     private static readonly Dictionary<int, string> Jackpots = new()
     {
         [0] = "怎，怎么会这样...",
@@ -30,13 +31,13 @@ public class Jrrp : IHarmonyCommand
     public string GetCommandDescription()
     {
         return """
-/jrrp
-获取今日人品。人品值范围由0到100。
-在线文档：https://docs.ziyuebot.cn/jrrp.html
-""";
+               /jrrp
+               获取今日人品。人品值范围由0到100。
+               在线文档：https://docs.ziyuebot.cn/jrrp.html
+               """;
     }
 
-    public string GetCommandID()
+    public string GetCommandId()
     {
         return "jrrp";
     }
@@ -62,7 +63,7 @@ public class Jrrp : IHarmonyCommand
         if (Jackpots.TryGetValue(luck, out string? value))
         {
             comment = value;
-        } 
+        }
         else
         {
             int curr = 0;
@@ -73,8 +74,10 @@ public class Jrrp : IHarmonyCommand
                     curr = level.Key;
                 }
             }
+
             comment = Levels[curr];
         }
+
         return $"{userName} 的今日人品是 {luck}。{comment}";
     }
 }

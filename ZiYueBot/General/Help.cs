@@ -11,13 +11,13 @@ public class Help : IGeneralCommand
     public string GetCommandDescription()
     {
         return """
-/help [command]
-获取命令的帮助信息。其中“command”为命令名，为空时返回可用命令列表。
-在线文档：https://docs.ziyuebot.cn/help.html
-""";
+               /help [command]
+               获取命令的帮助信息。其中“command”为命令名，为空时返回可用命令列表。
+               在线文档：https://docs.ziyuebot.cn/help.html
+               """;
     }
 
-    public string GetCommandID()
+    public string GetCommandId()
     {
         return "help";
     }
@@ -47,11 +47,13 @@ public class Help : IGeneralCommand
             {
                 return harmony.GetCommandDescription();
             }
+
             IGeneralCommand? general = Commands.GetGeneralCommand<IGeneralCommand>(platform, args[1]);
             if (general is not null)
             {
                 return general.GetCommandDescription();
             }
+
             return $"命令未找到：{args[1]}";
         }
         else
@@ -59,15 +61,17 @@ public class Help : IGeneralCommand
             string help = "子悦机器可用命令：\n";
             foreach (IHarmonyCommand command in Commands.HarmonyCommands.Values.ToHashSet())
             {
-                help += $"\t/{command.GetCommandID()}\t{command.GetCommandName()}\n";
+                help += $"\t/{command.GetCommandId()}\t{command.GetCommandName()}\n";
             }
+
             foreach (IGeneralCommand command in Commands.GeneralCommands.Values.ToHashSet())
             {
                 if (command.GetSupportedPlatform() == Platform.Both || command.GetSupportedPlatform() == platform)
                 {
-                    help += $"\t/{command.GetCommandID()}\t{command.GetCommandName()}\n";
+                    help += $"\t/{command.GetCommandId()}\t{command.GetCommandName()}\n";
                 }
             }
+
             help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：https://docs.ziyuebot.cn/";
             return help;
         }

@@ -5,7 +5,6 @@ namespace ZiYueBot.Harmony;
 /// <summary>
 /// 鸿蒙命令。
 /// </summary>
-
 public interface IHarmonyCommand : ICommand
 {
     /// <summary>
@@ -14,6 +13,6 @@ public interface IHarmonyCommand : ICommand
     /// <param name="userName">调用者的昵称</param>
     /// <param name="userId">调用者的ID</param>
     /// <param name="args">命令的参数。</param>
-    /// <returns></returns>
+    /// <returns>要发送的内容</returns>
     string Invoke(string userName, ulong userId, string[] args);
 }

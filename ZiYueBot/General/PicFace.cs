@@ -15,13 +15,13 @@ public class PicFace : IGeneralCommand
     public string GetCommandDescription()
     {
         return """
-/表情转图片
-将 QQ 表情包转换为可保存的图片。该命令仅在 QQ 可用。
-在线文档：https://docs.ziyuebot.cn/picface.html
-""";
+               /表情转图片
+               将 QQ 表情包转换为可保存的图片。该命令仅在 QQ 可用。
+               在线文档：https://docs.ziyuebot.cn/picface.html
+               """;
     }
 
-    public string GetCommandID()
+    public string GetCommandId()
     {
         return "表情转图片";
     }
@@ -42,7 +42,7 @@ public class PicFace : IGeneralCommand
         Users.Add(userId);
         return "正在等待发送表情包...";
     }
-    
+
     public string DiscordInvoke(string userPing, ulong userId, string[] args)
     {
         throw new NotImplementedException();

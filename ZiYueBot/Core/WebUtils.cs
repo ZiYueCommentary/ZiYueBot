@@ -1,7 +1,14 @@
 ﻿namespace ZiYueBot.Core;
 
-public class WebUtils
+/// <summary>
+/// 网络相关。
+/// </summary>
+
+public static class WebUtils
 {
+    /// <summary>
+    /// 下载指定文件。
+    /// </summary>
     public static async Task DownloadFile(string url, string destinationPath)
     {
         using HttpClient client = new HttpClient();

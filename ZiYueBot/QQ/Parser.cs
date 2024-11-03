@@ -1,6 +1,6 @@
 ﻿namespace ZiYueBot.QQ;
 
-public class Parser
+public static class Parser
 {
     /// <summary>
     /// 解析命令行。该函数会自动跳过开头的斜线，并在空格处分割字符串。

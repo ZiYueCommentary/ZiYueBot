@@ -3,7 +3,6 @@
 /// <summary>
 /// 频率限制相关。
 /// </summary>
-
 public static class RateLimit
 {
     internal static readonly Dictionary<ICommand, Dictionary<ulong, DateTime>> LastInvoke = [];

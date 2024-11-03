@@ -2,20 +2,20 @@
 
 namespace ZiYueBot.Harmony;
 
-internal class Hitokoto : IHarmonyCommand
+public class Hitokoto : IHarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("一言");
 
     public string GetCommandDescription()
     {
         return """
-/hitokoto
-获得一句话。
-在线文档：https://docs.ziyuebot.cn/hitokoto.html
-""";
+               /hitokoto
+               获得一句话。
+               在线文档：https://docs.ziyuebot.cn/hitokoto.html
+               """;
     }
 
-    public string GetCommandID()
+    public string GetCommandId()
     {
         return "hitokoto";
     }
@@ -46,6 +46,7 @@ internal class Hitokoto : IHarmonyCommand
         {
             Logger.Error(e.Message, e);
         }
+
         return "一言获取失败。";
     }
 }

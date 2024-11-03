@@ -8,15 +8,16 @@ using ZiYueBot.Harmony;
 
 namespace ZiYueBot.Discord;
 
-public class Handler
+public static class Handler
 {
     private static readonly ILog Logger = LogManager.GetLogger("Discord 消息解析");
 
-    public static async void RegisterCommand(SlashCommandBuilder builder)
+    private static async void RegisterCommand(SlashCommandBuilder builder)
     {
         try
         {
-            await ZiYueBot.Instance.Discord.GetGuild(1152562772941484118).CreateApplicationCommandAsync(builder.Build());
+            await ZiYueBot.Instance.Discord.GetGuild(1152562772941484118)
+                .CreateApplicationCommandAsync(builder.Build());
         }
         catch (HttpException e)
         {
@@ -41,33 +42,35 @@ public class Handler
     {
         foreach (IHarmonyCommand harmony in Commands.HarmonyCommands.Values.ToHashSet())
         {
-            builder.AddChoice($"{harmony.GetCommandName()}（{harmony.GetCommandID()}）", harmony.GetCommandID());
+            builder.AddChoice($"{harmony.GetCommandName()}（{harmony.GetCommandId()}）", harmony.GetCommandId());
         }
+
         foreach (IGeneralCommand general in Commands.GeneralCommands.Values.ToHashSet())
         {
             if (general.GetSupportedPlatform() == Platform.Both || general.GetSupportedPlatform() == Platform.Discord)
             {
-                builder.AddChoice($"{general.GetCommandName()}（{general.GetCommandID()}）", general.GetCommandID());
+                builder.AddChoice($"{general.GetCommandName()}（{general.GetCommandId()}）", general.GetCommandId());
             }
         }
     }
 
-    public static async Task ClientReady()
+    private static async Task ClientReady()
     {
         {
             Jrrp jrrp = new Jrrp();
             SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(jrrp.GetCommandID());
+            builder.WithName(jrrp.GetCommandId());
             builder.WithDescription(jrrp.GetCommandShortDescription());
             RegisterCommand(builder);
         }
         {
             Help help = new Help();
             SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(help.GetCommandID());
+            builder.WithName(help.GetCommandId());
             builder.WithDescription(help.GetCommandShortDescription());
             SlashCommandOptionBuilder optionBuilder = new();
-            optionBuilder.WithName("command").WithDescription("获取帮助的命令名").WithRequired(false).WithType(ApplicationCommandOptionType.String);
+            optionBuilder.WithName("command").WithDescription("获取帮助的命令名").WithRequired(false)
+                .WithType(ApplicationCommandOptionType.String);
             AddCommandsAsChoices(optionBuilder);
             builder.AddOption(optionBuilder);
             RegisterCommand(builder);
@@ -75,23 +78,24 @@ public class Handler
         {
             Hitokoto hitokoto = new Hitokoto();
             SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(hitokoto.GetCommandID());
+            builder.WithName(hitokoto.GetCommandId());
             builder.WithDescription(hitokoto.GetCommandShortDescription());
             RegisterCommand(builder);
         }
         {
             Ask ask = new Ask();
             SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(ask.GetCommandID());
+            builder.WithName(ask.GetCommandId());
             builder.WithDescription(ask.GetCommandShortDescription());
             SlashCommandOptionBuilder optionBuilder = new();
-            optionBuilder.WithName("question").WithDescription("向张维为教授提出问题").WithRequired(false).WithType(ApplicationCommandOptionType.String);
+            optionBuilder.WithName("question").WithDescription("向张维为教授提出问题").WithRequired(false)
+                .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
             RegisterCommand(builder);
         }
     }
 
-    public static async Task SlashCommandHandler(SocketSlashCommand command)
+    private static async Task SlashCommandHandler(SocketSlashCommand command)
     {
         try
         {
@@ -101,11 +105,13 @@ public class Handler
             {
                 case "ask":
                     var question = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(userMention, userId, ["ask", question is null ? "" : (string)question.Value]));
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(userMention, userId,
+                        ["ask", question is null ? "" : (string)question.Value]));
                     break;
                 case "help":
                     var first = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord).DiscordInvoke(userMention, userId, ["help", first is null ? "" : (string)first.Value]));
+                    await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)
+                        .DiscordInvoke(userMention, userId, ["help", first is null ? "" : (string)first.Value]));
                     break;
                 default:
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(command.CommandName);
@@ -115,7 +121,8 @@ public class Handler
                     }
                     else
                     {
-                        IGeneralCommand? general = Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName);
+                        IGeneralCommand? general =
+                            Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName);
                         if (general is not null)
                         {
                             await command.RespondAsync(general.DiscordInvoke(userMention, userId, []));
@@ -124,8 +131,8 @@ public class Handler
                         {
                             await command.RespondAsync("未知命令。");
                         }
-                        break;
                     }
+
                     break;
             }
         }
