@@ -6,7 +6,7 @@ public interface ICommand
     /// 命令名。
     /// </summary>
     /// <returns />
-    string GetCommandID();
+    string GetCommandId();
 
     /// <summary>
     /// 命令列表显示的名字。
@@ -26,8 +26,8 @@ public interface ICommand
     /// <summary>
     /// 获取该命令的调用频率限制。以秒为单位。
     /// </summary>
-    long GetRateLimit()
+    TimeSpan GetRateLimit()
     {
-        return 0;
+        return TimeSpan.Zero;
     }
 }
