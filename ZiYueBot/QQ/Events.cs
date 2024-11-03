@@ -64,11 +64,14 @@ public static class Events
 
         if (!hasForwardMessage) return result;
 
-        return result.Contains(' ') ? result.Insert(result.IndexOf(' '), $" \"{forwardMessage}\" ") : $"{result} \"{forwardMessage}\"";
+        return result.Contains(' ')
+            ? result.Insert(result.IndexOf(' '), $" \"{forwardMessage}\" ")
+            : $"{result} \"{forwardMessage}\"";
     }
 
     private static MessageBuilder HierarchizeMessage(uint groupUin, string message)
     {
+        bool simpleMessage = true;
         MessageBuilder builder = MessageBuilder.Group(groupUin);
         int pos = 0;
         for (int i = 0; i < message.Length; i++)
@@ -77,32 +80,37 @@ public static class Events
             {
                 case '\u2402': // 图片
                 {
-                    builder.Text(message.Substring(pos, i - pos));
+                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
                     int end = message.IndexOf('\u2403', i + 1);
                     builder.Image(WebUtils.DownloadFile(message.Substring(i + 1, end - i - 1)));
-                    i = pos = end + 2;
+                    i = pos = end;
+                    simpleMessage = false;
                     continue;
                 }
                 case '\u2404': // 提及
                 {
-                    builder.Text(message.Substring(pos, i - pos));
+                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
                     int end = message.IndexOf('\u2405', i + 1);
                     builder.Mention(uint.Parse(message.Substring(i + 1, end - i - 1))).Text(" "); // 提及后面必须加空格，否则会显示出错。
-                    i = pos = end + 1;
+                    i = pos = end;
+                    simpleMessage = false;
                     continue;
                 }
                 case '\u2406': // 表情
                 {
-                    builder.Text(message.Substring(pos, i - pos));
+                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
                     int end = message.IndexOf('\u2407', i + 1);
                     builder.Face(ushort.Parse(message.Substring(i + 1, end - i - 1)));
-                    i = pos = end + 2;
+                    i = pos = end;
+                    simpleMessage = false;
                     continue;
                 }
             }
         }
 
-        if (pos < message.Length) builder.Text(message[pos..]);
+        if (simpleMessage) return builder.Text(message);
+        
+        if (pos < message.Length) builder.Text(message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..]);
         return builder;
     }
 
@@ -119,7 +127,7 @@ public static class Events
             string userName = e.Chain.GroupMemberInfo.MemberName;
             uint userId = e.Chain.FriendUin;
             string flatten = FlattenMessage(context, e.Chain);
-            Console.WriteLine(flatten);
+            if (flatten == "/") return;
             string[] args = Parser.Parse(flatten);
             if (e.Chain.First() is ImageEntity image && PicFace.Users.Contains(userId))
             {
@@ -147,7 +155,7 @@ public static class Events
                             context.SendMessage(HierarchizeMessage((uint)e.Chain.GroupUin,
                                 general.QQInvoke(userName, userId, args)).Build());
                         }
-                        else if (flatten.StartsWith("/"))
+                        else if (flatten.StartsWith('/'))
                         {
                             context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
                                 .Text("未知命令。请使用/help查看命令列表。")
