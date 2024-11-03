@@ -17,4 +17,16 @@ public static class WebUtils
         await using Stream streamToWriteTo = File.Open(destinationPath, FileMode.Create);
         await streamToReadFrom.CopyToAsync(streamToWriteTo);
     }
+    
+    /// <summary>
+    /// 下载指定文件并直接返回。
+    /// </summary>
+    public static byte[] DownloadFile(string url)
+    {
+        return Task.Run(async () =>
+        {
+            using HttpClient client = new HttpClient();
+            return await client.GetByteArrayAsync(url);
+        }).GetAwaiter().GetResult();
+    }
 }

@@ -45,6 +45,6 @@ public class PicFace : IGeneralCommand
 
     public string DiscordInvoke(string userPing, ulong userId, string[] args)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 }

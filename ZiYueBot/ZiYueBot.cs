@@ -44,6 +44,7 @@ public class ZiYueBot
         };
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
+            //todo
             //WebSocketProvider = DefaultWebSocketProvider.Create(proxy)
         });
         LoggerDiscord.Info("初始化完毕");
@@ -52,7 +53,7 @@ public class ZiYueBot
     private bool DeserializeBotConfigs()
     {
         bool hasKeystore = false;
-        bool hasDeviceinfo = false;
+        bool hasDeviceInfo = false;
         try
         {
             using (FileStream stream = new FileStream("data/keystore.json", FileMode.OpenOrCreate, FileAccess.Read))
@@ -77,7 +78,7 @@ public class ZiYueBot
             }
 
             if (_deviceInfo is null) throw new NullReferenceException();
-            hasDeviceinfo = true;
+            hasDeviceInfo = true;
         }
         catch (Exception e) when (e is JsonException or NullReferenceException)
         {
@@ -91,7 +92,7 @@ public class ZiYueBot
             };
         }
 
-        return hasKeystore && hasDeviceinfo;
+        return hasKeystore && hasDeviceInfo;
     }
 
     private void SerializeBotConfigs()

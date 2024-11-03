@@ -37,7 +37,7 @@ public class Help : IGeneralCommand
         return Platform.Both;
     }
 
-    public string Invoke(Platform platform, string userName, ulong userId, string[] args)
+    private string Invoke(Platform platform, string userName, ulong userId, string[] args)
     {
         Logger.Info($"平台：${platform}，调用者：{userName}（{userId}），参数：{string.Join(',', args)}");
         if (args.Length >= 2 && args[1] != "")
@@ -49,32 +49,19 @@ public class Help : IGeneralCommand
             }
 
             IGeneralCommand? general = Commands.GetGeneralCommand<IGeneralCommand>(platform, args[1]);
-            if (general is not null)
-            {
-                return general.GetCommandDescription();
-            }
-
-            return $"命令未找到：{args[1]}";
+            return general is not null ? general.GetCommandDescription() : $"命令未找到：{args[1]}";
         }
-        else
-        {
-            string help = "子悦机器可用命令：\n";
-            foreach (IHarmonyCommand command in Commands.HarmonyCommands.Values.ToHashSet())
-            {
-                help += $"\t/{command.GetCommandId()}\t{command.GetCommandName()}\n";
-            }
 
-            foreach (IGeneralCommand command in Commands.GeneralCommands.Values.ToHashSet())
-            {
-                if (command.GetSupportedPlatform() == Platform.Both || command.GetSupportedPlatform() == platform)
-                {
-                    help += $"\t/{command.GetCommandId()}\t{command.GetCommandName()}\n";
-                }
-            }
+        string help = Commands.HarmonyCommands.Values.ToHashSet().Aggregate("子悦机器可用命令：\n",
+            (current, command) => current + $"\t/{command.GetCommandId()}\t{command.GetCommandName()}\n");
 
-            help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：https://docs.ziyuebot.cn/";
-            return help;
-        }
+        help = Commands.GeneralCommands.Values.ToHashSet()
+            .Where(command => command.GetSupportedPlatform() == Platform.Both ||
+                              command.GetSupportedPlatform() == platform).Aggregate(help,
+                (current, command) => current + $"\t/{command.GetCommandId()}\t{command.GetCommandName()}\n");
+
+        help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：https://docs.ziyuebot.cn/";
+        return help;
     }
 
     public string QQInvoke(string userName, uint userId, string[] args)

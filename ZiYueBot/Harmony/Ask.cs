@@ -6,18 +6,25 @@ namespace ZiYueBot.Harmony;
 public class Ask : IHarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("评价");
-    private readonly List<string> _reviews = [];
+    private static readonly List<string> Reviews = [];
 
-    public Ask()
+    static Ask()
     {
-        using FileStream stream = new FileStream("data/words.txt", FileMode.OpenOrCreate);
-        using StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(936));
-        while (reader.ReadLine() is { } line)
+        try
         {
-            _reviews.Add(line);
-        }
+            using FileStream stream = new FileStream("data/words.txt", FileMode.OpenOrCreate);
+            using StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(936));
+            while (reader.ReadLine() is { } line)
+            {
+                Reviews.Add(line);
+            }
 
-        Logger.Info("张维为语录库加载完毕");
+            Logger.Info("张维为语录库加载完毕");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("张维为语录库加载失败！", ex);
+        }
     }
 
     public string GetCommandDescription()
@@ -49,11 +56,9 @@ public class Ask : IHarmonyCommand
         Logger.Info($"调用者：{userName}（{userId}），参数：${string.Join(',', args)}");
         if (args.Length >= 2 && args[1] != "")
         {
-            return $"张教授对 {args[1]} 的评价是：{_reviews[Random.Shared.Next(0, _reviews.Count - 1)]}";
+            return $"张教授对 {args[1]} 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
         }
-        else
-        {
-            return $"张教授的评价是：{_reviews[Random.Shared.Next(0, _reviews.Count - 1)]}";
-        }
+
+        return $"张教授的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
     }
 }

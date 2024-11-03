@@ -59,24 +59,9 @@ public class Jrrp : IHarmonyCommand
         builder.Append(userId).Append(DateTime.Now.DayOfYear).Append(42);
         byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
         int luck = Math.Abs(BitConverter.ToInt32(bytes, 0)) % 101;
-        string comment;
-        if (Jackpots.TryGetValue(luck, out string? value))
-        {
-            comment = value;
-        }
-        else
-        {
-            int curr = 0;
-            foreach (KeyValuePair<int, string> level in Levels)
-            {
-                if (level.Key <= luck)
-                {
-                    curr = level.Key;
-                }
-            }
-
-            comment = Levels[curr];
-        }
+        string comment = Jackpots.TryGetValue(luck, out string? value)
+            ? value
+            : Levels.Last(level => level.Key <= luck).Value;
 
         return $"{userName} 的今日人品是 {luck}。{comment}";
     }

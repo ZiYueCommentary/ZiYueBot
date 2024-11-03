@@ -22,17 +22,19 @@ public static class Parser
         int pos = line.First() == '/' ? 1 : 0;
         for (int i = pos; i < line.Length; i++)
         {
-            if (line[i] == '"')
+            switch (line[i])
             {
-                int nextQuote = line.IndexOf('"', i + 1);
-                args.Add(line.Substring(i + 1, nextQuote - i - 1));
-                i = pos = nextQuote + 2;
-                continue;
-            }
-            if (line[i] == ' ')
-            {
-                args.Add(line[pos..i]);
-                pos = i + 1;
+                case '"':
+                {
+                    int nextQuote = line.IndexOf('"', i + 1);
+                    args.Add(line.Substring(i + 1, nextQuote - i - 1));
+                    i = pos = nextQuote + 2;
+                    continue;
+                }
+                case ' ':
+                    args.Add(line[pos..i]);
+                    pos = i + 1;
+                    break;
             }
         }
         if (pos < line.Length) args.Add(line[pos..]);

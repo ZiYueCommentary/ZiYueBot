@@ -24,7 +24,7 @@ public interface ICommand
     string GetCommandShortDescription();
 
     /// <summary>
-    /// 获取该命令的调用频率限制。以秒为单位。
+    /// 获取该命令的调用频率限制。
     /// </summary>
     TimeSpan GetRateLimit()
     {

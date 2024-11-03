@@ -15,7 +15,7 @@ public static class Handler
     private static async void RegisterCommand(SlashCommandBuilder builder)
     {
         try
-        {
+        { //todo 换成全局
             await ZiYueBot.Instance.Discord.GetGuild(1152562772941484118)
                 .CreateApplicationCommandAsync(builder.Build());
         }
@@ -45,12 +45,11 @@ public static class Handler
             builder.AddChoice($"{harmony.GetCommandName()}（{harmony.GetCommandId()}）", harmony.GetCommandId());
         }
 
-        foreach (IGeneralCommand general in Commands.GeneralCommands.Values.ToHashSet())
+        foreach (IGeneralCommand general in Commands.GeneralCommands.Values.ToHashSet().Where(general =>
+                     general.GetSupportedPlatform() == Platform.Both ||
+                     general.GetSupportedPlatform() == Platform.Discord))
         {
-            if (general.GetSupportedPlatform() == Platform.Both || general.GetSupportedPlatform() == Platform.Discord)
-            {
-                builder.AddChoice($"{general.GetCommandName()}（{general.GetCommandId()}）", general.GetCommandId());
-            }
+            builder.AddChoice($"{general.GetCommandName()}（{general.GetCommandId()}）", general.GetCommandId());
         }
     }
 
@@ -68,7 +67,7 @@ public static class Handler
             SlashCommandBuilder builder = new SlashCommandBuilder();
             builder.WithName(help.GetCommandId());
             builder.WithDescription(help.GetCommandShortDescription());
-            SlashCommandOptionBuilder optionBuilder = new();
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("command").WithDescription("获取帮助的命令名").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.String);
             AddCommandsAsChoices(optionBuilder);
@@ -87,7 +86,7 @@ public static class Handler
             SlashCommandBuilder builder = new SlashCommandBuilder();
             builder.WithName(ask.GetCommandId());
             builder.WithDescription(ask.GetCommandShortDescription());
-            SlashCommandOptionBuilder optionBuilder = new();
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("question").WithDescription("向张维为教授提出问题").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
@@ -129,7 +128,7 @@ public static class Handler
                         }
                         else
                         {
-                            await command.RespondAsync("未知命令。");
+                            await command.RespondAsync("未知命令。请使用/help查看命令列表。");
                         }
                     }
 
