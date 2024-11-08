@@ -118,6 +118,7 @@ public static class Commands
         RegisterHarmonyCommand(new Jrrp());
         RegisterHarmonyCommand(new Hitokoto());
         RegisterHarmonyCommand(new Ask());
+        RegisterHarmonyCommand(new About());
 
         RegisterGeneralCommand(new Help());
         RegisterGeneralCommand(new PicFace());

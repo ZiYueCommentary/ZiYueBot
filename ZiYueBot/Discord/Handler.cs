@@ -103,12 +103,12 @@ public static class Handler
             switch (command.CommandName)
             {
                 case "ask":
-                    var question = command.Data.Options.FirstOrDefault();
+                    SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(userMention, userId,
                         ["ask", question is null ? "" : (string)question.Value]));
                     break;
                 case "help":
-                    var first = command.Data.Options.FirstOrDefault();
+                    SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)
                         .DiscordInvoke(userMention, userId, ["help", first is null ? "" : (string)first.Value]));
                     break;

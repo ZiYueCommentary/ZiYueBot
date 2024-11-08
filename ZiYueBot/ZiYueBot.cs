@@ -17,16 +17,18 @@ namespace ZiYueBot;
 
 public class ZiYueBot
 {
+    public static readonly string Version = "0.0.1";
+    
     public static readonly ILog LoggerDiscord = LogManager.GetLogger("Discord 主程序");
     public static readonly ILog LoggerQQ = LogManager.GetLogger("QQ 主程序");
     public static ZiYueBot Instance;
     
-    public BotContext QQ;
-    public DiscordSocketClient Discord;
+    public readonly BotContext QQ;
+    public readonly DiscordSocketClient Discord;
     private BotDeviceInfo _deviceInfo;
     private BotKeystore _keystore;
     private readonly bool _canAutoLogin;
-    private Config DiscordConfig;
+    private readonly Config DiscordConfig;
 
     private ZiYueBot()
     {

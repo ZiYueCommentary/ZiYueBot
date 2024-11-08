@@ -158,7 +158,7 @@ public static class Events
                         else if (flatten.StartsWith('/'))
                         {
                             context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
-                                .Text("未知命令。请使用/help查看命令列表。")
+                                .Text("未知命令。请使用 /help 查看命令列表。")
                                 .Build());
                         }
                     }
