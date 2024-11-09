@@ -92,6 +92,13 @@ public static class Handler
             builder.AddOption(optionBuilder);
             RegisterCommand(builder);
         }
+        {
+            About about = new About();
+            SlashCommandBuilder builder = new SlashCommandBuilder();
+            builder.WithName(about.GetCommandId());
+            builder.WithDescription(about.GetCommandShortDescription());
+            RegisterCommand(builder);
+        }
     }
 
     private static async Task SlashCommandHandler(SocketSlashCommand command)
@@ -104,19 +111,19 @@ public static class Handler
             {
                 case "ask":
                     SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(userMention, userId,
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(EventType.GroupMessage, userMention, userId,
                         ["ask", question is null ? "" : (string)question.Value]));
                     break;
                 case "help":
                     SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)
-                        .DiscordInvoke(userMention, userId, ["help", first is null ? "" : (string)first.Value]));
+                        .DiscordInvoke(EventType.GroupMessage, userMention, userId, ["help", first is null ? "" : (string)first.Value]));
                     break;
                 default:
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(command.CommandName);
                     if (harmony is not null)
                     {
-                        await command.RespondAsync(harmony.Invoke(userMention, userId, []));
+                        await command.RespondAsync(harmony.Invoke(EventType.GroupMessage, userMention, userId, []));
                     }
                     else
                     {
@@ -124,11 +131,11 @@ public static class Handler
                             Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName);
                         if (general is not null)
                         {
-                            await command.RespondAsync(general.DiscordInvoke(userMention, userId, []));
+                            await command.RespondAsync(general.DiscordInvoke(EventType.GroupMessage, userMention, userId, []));
                         }
                         else
                         {
-                            await command.RespondAsync("未知命令。请使用/help查看命令列表。");
+                            await command.RespondAsync("未知命令。请使用 ``/help`` 查看命令列表。");
                         }
                     }
 

@@ -1,6 +1,7 @@
 ﻿using log4net;
 using System.Security.Cryptography;
 using System.Text;
+using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
@@ -32,7 +33,7 @@ public class Jrrp : IHarmonyCommand
     {
         return """
                /jrrp
-               获取今日人品。人品值范围由0到100。
+               获取今日人品。人品值范围由 0 到 100。
                在线文档：https://docs.ziyuebot.cn/jrrp.html
                """;
     }
@@ -52,7 +53,7 @@ public class Jrrp : IHarmonyCommand
         return "获取今日人品";
     }
 
-    public string Invoke(string userName, ulong userId, string[] args)
+    public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName}（{userId}）");
         StringBuilder builder = new StringBuilder();

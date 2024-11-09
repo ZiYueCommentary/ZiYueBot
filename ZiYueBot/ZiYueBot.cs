@@ -28,7 +28,7 @@ public class ZiYueBot
     private BotDeviceInfo _deviceInfo;
     private BotKeystore _keystore;
     private readonly bool _canAutoLogin;
-    private readonly Config DiscordConfig;
+    private readonly Config _discordConfig;
 
     private ZiYueBot()
     {
@@ -37,12 +37,12 @@ public class ZiYueBot
         LoggerQQ.Info("初始化完毕");
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
-            DiscordConfig = JsonSerializer.Deserialize<Config>(stream);
+            _discordConfig = JsonSerializer.Deserialize<Config>(stream);
         }
 
-        WebProxy proxy = new WebProxy(DiscordConfig.Proxy)
+        WebProxy proxy = new WebProxy(_discordConfig.Proxy)
         {
-            Credentials = new NetworkCredential(DiscordConfig.Username, DiscordConfig.Password)
+            Credentials = new NetworkCredential(_discordConfig.Username, _discordConfig.Password)
         };
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
@@ -133,7 +133,7 @@ public class ZiYueBot
         LoggerQQ.Info("登录成功！");
         Events.Initialize();
 
-        await Discord.LoginAsync(TokenType.Bot, DiscordConfig.Token);
+        await Discord.LoginAsync(TokenType.Bot, _discordConfig.Token);
         await Discord.StartAsync();
         LoggerDiscord.Info("登录成功！");
         Handler.Initialize();

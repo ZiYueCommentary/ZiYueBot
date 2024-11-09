@@ -5,6 +5,6 @@ namespace ZiYueBot.General;
 public interface IGeneralCommand : ICommand
 {
     Platform GetSupportedPlatform();
-    string QQInvoke(string userName, uint userId, string[] args);
-    string DiscordInvoke(string userPing, ulong userId, string[] args);
+    string QQInvoke(EventType eventType, string userName, uint userId, string[] args);
+    string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args);
 }

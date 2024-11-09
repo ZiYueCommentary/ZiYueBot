@@ -64,12 +64,12 @@ public class Help : IGeneralCommand
         return help;
     }
 
-    public string QQInvoke(string userName, uint userId, string[] args)
+    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         return Invoke(Platform.QQ, userName, userId, args);
     }
 
-    public string DiscordInvoke(string userPing, ulong userId, string[] args)
+    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         return Invoke(Platform.Discord, userPing, userId, args);
     }

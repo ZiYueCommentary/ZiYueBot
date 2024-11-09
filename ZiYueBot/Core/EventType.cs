@@ -1,4 +1,4 @@
-﻿namespace ZiYueBot.QQ;
+﻿namespace ZiYueBot.Core;
 
 public enum EventType
 {

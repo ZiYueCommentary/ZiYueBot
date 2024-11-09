@@ -1,5 +1,6 @@
 ﻿using log4net;
 using System.Text;
+using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
@@ -51,7 +52,7 @@ public class Ask : IHarmonyCommand
         return "获取张维为教授语录";
     }
 
-    public string Invoke(string userName, ulong userId, string[] args)
+    public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName}（{userId}），参数：${string.Join(',', args)}");
         if (args.Length >= 2 && args[1] != "")

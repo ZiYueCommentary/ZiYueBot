@@ -18,7 +18,6 @@ public static class Commands
     public static void RegisterHarmonyCommand(IHarmonyCommand command)
     {
         HarmonyCommands[command.GetCommandId()] = command;
-        RateLimit.LastInvoke.TryAdd(command, []);
     }
 
     /// <summary>
@@ -30,7 +29,6 @@ public static class Commands
         {
             HarmonyCommands[name] = command;
         }
-        RateLimit.LastInvoke.TryAdd(command, []);
     }
 
     /// <summary>
@@ -66,7 +64,6 @@ public static class Commands
     public static void RegisterGeneralCommand(IGeneralCommand command)
     {
         GeneralCommands[command.GetCommandId()] = command;
-        RateLimit.LastInvoke.TryAdd(command, []);
     }
 
     /// <summary>
@@ -78,7 +75,6 @@ public static class Commands
         {
             GeneralCommands[name] = command;
         }
-        RateLimit.LastInvoke.TryAdd(command, []);
     }
 
     /// <summary>

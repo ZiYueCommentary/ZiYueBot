@@ -1,4 +1,6 @@
-﻿namespace ZiYueBot.Core;
+﻿using ZiYueBot.General;
+
+namespace ZiYueBot.Core;
 
 public interface ICommand
 {
@@ -26,7 +28,7 @@ public interface ICommand
     /// <summary>
     /// 获取该命令的调用频率限制。
     /// </summary>
-    TimeSpan GetRateLimit()
+    TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.Zero;
     }

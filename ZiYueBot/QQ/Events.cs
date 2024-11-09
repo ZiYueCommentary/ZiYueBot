@@ -1,4 +1,5 @@
-﻿using Lagrange.Core.Event.EventArg;
+﻿using System.Net.Mime;
+using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message.Entity;
 using Lagrange.Core.Message;
 using Lagrange.Core;
@@ -145,7 +146,7 @@ public static class Events
                     if (harmony is not null)
                     {
                         context.SendMessage(HierarchizeMessage((uint)e.Chain.GroupUin,
-                            harmony.Invoke(userName, userId, args)).Build());
+                            harmony.Invoke(EventType.GroupMessage, userName, userId, args)).Build());
                     }
                     else
                     {
@@ -153,7 +154,7 @@ public static class Events
                         if (general is not null)
                         {
                             context.SendMessage(HierarchizeMessage((uint)e.Chain.GroupUin,
-                                general.QQInvoke(userName, userId, args)).Build());
+                                general.QQInvoke(EventType.GroupMessage, userName, userId, args)).Build());
                         }
                         else if (flatten.StartsWith('/'))
                         {

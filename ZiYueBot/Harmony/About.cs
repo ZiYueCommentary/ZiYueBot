@@ -1,4 +1,5 @@
 using log4net;
+using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
@@ -30,7 +31,7 @@ public class About : IHarmonyCommand
         return "关于子悦机器";
     }
 
-    public string Invoke(string userName, ulong userId, string[] args)
+    public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName}（{userId}），参数：${string.Join(',', args)}");
         return $"""

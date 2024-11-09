@@ -1,4 +1,5 @@
 ﻿using log4net;
+using ZiYueBot.Core;
 
 namespace ZiYueBot.General;
 
@@ -36,14 +37,14 @@ public class PicFace : IGeneralCommand
         return "将表情转换为图片";
     }
 
-    public string QQInvoke(string userName, uint userId, string[] args)
+    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         Logger.Info($"调用者：{userName}（{userId}）");
         Users.Add(userId);
         return "正在等待发送表情包...";
     }
 
-    public string DiscordInvoke(string userPing, ulong userId, string[] args)
+    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         throw new NotSupportedException();
     }
