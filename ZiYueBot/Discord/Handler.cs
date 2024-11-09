@@ -15,7 +15,8 @@ public static class Handler
     private static async void RegisterCommand(SlashCommandBuilder builder)
     {
         try
-        { //todo 换成全局
+        {
+            //todo 换成全局
             await ZiYueBot.Instance.Discord.GetGuild(1152562772941484118)
                 .CreateApplicationCommandAsync(builder.Build());
         }
@@ -99,6 +100,20 @@ public static class Handler
             builder.WithDescription(about.GetCommandShortDescription());
             RegisterCommand(builder);
         }
+        {
+            BALogo baLogo = new BALogo();
+            SlashCommandBuilder builder = new SlashCommandBuilder();
+            builder.WithName(baLogo.GetCommandId());
+            builder.WithDescription(baLogo.GetCommandShortDescription());
+            SlashCommandOptionBuilder optionLeftBuilder = new SlashCommandOptionBuilder();
+            optionLeftBuilder.WithName("left").WithDescription("光环左侧文字").WithRequired(true)
+                .WithType(ApplicationCommandOptionType.String);
+            SlashCommandOptionBuilder optionRightBuilder = new SlashCommandOptionBuilder();
+            optionRightBuilder.WithName("right").WithDescription("光环右侧文字").WithRequired(true)
+                .WithType(ApplicationCommandOptionType.String);
+            builder.AddOptions(optionLeftBuilder, optionRightBuilder);
+            RegisterCommand(builder);
+        }
     }
 
     private static async Task SlashCommandHandler(SocketSlashCommand command)
@@ -111,13 +126,30 @@ public static class Handler
             {
                 case "ask":
                     SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(EventType.GroupMessage, userMention, userId,
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(EventType.GroupMessage,
+                        userMention, userId,
                         ["ask", question is null ? "" : (string)question.Value]));
                     break;
                 case "help":
                     SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)
-                        .DiscordInvoke(EventType.GroupMessage, userMention, userId, ["help", first is null ? "" : (string)first.Value]));
+                        .DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                            ["help", first is null ? "" : (string)first.Value]));
+                    break;
+                case "balogo":
+                    SocketSlashCommandDataOption? left = command.Data.Options.ToList()[0];
+                    SocketSlashCommandDataOption? right = command.Data.Options.ToList()[1];
+                    BALogo baLogo = Commands.GetHarmonyCommand<BALogo>();
+                    string result = baLogo.Invoke(EventType.GroupMessage, userMention, userId,
+                        ["balogo", (string)left.Value, (string)right.Value]);
+                    if (result == "")
+                    {
+                        await command.RespondWithFileAsync(new FileAttachment(
+                            new MemoryStream(baLogo.Render((string)left.Value, (string)right.Value)), "balogo.png"));
+                        break;
+                    }
+
+                    await command.RespondAsync(result);
                     break;
                 default:
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(command.CommandName);
@@ -131,7 +163,8 @@ public static class Handler
                             Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName);
                         if (general is not null)
                         {
-                            await command.RespondAsync(general.DiscordInvoke(EventType.GroupMessage, userMention, userId, []));
+                            await command.RespondAsync(general.DiscordInvoke(EventType.GroupMessage, userMention,
+                                userId, []));
                         }
                         else
                         {

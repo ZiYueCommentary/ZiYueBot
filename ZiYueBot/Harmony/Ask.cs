@@ -13,8 +13,8 @@ public class Ask : IHarmonyCommand
     {
         try
         {
-            using FileStream stream = new FileStream("data/words.txt", FileMode.OpenOrCreate);
-            using StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(936));
+            using FileStream stream = new FileStream("resources/words.txt", FileMode.OpenOrCreate);
+            using StreamReader reader = new StreamReader(stream);
             while (reader.ReadLine() is { } line)
             {
                 Reviews.Add(line);

@@ -113,9 +113,6 @@ public class ZiYueBot
         }
         else
         {
-            // 假设是初次登录。由于扫码登录耗时，因此在此时可以初始化一些文件。
-            WebUtils.DownloadFile("https://eggs.gold/MCA/words.txt", "data/words.txt");
-
             LoggerQQ.Info("正在进行扫码登录...");
             var qrCode = await QQ.FetchQrCode();
             QRCodeGenerator qrGenerator = new QRCodeGenerator();

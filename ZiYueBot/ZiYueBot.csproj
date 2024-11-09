@@ -12,7 +12,7 @@
       <PackageReference Include="Discord.Net" Version="3.16.0" />
       <PackageReference Include="log4net" Version="3.0.3-preview.1" />
       <PackageReference Include="QRCoder" Version="1.6.0" />
-      <PackageReference Include="SQLite" Version="3.13.0" />
+      <PackageReference Include="SkiaSharp" Version="3.118.0-preview.1.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -21,6 +21,19 @@
 
     <ItemGroup>
       <None Remove="Resources\words.txt" />
+      <None Update="resources\BlueArchive.ttf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="resources\halo.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Resource\words.txt" />
+      <AdditionalFiles Include="resources\words.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </AdditionalFiles>
     </ItemGroup>
 
 </Project>
