@@ -39,7 +39,7 @@ public class PicFace : IGeneralCommand
 
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        Logger.Info($"调用者：{userName}（{userId}）");
+        Logger.Info($"调用者：{userName} ({userId})");
         Users.Add(userId);
         return "正在等待发送表情包...";
     }

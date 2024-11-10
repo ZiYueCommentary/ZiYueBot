@@ -74,6 +74,7 @@ public static class Handler
         RegisterCommand(EasyCommandBuilder(new Jrrp()));
         RegisterCommand(EasyCommandBuilder(new Hitokoto()));
         RegisterCommand(EasyCommandBuilder(new About()));
+        RegisterCommand(EasyCommandBuilder(new Quotations()));
         {
             SlashCommandBuilder builder = EasyCommandBuilder(new Help());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();

@@ -33,7 +33,7 @@ public class Hitokoto : IHarmonyCommand
 
     public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
-        Logger.Info($"调用者：{userName}（{userId}）");
+        Logger.Info($"调用者：{userName} ({userId})");
         using HttpClient client = new HttpClient();
         try
         {

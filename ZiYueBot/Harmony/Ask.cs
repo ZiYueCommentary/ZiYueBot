@@ -55,7 +55,7 @@ public class Ask : IHarmonyCommand
 
     public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
-        Logger.Info($"调用者：{userName}（{userId}），参数：${MessageUtils.FlattenArguments(args)}");
+        Logger.Info($"调用者：{userName} ({userId})，参数：${MessageUtils.FlattenArguments(args)}");
         if (args.Length >= 2 && args[1] != "")
         {
             return $"张教授对 {args[1]} 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";

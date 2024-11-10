@@ -55,7 +55,7 @@ public class Jrrp : IHarmonyCommand
 
     public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
-        Logger.Info($"调用者：{userName}（{userId}）");
+        Logger.Info($"调用者：{userName} ({userId})");
         StringBuilder builder = new StringBuilder();
         builder.Append(userId).Append(DateTime.Now.DayOfYear).Append(42);
         byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));

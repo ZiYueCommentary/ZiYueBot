@@ -41,7 +41,7 @@ public class BALogo : IHarmonyCommand
 
     public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
-        Logger.Info($"调用者：{userName}（{userId}），参数：${MessageUtils.FlattenArguments(args)}");
+        Logger.Info($"调用者：{userName} ({userId})，参数：${MessageUtils.FlattenArguments(args)}");
 
         if (args.Length < 3) return "参数数量不足。使用“/help balogo”查看命令用法。";
         if (!MessageUtils.IsSimpleMessage(args[0]) || !MessageUtils.IsSimpleMessage(args[1])) return "请输入纯文字参数。";
