@@ -15,7 +15,7 @@ public static class Commands
     /// <summary>
     /// 注册鸿蒙命令，并将该命令与GetCommandID()的命令名绑定。
     /// </summary>
-    public static void RegisterHarmonyCommand(IHarmonyCommand command)
+    private static void RegisterHarmonyCommand(IHarmonyCommand command)
     {
         HarmonyCommands[command.GetCommandId()] = command;
     }
@@ -23,7 +23,7 @@ public static class Commands
     /// <summary>
     /// 注册鸿蒙命令，并将其与指定的命令名绑定。该方式不会将鸿蒙命令与GetCommandId()的命令名绑定。
     /// </summary>
-    public static void RegisterHarmonyCommand(IHarmonyCommand command, params string[] names)
+    private static void RegisterHarmonyCommand(IHarmonyCommand command, params string[] names)
     {
         foreach (string name in names)
         {
@@ -61,7 +61,7 @@ public static class Commands
     /// <summary>
     /// 注册一般命令，并将该命令与GetCommandID()的命令名绑定。
     /// </summary>
-    public static void RegisterGeneralCommand(IGeneralCommand command)
+    private static void RegisterGeneralCommand(IGeneralCommand command)
     {
         GeneralCommands[command.GetCommandId()] = command;
     }
@@ -69,7 +69,7 @@ public static class Commands
     /// <summary>
     /// 注册一般命令，并将其与指定的命令名绑定。该方式不会将一般命令与GetCommandId()的命令名绑定。
     /// </summary>
-    public static void RegisterGeneralCommand(IGeneralCommand command, params string[] names)
+    private static void RegisterGeneralCommand(IGeneralCommand command, params string[] names)
     {
         foreach (string name in names)
         {

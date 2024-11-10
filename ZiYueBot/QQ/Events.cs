@@ -1,5 +1,4 @@
-﻿using System.Net.Mime;
-using Lagrange.Core.Event.EventArg;
+﻿using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message.Entity;
 using Lagrange.Core.Message;
 using Lagrange.Core;

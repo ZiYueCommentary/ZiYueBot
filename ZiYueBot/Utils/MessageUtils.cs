@@ -1,9 +1,14 @@
 namespace ZiYueBot.Utils;
 
-public record Image(string Url)
+public static class MessageUtils
 {
-    public override string ToString()
+    public static bool IsSimpleMessage(string flatten)
     {
-        return $"\u2402{Url}\u2403";
+        return !(flatten.Contains('\u2402') || flatten.Contains('\u2404') || flatten.Contains('\u2406') || (flatten.Contains("<:") && flatten.Contains('>') || (flatten.Contains("<@") && flatten.Contains('>'))));
+    }
+
+    public static string FlattenArguments(string[] args)
+    {
+        return args.Aggregate("", (current, arg) => current + arg.Replace("\n", "\\n").Replace("\r", "\\r") + ",");
     }
 }

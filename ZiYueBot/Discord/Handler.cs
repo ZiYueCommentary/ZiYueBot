@@ -17,18 +17,25 @@ public static class Handler
         try
         {
             //todo 换成全局
-            await ZiYueBot.Instance.Discord.GetGuild(1152562772941484118)
-                .CreateApplicationCommandAsync(builder.Build());
+            try
+            {
+                await ZiYueBot.Instance.Discord.GetGuild(1152562772941484118)
+                    .CreateApplicationCommandAsync(builder.Build());
+            }
+            catch (HttpRequestException e)
+            {
+                Logger.Error("无法连接 Discord 服务器！", e);
+            }
         }
         catch (HttpException e)
         {
             if (e.HttpCode == System.Net.HttpStatusCode.MethodNotAllowed)
             {
-                ZiYueBot.LoggerDiscord.Warn($"命令重复注册：{builder.Name}");
+                Logger.Warn($"命令重复注册：{builder.Name}");
             }
             else
             {
-                ZiYueBot.LoggerDiscord.Error($"命令注册失败：{builder.Name}", e);
+                Logger.Error($"命令注册失败：{builder.Name}", e);
             }
         }
     }
@@ -43,7 +50,7 @@ public static class Handler
     {
         foreach (IHarmonyCommand harmony in Commands.HarmonyCommands.Values.ToHashSet())
         {
-            builder.AddChoice($"{harmony.GetCommandName()}（{harmony.GetCommandId()}）", harmony.GetCommandId());
+            builder.AddChoice($"{harmony.GetCommandName()} ({harmony.GetCommandId()})", harmony.GetCommandId());
         }
 
         foreach (IGeneralCommand general in Commands.GeneralCommands.Values.ToHashSet().Where(general =>
@@ -54,20 +61,21 @@ public static class Handler
         }
     }
 
+    private static SlashCommandBuilder EasyCommandBuilder(ICommand command)
+    {
+        SlashCommandBuilder builder = new SlashCommandBuilder();
+        builder.WithName(command.GetCommandId());
+        builder.WithDescription(command.GetCommandShortDescription());
+        return builder;
+    }
+
     private static async Task ClientReady()
     {
+        RegisterCommand(EasyCommandBuilder(new Jrrp()));
+        RegisterCommand(EasyCommandBuilder(new Hitokoto()));
+        RegisterCommand(EasyCommandBuilder(new About()));
         {
-            Jrrp jrrp = new Jrrp();
-            SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(jrrp.GetCommandId());
-            builder.WithDescription(jrrp.GetCommandShortDescription());
-            RegisterCommand(builder);
-        }
-        {
-            Help help = new Help();
-            SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(help.GetCommandId());
-            builder.WithDescription(help.GetCommandShortDescription());
+            SlashCommandBuilder builder = EasyCommandBuilder(new Help());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("command").WithDescription("获取帮助的命令名").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.String);
@@ -76,17 +84,7 @@ public static class Handler
             RegisterCommand(builder);
         }
         {
-            Hitokoto hitokoto = new Hitokoto();
-            SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(hitokoto.GetCommandId());
-            builder.WithDescription(hitokoto.GetCommandShortDescription());
-            RegisterCommand(builder);
-        }
-        {
-            Ask ask = new Ask();
-            SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(ask.GetCommandId());
-            builder.WithDescription(ask.GetCommandShortDescription());
+            SlashCommandBuilder builder = EasyCommandBuilder(new Ask());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("question").WithDescription("向张维为教授提出问题").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.String);
@@ -94,17 +92,7 @@ public static class Handler
             RegisterCommand(builder);
         }
         {
-            About about = new About();
-            SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(about.GetCommandId());
-            builder.WithDescription(about.GetCommandShortDescription());
-            RegisterCommand(builder);
-        }
-        {
-            BALogo baLogo = new BALogo();
-            SlashCommandBuilder builder = new SlashCommandBuilder();
-            builder.WithName(baLogo.GetCommandId());
-            builder.WithDescription(baLogo.GetCommandShortDescription());
+            SlashCommandBuilder builder = EasyCommandBuilder(new BALogo());
             SlashCommandOptionBuilder optionLeftBuilder = new SlashCommandOptionBuilder();
             optionLeftBuilder.WithName("left").WithDescription("光环左侧文字").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);

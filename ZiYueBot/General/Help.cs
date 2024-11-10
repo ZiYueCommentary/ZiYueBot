@@ -1,6 +1,7 @@
 ﻿using log4net;
 using ZiYueBot.Core;
 using ZiYueBot.Harmony;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
@@ -39,7 +40,7 @@ public class Help : IGeneralCommand
 
     private string Invoke(Platform platform, string userName, ulong userId, string[] args)
     {
-        Logger.Info($"平台：${platform}，调用者：{userName}（{userId}），参数：{string.Join(',', args)}");
+        Logger.Info($"平台：${platform}，调用者：{userName}（{userId}），参数：{MessageUtils.FlattenArguments(args)}");
         if (args.Length >= 2 && args[1] != "")
         {
             IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(args[1]);

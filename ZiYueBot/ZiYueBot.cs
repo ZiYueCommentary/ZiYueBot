@@ -19,8 +19,7 @@ public class ZiYueBot
 {
     public static readonly string Version = "0.0.1";
     
-    public static readonly ILog LoggerDiscord = LogManager.GetLogger("Discord 主程序");
-    public static readonly ILog LoggerQQ = LogManager.GetLogger("QQ 主程序");
+    public static readonly ILog Logger = LogManager.GetLogger("主程序");
     public static ZiYueBot Instance;
     
     public readonly BotContext QQ;
@@ -34,7 +33,7 @@ public class ZiYueBot
     {
         _canAutoLogin = DeserializeBotConfigs();
         QQ = BotFactory.Create(new BotConfig(), _deviceInfo, _keystore);
-        LoggerQQ.Info("初始化完毕");
+        Logger.Info("QQ - 初始化完毕");
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
             _discordConfig = JsonSerializer.Deserialize<Config>(stream);
@@ -49,7 +48,7 @@ public class ZiYueBot
             //todo
             //WebSocketProvider = DefaultWebSocketProvider.Create(proxy)
         });
-        LoggerDiscord.Info("初始化完毕");
+        Logger.Info("Discord - 初始化完毕");
     }
 
     private bool DeserializeBotConfigs()
@@ -68,7 +67,7 @@ public class ZiYueBot
         }
         catch (Exception e) when (e is JsonException or NullReferenceException)
         {
-            LoggerQQ.Warn("未找到data/keystore.json");
+            Logger.Warn("QQ - 未找到data/keystore.json");
             _keystore = new BotKeystore();
         }
 
@@ -84,7 +83,7 @@ public class ZiYueBot
         }
         catch (Exception e) when (e is JsonException or NullReferenceException)
         {
-            LoggerQQ.Warn("未找到data/deviceinfo.json");
+            Logger.Warn("QQ - 未找到data/deviceinfo.json");
             _deviceInfo = new BotDeviceInfo()
             {
                 Guid = new Guid(),
@@ -107,13 +106,13 @@ public class ZiYueBot
     {
         if (_canAutoLogin)
         {
-            LoggerQQ.Info("正在进行自动登录...");
+            Logger.Info("QQ - 正在进行自动登录...");
             await QQ.LoginByPassword();
             _keystore = QQ.UpdateKeystore();
         }
         else
         {
-            LoggerQQ.Info("正在进行扫码登录...");
+            Logger.Info("QQ - 正在进行扫码登录...");
             var qrCode = await QQ.FetchQrCode();
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
             QRCodeData data = qrGenerator.CreateQrCode(qrCode.Value.Url, QRCodeGenerator.ECCLevel.Q);
@@ -127,12 +126,12 @@ public class ZiYueBot
         }
 
         SerializeBotConfigs();
-        LoggerQQ.Info("登录成功！");
+        Logger.Info("QQ - 登录成功！");
         Events.Initialize();
 
         await Discord.LoginAsync(TokenType.Bot, _discordConfig.Token);
         await Discord.StartAsync();
-        LoggerDiscord.Info("登录成功！");
+        Logger.Info("Discord - 登录成功！");
         Handler.Initialize();
     }
 

@@ -146,9 +146,4 @@ public static class Parser
         if (pos < message.Length - 1) builder.Text(message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..]);
         return builder;
     }
-
-    public static bool IsSimpleMessage(string flatten)
-    {
-        return !(flatten.Contains('\u2402') || flatten.Contains('\u2404') || flatten.Contains('\u2406') || (flatten.Contains("<:") && flatten.Contains('>') || (flatten.Contains("<@") && flatten.Contains('>'))));
-    }
 }

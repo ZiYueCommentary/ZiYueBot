@@ -3,6 +3,5 @@
 public enum EventType
 {
     GroupMessage,
-    FriendMessage,
-    TemporaryMessage
+    DirectMessage
 }
