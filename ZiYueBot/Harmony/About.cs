@@ -37,6 +37,7 @@ public class About : IHarmonyCommand
         return $"""
                子悦机器 (ZiYue Bot) - v{ZiYueBot.Version}
                子悦机器是一个由 子悦解说 开发的，用 C# 编写的 QQ 和 Discord 机器人。
+               使用教程：https://docs.ziyuebot.cn/usage.html
                开源仓库：https://github.com/ZiYueCommentary/ZiYueBot
                在线文档：https://docs.ziyuebot.cn/
                """;

@@ -26,9 +26,9 @@ public static class Events
             if (context.BotUin == e.Chain.FriendUin) return;
             string userName = e.Chain.GroupMemberInfo.MemberName;
             uint userId = e.Chain.FriendUin;
-            string flatten = Parser.FlattenMessage(context, e.Chain);
-            if (flatten == "/") return;
-            string[] args = Parser.Parse(flatten);
+            Message flatten = Parser.FlattenMessage(context, e.Chain);
+            if (flatten.Text == "/") return;
+            string[] args = Parser.Parse(flatten.Text);
             if (e.Chain.First() is ImageEntity image && PicFace.Users.Contains(userId))
             {
                 context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
@@ -49,6 +49,7 @@ public static class Events
                         context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Text(result).Build());
                         break;
                     }
+
                     context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Image(Xibao.Render(true, args[1]))
                         .Build());
                     break;
@@ -83,6 +84,14 @@ public static class Events
                 }
                 default:
                 {
+                    if (flatten.Text.Contains("云瓶") && flatten.HasForward)
+                    {
+                        context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
+                            .Text("使用云瓶相关指令时不可回复消息！")
+                            .Build());
+                        break;
+                    }
+
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(args[0]);
                     if (harmony is not null)
                     {
@@ -97,7 +106,7 @@ public static class Events
                             context.SendMessage(Parser.HierarchizeMessage((uint)e.Chain.GroupUin,
                                 general.QQInvoke(EventType.GroupMessage, userName, userId, args)).Build());
                         }
-                        else if (flatten.StartsWith('/'))
+                        else if (flatten.Text.StartsWith('/'))
                         {
                             context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
                                 .Text("未知命令。请使用 /help 查看命令列表。")

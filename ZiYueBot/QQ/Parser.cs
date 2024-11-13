@@ -43,6 +43,7 @@ public static class Parser
                     break;
             }
         }
+
         if (pos < line.Length) args.Add(line[pos..]);
         return [.. args];
     }
@@ -50,8 +51,9 @@ public static class Parser
     /// <summary>
     /// 扁平化 QQ 消息，以便于传输给各命令。
     /// </summary>
-    public static string FlattenMessage(BotContext context, MessageChain chain, bool ignoreForward = false)
+    public static Message FlattenMessage(BotContext context, MessageChain chain, bool ignoreForward = false)
     {
+        Message message = new Message();
         string result = "";
         string forwardMessage = ""; // 被引用的消息内容
         bool hasForwardMessage = false;
@@ -70,7 +72,7 @@ public static class Parser
 
                     forwardMessage = FlattenMessage(context,
                         context.GetGroupMessage((uint)chain.GroupUin, forward.Sequence, forward.Sequence)
-                            .GetAwaiter().GetResult().First());
+                            .GetAwaiter().GetResult().First(), true).Text;
                     result = "";
                     hasForwardMessage = true;
                     wasMention = false;
@@ -86,6 +88,7 @@ public static class Parser
                 case MentionEntity mention:
                     if (ignoreForward && i == 0) continue;
                     result += $"\u2404{mention.Uin}\u2405";
+                    Message.MentionedUinAndName[mention.Uin] = mention.Name;
                     wasMention = true;
                     break;
                 case FaceEntity face:
@@ -95,11 +98,18 @@ public static class Parser
             }
         }
 
-        if (!hasForwardMessage) return result;
+        if (!hasForwardMessage)
+        {
+            message.HasForward = false;
+            message.Text = result;
+            return message;
+        }
 
-        return result.Contains(' ')
+        message.HasForward = true;
+        message.Text = result.Contains(' ')
             ? result.Insert(result.IndexOf(' '), $" \"{forwardMessage}\" ")
             : $"{result} \"{forwardMessage}\"";
+        return message;
     }
 
     public static MessageBuilder HierarchizeMessage(uint groupUin, string message)
@@ -134,6 +144,15 @@ public static class Parser
                     builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
                     int end = message.IndexOf('\u2407', i + 1);
                     builder.Face(ushort.Parse(message.Substring(i + 1, end - i - 1)));
+                    i = pos = end;
+                    simpleMessage = false;
+                    continue;
+                }
+                case '\u2408': // 本地图片，仅在云瓶中使用
+                {
+                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
+                    int end = message.IndexOf('\u2409', i + 1);
+                    builder.Image(message.Substring(i + 1, end - i - 1));
                     i = pos = end;
                     simpleMessage = false;
                     continue;

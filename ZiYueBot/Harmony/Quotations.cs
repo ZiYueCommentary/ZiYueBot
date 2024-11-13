@@ -1,6 +1,5 @@
 using log4net;
 using ZiYueBot.Core;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 

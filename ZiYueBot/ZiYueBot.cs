@@ -11,6 +11,7 @@ using log4net;
 using QRCoder;
 using System.Net;
 using System.Text.Json;
+using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 
 namespace ZiYueBot;
@@ -18,16 +19,17 @@ namespace ZiYueBot;
 public class ZiYueBot
 {
     public static readonly string Version = "0.0.1";
-    
+
     public static readonly ILog Logger = LogManager.GetLogger("主程序");
     public static ZiYueBot Instance;
-    
+
     public readonly BotContext QQ;
     public readonly DiscordSocketClient Discord;
+    public readonly MySqlConnection Database;
     private BotDeviceInfo _deviceInfo;
     private BotKeystore _keystore;
     private readonly bool _canAutoLogin;
-    private readonly Config _discordConfig;
+    private readonly Config _config;
 
     private ZiYueBot()
     {
@@ -36,12 +38,12 @@ public class ZiYueBot
         Logger.Info("QQ - 初始化完毕");
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
-            _discordConfig = JsonSerializer.Deserialize<Config>(stream);
+            _config = JsonSerializer.Deserialize<Config>(stream);
         }
 
-        WebProxy proxy = new WebProxy(_discordConfig.Proxy)
+        WebProxy proxy = new WebProxy(_config.DiscordProxy)
         {
-            Credentials = new NetworkCredential(_discordConfig.Username, _discordConfig.Password)
+            Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword)
         };
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
@@ -49,6 +51,58 @@ public class ZiYueBot
             //WebSocketProvider = DefaultWebSocketProvider.Create(proxy)
         });
         Logger.Info("Discord - 初始化完毕");
+
+        Database = new MySqlConnection(
+            $"server={_config.DatabaseSource};port={_config.DatabasePort};database={_config.DatabaseName};user={_config.DatabaseUser};password={_config.DatabasePassword};Charset=utf8mb4;");
+        Database.Open();
+        InitializeDatabase();
+        Logger.Info("MySQL - 初始化完毕");
+    }
+
+    ~ZiYueBot()
+    {
+        Instance.Database.Close();
+    }
+
+    private void InitializeDatabase()
+    {
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    create table driftbottles
+                                                    (
+                                                        id       int auto_increment primary key,
+                                                        userId   bigint                    null,
+                                                        username tinytext                  null,
+                                                        `date`   date                      null,
+                                                        content  text                      null
+                                                    ) charset = utf8mb4;
+                                                    """, Database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
+
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    create table straitbottles
+                                                    (
+                                                        id            int auto_increment primary key,
+                                                        userId        bigint                    null,
+                                                        username      tinytext                  null,
+                                                        `date`        date                      null,
+                                                        content       text                      null,
+                                                        isFromDiscord boolean                   null,
+                                                        picked        boolean          default false
+                                                    ) charset = utf8mb4;
+                                                    """, Database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
     }
 
     private bool DeserializeBotConfigs()
@@ -129,7 +183,7 @@ public class ZiYueBot
         Logger.Info("QQ - 登录成功！");
         Events.Initialize();
 
-        await Discord.LoginAsync(TokenType.Bot, _discordConfig.Token);
+        await Discord.LoginAsync(TokenType.Bot, _config.DiscordToken);
         await Discord.StartAsync();
         Logger.Info("Discord - 登录成功！");
         Handler.Initialize();
@@ -141,6 +195,7 @@ public class ZiYueBot
         log4net.Config.XmlConfigurator.Configure();
         Directory.CreateDirectory("data");
         Directory.CreateDirectory("temp");
+        Directory.CreateDirectory("data/images");
         Instance = new ZiYueBot();
         Instance.Login();
         Commands.Initialize();
