@@ -61,7 +61,7 @@ public class Xibao : IHarmonyCommand
             IsAntialias = true,
             Color = isXibao ? new SKColor(255, 10, 10) : new SKColor(0, 5, 0)
         };
-        using SKBitmap image = isXibao ? ImageXibao : ImageBeibao;
+        SKBitmap image = isXibao ? ImageXibao : ImageBeibao;
         canvas.DrawBitmap(image, 0, 0, paint);
         DrawCenteredText(canvas, text, 1024, 512, 384, Font, paint);
         using SKData? output = surface.Snapshot().Encode();
