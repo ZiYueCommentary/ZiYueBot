@@ -117,6 +117,8 @@ public static class Commands
         RegisterHarmonyCommand(new About());
         RegisterHarmonyCommand(new BALogo());
         RegisterHarmonyCommand(new Quotations());
+        RegisterHarmonyCommand(new Xibao());
+        RegisterHarmonyCommand(new Beibao());
 
         RegisterGeneralCommand(new Help());
         RegisterGeneralCommand(new PicFace());

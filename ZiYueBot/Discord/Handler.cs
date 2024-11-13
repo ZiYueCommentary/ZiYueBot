@@ -103,6 +103,22 @@ public static class Handler
             builder.AddOptions(optionLeftBuilder, optionRightBuilder);
             RegisterCommand(builder);
         }
+        {
+            SlashCommandBuilder builder = EasyCommandBuilder(new Xibao());
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
+            optionBuilder.WithName("content").WithDescription("喜报内容").WithRequired(true)
+                .WithType(ApplicationCommandOptionType.String);
+            builder.AddOption(optionBuilder);
+            RegisterCommand(builder);
+        }
+        {
+            SlashCommandBuilder builder = EasyCommandBuilder(new Beibao());
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
+            optionBuilder.WithName("content").WithDescription("悲报内容").WithRequired(true)
+                .WithType(ApplicationCommandOptionType.String);
+            builder.AddOption(optionBuilder);
+            RegisterCommand(builder);
+        }
     }
 
     private static async Task SlashCommandHandler(SocketSlashCommand command)
@@ -114,18 +130,23 @@ public static class Handler
             switch (command.CommandName)
             {
                 case "ask":
+                {
                     SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(EventType.GroupMessage,
                         userMention, userId,
                         ["ask", question is null ? "" : (string)question.Value]));
                     break;
+                }
                 case "help":
+                {
                     SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)
                         .DiscordInvoke(EventType.GroupMessage, userMention, userId,
                             ["help", first is null ? "" : (string)first.Value]));
                     break;
+                }
                 case "balogo":
+                {
                     SocketSlashCommandDataOption? left = command.Data.Options.ToList()[0];
                     SocketSlashCommandDataOption? right = command.Data.Options.ToList()[1];
                     BALogo baLogo = Commands.GetHarmonyCommand<BALogo>();
@@ -140,7 +161,41 @@ public static class Handler
 
                     await command.RespondAsync(result);
                     break;
+                }
+                case "xibao":
+                {
+                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
+                    Xibao xibao = Commands.GetHarmonyCommand<Xibao>();
+                    string result = xibao.Invoke(EventType.GroupMessage, userMention, userId,
+                        ["xibao", (string)content.Value]);
+                    if (result == "")
+                    {
+                        await command.RespondWithFileAsync(new FileAttachment(
+                            new MemoryStream(Xibao.Render(true, (string)content.Value)), "xibao.png"));
+                        break;
+                    }
+
+                    await command.RespondAsync(result);
+                    break;
+                }
+                case "beibao":
+                {
+                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
+                    Beibao beibao = Commands.GetHarmonyCommand<Beibao>();
+                    string result = beibao.Invoke(EventType.GroupMessage, userMention, userId,
+                        ["beibao", (string)content.Value]);
+                    if (result == "")
+                    {
+                        await command.RespondWithFileAsync(new FileAttachment(
+                            new MemoryStream(Xibao.Render(false, (string)content.Value)), "beibao.png"));
+                        break;
+                    }
+
+                    await command.RespondAsync(result);
+                    break;
+                }
                 default:
+                {
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(command.CommandName);
                     if (harmony is not null)
                     {
@@ -162,6 +217,7 @@ public static class Handler
                     }
 
                     break;
+                }
             }
         }
         catch (Exception ex)

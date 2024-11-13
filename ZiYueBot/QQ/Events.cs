@@ -40,17 +40,49 @@ public static class Events
 
             switch (args[0])
             {
-                case "balogo":
-                    BALogo command = Commands.GetHarmonyCommand<BALogo>();
-                    string result = command.Invoke(EventType.GroupMessage, userName, userId, args);
+                case "xibao":
+                {
+                    Xibao xibao = Commands.GetHarmonyCommand<Xibao>();
+                    string result = xibao.Invoke(EventType.GroupMessage, userName, userId, args);
                     if (result != "")
                     {
                         context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Text(result).Build());
                         break;
                     }
-                    context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Image(command.Render(args[1], args[2])).Build());
+                    context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Image(Xibao.Render(true, args[1]))
+                        .Build());
                     break;
+                }
+                case "beibao":
+                {
+                    Beibao beibao = Commands.GetHarmonyCommand<Beibao>();
+                    string result = beibao.Invoke(EventType.GroupMessage, userName, userId, args);
+                    if (result != "")
+                    {
+                        context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Text(result).Build());
+                        break;
+                    }
+
+                    context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Image(Xibao.Render(false, args[1]))
+                        .Build());
+                    break;
+                }
+                case "balogo":
+                {
+                    BALogo baLogo = Commands.GetHarmonyCommand<BALogo>();
+                    string result = baLogo.Invoke(EventType.GroupMessage, userName, userId, args);
+                    if (result != "")
+                    {
+                        context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin).Text(result).Build());
+                        break;
+                    }
+
+                    context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
+                        .Image(baLogo.Render(args[1], args[2])).Build());
+                    break;
+                }
                 default:
+                {
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(args[0]);
                     if (harmony is not null)
                     {
@@ -74,6 +106,7 @@ public static class Events
                     }
 
                     break;
+                }
             }
         }
         catch (Exception ex)

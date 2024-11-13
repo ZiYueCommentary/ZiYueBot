@@ -9,6 +9,6 @@ public static class MessageUtils
 
     public static string FlattenArguments(string[] args)
     {
-        return args.Aggregate("", (current, arg) => current + arg.Replace("\n", "\\n").Replace("\r", "\\r") + ",");
+        return args.Aggregate("", (current, arg) => current + arg.Replace("\n", "\\n").Replace("\r", "\\r") + ",")[..^1];
     }
 }

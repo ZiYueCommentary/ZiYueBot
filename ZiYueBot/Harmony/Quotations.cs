@@ -20,7 +20,7 @@ public class Quotations : IHarmonyCommand
             for (int i = 0; i < full.Length; i++)
             {
                 if (full[i] != '~') continue;
-                Quotes.Add(full[pos..(i - 1)]);
+                Quotes.Add(full[pos..(i - 2)]);
                 pos = i + 3;
             }
             Quotes.Add(full[pos..]);
@@ -59,7 +59,7 @@ public class Quotations : IHarmonyCommand
 
     public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        Logger.Info($"调用者：{userName} ({userId})");
         return Quotes[Random.Shared.Next(0, Quotes.Count - 1)];
     }
 }

@@ -12,7 +12,7 @@ public class BALogo : IHarmonyCommand
     private static readonly double OffsetX = 250 / Math.Tan(double.DegreesToRadians(60));
     private static readonly SKTypeface Face = SKTypeface.FromFile("resources/BlueArchive.ttf");
     private static readonly SKFont Font = new SKFont(Face, 84);
-    
+
     public string GetCommandId()
     {
         return "balogo";
@@ -41,11 +41,12 @@ public class BALogo : IHarmonyCommand
 
     public string Invoke(EventType type, string userName, ulong userId, string[] args)
     {
-        Logger.Info($"调用者：{userName} ({userId})，参数：${MessageUtils.FlattenArguments(args)}");
-
         if (args.Length < 3) return "参数数量不足。使用“/help balogo”查看命令用法。";
         if (!MessageUtils.IsSimpleMessage(args[0]) || !MessageUtils.IsSimpleMessage(args[1])) return "请输入纯文字参数。";
-        return !RateLimit.TryPassRateLimit(this, EventType.GroupMessage, userId) ? "频率已达限制（每分钟 1 条）" : "";
+        if (!RateLimit.TryPassRateLimit(this, EventType.GroupMessage, userId)) return "频率已达限制（每分钟 1 条）";
+
+        Logger.Info($"调用者：{userName} ({userId})，参数：${MessageUtils.FlattenArguments(args)}");
+        return "";
     }
 
     public byte[] Render(string left, string right)
@@ -69,7 +70,7 @@ public class BALogo : IHarmonyCommand
             SKTextAlign.Left, Font, haloPaint);
         canvas.Restore();
         using SKBitmap halo = SKBitmap.Decode("resources/halo.png");
-        canvas.DrawBitmap(halo, (width - 250F) / 2F, 0, haloPaint);
+        canvas.DrawBitmap(halo, (float)((width - OffsetX) / 2) - (rightWidth - leftWidth) / 2, 0, haloPaint);
         using SKData? output = surface.Snapshot().Encode();
         return output.ToArray();
     }
