@@ -32,7 +32,7 @@ public class PickDriftbottle : IHarmonyCommand
 
     public string GetCommandShortDescription()
     {
-        return "捞云瓶";
+        return "捞一个漂流云瓶";
     }
 
     public string Invoke(EventType type, string userName, ulong userId, string[] args)
@@ -58,22 +58,25 @@ public class PickDriftbottle : IHarmonyCommand
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         using MySqlCommand command = new MySqlCommand(
             id == int.MinValue
-                ? "SELECT * FROM driftbottles ORDER BY RAND() LIMIT 1"
-                : $"SELECT * FROM driftbottles WHERE id = {id}",
+                ? "SELECT * FROM driftbottles WHERE pickable = true ORDER BY RAND() LIMIT 1"
+                : $"SELECT * FROM driftbottles WHERE pickable = true AND id = {id}",
             ZiYueBot.Instance.Database);
         using MySqlDataReader reader = command.ExecuteReader();
-        if (reader.Read())
-        {
-            return $"""
-                    你捞到了 {reader.GetInt32("id")} 号瓶子！
-                    来自：{reader.GetString("username")}
-                    日期：{reader.GetDateTime("date"):yyyy年MM月dd日}
+        if (!reader.Read()) return "找不到瓶子！";
+            
+        string result = $"""
+                         你捞到了 {reader.GetInt32("id")} 号瓶子！
+                         来自：{reader.GetString("username")}
+                         日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
 
-                    {reader.GetString("content")}
-                    """;
-        }
+                         {reader.GetString("content")}
+                         """;
+            
+        using MySqlCommand addViews = new MySqlCommand($"UPDATE driftbottles SET views = views + 1 WHERE id = {reader.GetInt32("id")}", ZiYueBot.Instance.Database);
+        reader.Close();
+        addViews.ExecuteNonQuery();
 
-        return "找不到瓶子！";
+        return result;
     }
 
     public TimeSpan GetRateLimit(Platform platform, EventType eventType)

@@ -69,14 +69,16 @@ public class ZiYueBot
         try
         {
             MySqlCommand command = new MySqlCommand("""
-                                                    create table driftbottles
+                                                    CREATE TABLE driftbottles
                                                     (
                                                         id       int auto_increment primary key,
                                                         userId   bigint                    null,
                                                         username tinytext                  null,
-                                                        `date`   date                      null,
-                                                        content  text                      null
-                                                    ) charset = utf8mb4;
+                                                        created  datetime                  null,
+                                                        content  text                      null,
+                                                        pickable boolean           default true,
+                                                        views    int                  default 0
+                                                    ) CHARSET = utf8mb4;
                                                     """, Database);
             command.ExecuteNonQuery();
         }
@@ -87,16 +89,16 @@ public class ZiYueBot
         try
         {
             MySqlCommand command = new MySqlCommand("""
-                                                    create table straitbottles
+                                                    CREATE TABLE straitbottles
                                                     (
                                                         id            int auto_increment primary key,
                                                         userId        bigint                    null,
                                                         username      tinytext                  null,
-                                                        `date`        date                      null,
+                                                        created       datetime                  null,
                                                         content       text                      null,
-                                                        isFromDiscord boolean                   null,
+                                                        fromDiscord   boolean                   null,
                                                         picked        boolean          default false
-                                                    ) charset = utf8mb4;
+                                                    ) CHARSET = utf8mb4;
                                                     """, Database);
             command.ExecuteNonQuery();
         }

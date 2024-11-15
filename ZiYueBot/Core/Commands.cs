@@ -121,6 +121,8 @@ public static class Commands
         RegisterHarmonyCommand(new Beibao());
         RegisterHarmonyCommand(new ThrowDriftbottle());
         RegisterHarmonyCommand(new PickDriftbottle());
+        RegisterHarmonyCommand(new RemoveDriftbottle());
+        RegisterHarmonyCommand(new ListDriftbottle());
 
         RegisterGeneralCommand(new Help());
         RegisterGeneralCommand(new PicFace());

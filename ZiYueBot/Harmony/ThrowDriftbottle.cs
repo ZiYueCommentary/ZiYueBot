@@ -33,7 +33,7 @@ public class ThrowDriftbottle : IHarmonyCommand
 
     public string GetCommandShortDescription()
     {
-        return "扔云瓶";
+        return "扔一个漂流云瓶";
     }
 
     public TimeSpan GetRateLimit(Platform platform, EventType eventType)
@@ -48,7 +48,7 @@ public class ThrowDriftbottle : IHarmonyCommand
         if (!RateLimit.TryPassRateLimit(this, EventType.GroupMessage, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
 
-        using MySqlCommand command = new MySqlCommand("INSERT INTO driftbottles(userId, username, date, content) value (@userId, @username, current_date, @content)", ZiYueBot.Instance.Database);
+        using MySqlCommand command = new MySqlCommand("INSERT INTO driftbottles(userId, username, created, content) VALUE (@userId, @username, now(), @content)", ZiYueBot.Instance.Database);
         command.Parameters.AddWithValue("@userId", userId);
         command.Parameters.AddWithValue("@username", userName.Contains(userId.ToString()) ? $"@{Message.MentionedUinAndName[userId]}" : userName); // 如果 userName 包含 userId，则判断为 Discord 提及消息。
         command.Parameters.AddWithValue("@content", FriendlyMessage(args[1]));
@@ -70,7 +70,7 @@ public class ThrowDriftbottle : IHarmonyCommand
                     result += arg.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = arg.IndexOf('\u2403', i + 1);
                     string path = $"data/images/{Guid.NewGuid()}.png";
-                    WebUtils.DownloadFile(arg.Substring(i + 1, end - i - 1), path).GetAwaiter().GetResult();
+                    WebUtils.DownloadFile(arg.Substring(i + 1, end - i - 1), path);
                     result += $"\u2408{path}\u2409";
                     i = pos = end;
                     simpleMessage = false;

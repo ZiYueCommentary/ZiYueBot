@@ -87,7 +87,7 @@ public static class Events
                     if (flatten.Text.Contains("云瓶") && flatten.HasForward)
                     {
                         context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
-                            .Text("使用云瓶相关指令时不可回复消息！")
+                            .Text("使用云瓶命令时不可回复消息！")
                             .Build());
                         break;
                     }

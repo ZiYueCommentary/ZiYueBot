@@ -5,7 +5,6 @@ using log4net;
 using ZiYueBot.Core;
 using ZiYueBot.General;
 using ZiYueBot.Harmony;
-using ZiYueBot.QQ;
 
 namespace ZiYueBot.Discord;
 
@@ -76,6 +75,7 @@ public static class Handler
         RegisterCommand(EasyCommandBuilder(new Hitokoto()));
         RegisterCommand(EasyCommandBuilder(new About()));
         RegisterCommand(EasyCommandBuilder(new Quotations()));
+        RegisterCommand(EasyCommandBuilder(new ListDriftbottle()));
         {
             SlashCommandBuilder builder = EasyCommandBuilder(new ThrowDriftbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
@@ -88,6 +88,14 @@ public static class Handler
             SlashCommandBuilder builder = EasyCommandBuilder(new PickDriftbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("id").WithDescription("瓶子编号").WithRequired(false)
+                .WithType(ApplicationCommandOptionType.Integer);
+            builder.AddOption(optionBuilder);
+            RegisterCommand(builder);
+        }
+        {
+            SlashCommandBuilder builder = EasyCommandBuilder(new RemoveDriftbottle());
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
+            optionBuilder.WithName("id").WithDescription("瓶子编号").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.Integer);
             builder.AddOption(optionBuilder);
             RegisterCommand(builder);
@@ -210,6 +218,14 @@ public static class Handler
                     }
 
                     await command.RespondAsync(result);
+                    break;
+                }
+                case "删除云瓶":
+                {
+                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
+                    RemoveDriftbottle removeDriftbottle = Commands.GetHarmonyCommand<RemoveDriftbottle>();
+                    await command.RespondAsync(removeDriftbottle.Invoke(EventType.GroupMessage, userMention, userId,
+                        ["删除云瓶", ((long)content.Value).ToString()]));
                     break;
                 }
                 case "扔云瓶":
