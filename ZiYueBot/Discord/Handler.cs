@@ -26,6 +26,10 @@ public static class Handler
             {
                 Logger.Error("无法连接 Discord 服务器！", e);
             }
+            catch (TimeoutException)
+            {
+                Logger.Warn("连接超时");
+            }
         }
         catch (HttpException e)
         {
@@ -285,25 +289,25 @@ public static class Handler
                 case "删除云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    RemoveDriftbottle removeDriftbottle = Commands.GetHarmonyCommand<RemoveDriftbottle>();
-                    await command.RespondAsync(removeDriftbottle.Invoke(EventType.GroupMessage, userMention, userId,
-                        ["删除云瓶", ((long)content.Value).ToString()]));
+                    RemoveDriftbottle removeDriftbottle = Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord);
+                    await command.RespondAsync(removeDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                        [((long)content.Value).ToString()]));
                     break;
                 }
                 case "扔云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    ThrowDriftbottle throwDriftbottle = Commands.GetHarmonyCommand<ThrowDriftbottle>();
-                    await command.RespondAsync(throwDriftbottle.Invoke(EventType.GroupMessage, userMention, userId,
-                        ["扔云瓶", (string)content.Value]));
+                    ThrowDriftbottle throwDriftbottle = Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord);
+                    await command.RespondAsync(throwDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                        [(string)content.Value]));
                     break;
                 }
                 case "捞云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    PickDriftbottle pickDriftbottle = Commands.GetHarmonyCommand<PickDriftbottle>();
-                    string result = pickDriftbottle.Invoke(EventType.GroupMessage, userMention, userId,
-                        ["捞云瓶", content == null ? int.MinValue.ToString() : ((long)content.Value).ToString()]);
+                    PickDriftbottle pickDriftbottle = Commands.GetGeneralCommand<PickDriftbottle>(Platform.Discord);
+                    string result = pickDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                        [content == null ? int.MinValue.ToString() : ((long)content.Value).ToString()]);
                     await SendComplexMessage(command, result);
                     break;
                 }

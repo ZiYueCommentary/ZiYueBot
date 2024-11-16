@@ -119,13 +119,13 @@ public static class Commands
         RegisterHarmonyCommand(new Quotations());
         RegisterHarmonyCommand(new Xibao());
         RegisterHarmonyCommand(new Beibao());
-        RegisterHarmonyCommand(new ThrowDriftbottle());
-        RegisterHarmonyCommand(new PickDriftbottle());
-        RegisterHarmonyCommand(new RemoveDriftbottle());
-        RegisterHarmonyCommand(new ListDriftbottle());
 
         RegisterGeneralCommand(new Help());
         RegisterGeneralCommand(new PicFace());
+        RegisterGeneralCommand(new ThrowDriftbottle());
+        RegisterGeneralCommand(new PickDriftbottle());
+        RegisterGeneralCommand(new RemoveDriftbottle());
+        RegisterGeneralCommand(new ListDriftbottle());
         RegisterGeneralCommand(new ThrowStraitbottle());
         RegisterGeneralCommand(new PickStraitbottle());
         RegisterGeneralCommand(new ListStraitbottle());
