@@ -41,11 +41,11 @@ public class ThrowDriftbottle : IHarmonyCommand
         return TimeSpan.FromMinutes(1);
     }
     
-    public string Invoke(EventType type, string userName, ulong userId, string[] args)
+    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用 “/help 扔云瓶” 查看命令用法。";
         if (args[1].Contains('\u2406') || Regex.IsMatch(args[1], "<:.*:\\d+>")) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, EventType.GroupMessage, userId)) return "频率已达限制（每分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
 
         using MySqlCommand command = new MySqlCommand("INSERT INTO driftbottles(userId, username, created, content) VALUE (@userId, @username, now(), @content)", ZiYueBot.Instance.Database);
@@ -56,7 +56,7 @@ public class ThrowDriftbottle : IHarmonyCommand
         return $"你的 {command.LastInsertedId} 号漂流瓶扔出去了！";
     }
 
-    private static string FriendlyMessage(string arg)
+    public static string FriendlyMessage(string arg)
     {
         string result = "";
         bool simpleMessage = true;

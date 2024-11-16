@@ -35,7 +35,7 @@ public class PickDriftbottle : IHarmonyCommand
         return "捞一个漂流云瓶";
     }
 
-    public string Invoke(EventType type, string userName, ulong userId, string[] args)
+    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         int id = int.MinValue;
         if (args.Length > 1)
@@ -54,7 +54,7 @@ public class PickDriftbottle : IHarmonyCommand
             }
         }
 
-        if (!RateLimit.TryPassRateLimit(this, EventType.GroupMessage, userId)) return "频率已达限制（每分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         using MySqlCommand command = new MySqlCommand(
             id == int.MinValue

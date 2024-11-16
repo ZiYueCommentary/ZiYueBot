@@ -7,23 +7,23 @@ namespace ZiYueBot.Harmony;
 
 public class ListDriftbottle : IHarmonyCommand
 {
-    private static readonly ILog Logger = LogManager.GetLogger("查看我的瓶子");
+    private static readonly ILog Logger = LogManager.GetLogger("查看我的云瓶");
     
     public string GetCommandId()
     {
-        return "查看我的瓶子";
+        return "查看我的云瓶";
     }
 
     public string GetCommandName()
     {
-        return "查看我的瓶子";
+        return "查看我的云瓶";
     }
 
     public string GetCommandDescription()
     {
         return """
-               /查看我的瓶子
-               查看你扔出的所有漂流云瓶的相关信息。不包括已删除云瓶。
+               /查看我的云瓶
+               查看你扔出的所有漂流云瓶的相关信息。不包括已删除的云瓶。
                频率限制：每次调用间隔 30 分钟。
                在线文档：https://docs.ziyuebot.cn/list-driftbottle.html
                """;
@@ -31,11 +31,12 @@ public class ListDriftbottle : IHarmonyCommand
 
     public string GetCommandShortDescription()
     {
-        return "查看你所扔出的所有瓶子";
+        return "查看你所扔出的所有云瓶";
     }
 
-    public string Invoke(EventType type, string userName, ulong userId, string[] args)
+    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
+        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（30 分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})");
         
         using MySqlCommand command = new MySqlCommand(

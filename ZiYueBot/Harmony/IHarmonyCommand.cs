@@ -15,5 +15,5 @@ public interface IHarmonyCommand : ICommand
     /// <param name="userId">调用者的ID</param>
     /// <param name="args">命令的参数</param>
     /// <returns>要发送的内容</returns>
-    string Invoke(EventType type, string userName, ulong userId, string[] args);
+    string Invoke(EventType eventType, string userName, ulong userId, string[] args);
 }

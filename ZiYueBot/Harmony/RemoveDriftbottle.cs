@@ -33,7 +33,7 @@ public class RemoveDriftbottle : IHarmonyCommand
         return "删除一个漂流云瓶";
     }
 
-    public string Invoke(EventType type, string userName, ulong userId, string[] args)
+    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用 “/help 删除云瓶” 查看命令用法。";
         int id = int.MinValue;

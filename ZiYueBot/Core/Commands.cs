@@ -126,5 +126,8 @@ public static class Commands
 
         RegisterGeneralCommand(new Help());
         RegisterGeneralCommand(new PicFace());
+        RegisterGeneralCommand(new ThrowStraitbottle());
+        RegisterGeneralCommand(new PickStraitbottle());
+        RegisterGeneralCommand(new ListStraitbottle());
     }
 }

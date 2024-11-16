@@ -56,7 +56,7 @@ public class Quotations : IHarmonyCommand
         return "随机一句毛泽东主席语录";
     }
 
-    public string Invoke(EventType type, string userName, ulong userId, string[] args)
+    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
         return Quotes[Random.Shared.Next(0, Quotes.Count - 1)];

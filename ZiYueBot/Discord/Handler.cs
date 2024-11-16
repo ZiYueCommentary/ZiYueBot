@@ -76,6 +76,16 @@ public static class Handler
         RegisterCommand(EasyCommandBuilder(new About()));
         RegisterCommand(EasyCommandBuilder(new Quotations()));
         RegisterCommand(EasyCommandBuilder(new ListDriftbottle()));
+        RegisterCommand(EasyCommandBuilder(new PickStraitbottle()));
+        RegisterCommand(EasyCommandBuilder(new ListStraitbottle()));
+        {
+            SlashCommandBuilder builder = EasyCommandBuilder(new ThrowStraitbottle());
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
+            optionBuilder.WithName("content").WithDescription("瓶子内容").WithRequired(true)
+                .WithType(ApplicationCommandOptionType.String);
+            builder.AddOption(optionBuilder);
+            RegisterCommand(builder);
+        }
         {
             SlashCommandBuilder builder = EasyCommandBuilder(new ThrowDriftbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
@@ -143,6 +153,40 @@ public static class Handler
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
             RegisterCommand(builder);
+        }
+    }
+
+    private static async Task SendComplexMessage(SocketSlashCommand command, string message)
+    {
+        if (message.Contains('\u2408'))
+        {
+            string reply = "";
+            List<string> images = [];
+            int pos = 0;
+            for (int i = 0; i < message.Length; i++)
+            {
+                switch (message[i])
+                {
+                    case '\u2408':
+                    {
+                        reply += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
+                        int end = message.IndexOf('\u2409', i + 1);
+                        images.Add(message.Substring(i + 1, end - i - 1));
+                        i = pos = end;
+                        continue;
+                    }
+                }
+            }
+
+            if (pos < message.Length - 1) reply += message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..];
+
+            await command.RespondWithFilesAsync(
+                images.ConvertAll(path => new FileAttachment(path, path)),
+                reply);
+        }
+        else
+        {
+            await command.RespondAsync(message);
         }
     }
 
@@ -220,6 +264,24 @@ public static class Handler
                     await command.RespondAsync(result);
                     break;
                 }
+                case "扔海峡云瓶":
+                {
+                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
+                    ThrowStraitbottle throwStraitbottle =
+                        Commands.GetGeneralCommand<ThrowStraitbottle>(Platform.Discord);
+                    await command.RespondAsync(throwStraitbottle.DiscordInvoke(EventType.GroupMessage, userMention,
+                        userId,
+                        ["扔海峡云瓶", (string)content.Value]));
+                    break;
+                }
+                case "捞海峡云瓶":
+                {
+                    PickStraitbottle pickStraitbottle = Commands.GetGeneralCommand<PickStraitbottle>(Platform.Discord);
+                    string result =
+                        pickStraitbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId, ["捞海峡云瓶"]);
+                    await SendComplexMessage(command, result);
+                    break;
+                }
                 case "删除云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
@@ -242,35 +304,7 @@ public static class Handler
                     PickDriftbottle pickDriftbottle = Commands.GetHarmonyCommand<PickDriftbottle>();
                     string result = pickDriftbottle.Invoke(EventType.GroupMessage, userMention, userId,
                         ["捞云瓶", content == null ? int.MinValue.ToString() : ((long)content.Value).ToString()]);
-                    if (result.Contains('\u2408'))
-                    {
-                        string reply = "";
-                        List<string> images = [];
-                        int pos = 0;
-                        for (int i = 0; i < result.Length; i++)
-                        {
-                            switch (result[i])
-                            {
-                                case '\u2408':
-                                {
-                                    reply += result.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
-                                    int end = result.IndexOf('\u2409', i + 1);
-                                    images.Add(result.Substring(i + 1, end - i - 1));
-                                    i = pos = end;
-                                    continue;
-                                }
-                            }
-                        }
-
-                        if (pos < result.Length - 1) reply += result[(pos + (result[pos + 1] == ' ' ? 2 : 1))..];
-
-                        await command.RespondWithFilesAsync(
-                            images.ConvertAll(path => new FileAttachment(path, path)),
-                            reply);
-                        break;
-                    }
-
-                    await command.RespondAsync(result);
+                    await SendComplexMessage(command, result);
                     break;
                 }
                 default:

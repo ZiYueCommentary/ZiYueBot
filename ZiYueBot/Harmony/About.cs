@@ -31,7 +31,7 @@ public class About : IHarmonyCommand
         return "关于子悦机器";
     }
 
-    public string Invoke(EventType type, string userName, ulong userId, string[] args)
+    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
         return $"""
