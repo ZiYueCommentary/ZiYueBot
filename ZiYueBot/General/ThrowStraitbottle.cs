@@ -54,7 +54,7 @@ public class ThrowStraitbottle : IGeneralCommand
         command.Parameters.AddWithValue("@username", userName);
         command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(args[1]));
         command.ExecuteNonQuery();
-        return $"你的 {command.LastInsertedId} 号漂流瓶扔出去了！";
+        return "你的海峡云瓶扔出去了！";
 
     }
 
@@ -70,7 +70,7 @@ public class ThrowStraitbottle : IGeneralCommand
         command.Parameters.AddWithValue("@username", Message.MentionedUinAndName[userId]);
         command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(args[1]));
         command.ExecuteNonQuery();
-        return $"你的 {command.LastInsertedId} 号漂流瓶扔出去了！";
+        return "你的海峡云瓶扔出去了！";
     }
 
     public TimeSpan GetRateLimit(Platform platform, EventType eventType)

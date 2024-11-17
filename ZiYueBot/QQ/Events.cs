@@ -84,7 +84,7 @@ public static class Events
                 }
                 default:
                 {
-                    if (flatten.Text.Contains("云瓶") && flatten.HasForward)
+                    if (args[0].Contains("云瓶") && flatten.HasForward)
                     {
                         context.SendMessage(MessageBuilder.Group((uint)e.Chain.GroupUin)
                             .Text("使用云瓶命令时不可回复消息！")

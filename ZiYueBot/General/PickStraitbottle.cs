@@ -50,8 +50,7 @@ public class PickStraitbottle : IGeneralCommand
         if (!reader.Read()) return "找不到瓶子！";
             
         string result = $"""
-                         你捞到了 {reader.GetInt32("id")} 号瓶子！
-                         来自：{reader.GetString("username")}
+                         你捞到了 {reader.GetString("username")} 的瓶子！
                          日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
 
                          {reader.GetString("content")}
@@ -76,8 +75,7 @@ public class PickStraitbottle : IGeneralCommand
         if (!reader.Read()) return "找不到瓶子！";
         
         string result = $"""
-                         你捞到了 {reader.GetInt32("id")} 号瓶子！
-                         来自：{reader.GetString("username")}
+                         你捞到了 {reader.GetString("username")} 的瓶子！
                          日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
 
                          {reader.GetString("content")}
