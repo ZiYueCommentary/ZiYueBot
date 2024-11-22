@@ -24,7 +24,7 @@ public class PickDriftbottle : IGeneralCommand
         return """
                /捞云瓶 [id]
                捞一个漂流云瓶。“id”是可选参数，为瓶子的数字编号。
-               频率限制：QQ 每次调用间隔 1 分钟；Discord 不限。
+               频率限制：QQ 群聊每次调用间隔 1 分钟，私聊不限；Discord 不限。
                在线文档：https://docs.ziyuebot.cn/pick-driftbottle.html
                """;
     }
@@ -113,6 +113,7 @@ public class PickDriftbottle : IGeneralCommand
 
     public TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
-        return platform == Platform.Discord ? TimeSpan.Zero : TimeSpan.FromMinutes(1);
+        if (platform == Platform.Discord || eventType == EventType.DirectMessage) return TimeSpan.Zero;
+        return TimeSpan.FromMinutes(1);
     }
 }

@@ -112,10 +112,10 @@ public static class Parser
         return message;
     }
 
-    public static MessageBuilder HierarchizeMessage(uint groupUin, string message)
+    public static MessageBuilder HierarchizeMessage(Events.MetaMessageBuilder meta, string message)
     {
         bool simpleMessage = true;
-        MessageBuilder builder = MessageBuilder.Group(groupUin);
+        MessageBuilder builder = meta();
         int pos = 0;
         for (int i = 0; i < message.Length; i++)
         {
