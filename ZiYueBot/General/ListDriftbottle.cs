@@ -99,7 +99,7 @@ public class ListDriftbottle : IGeneralCommand
 
     public TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
-        if (eventType == EventType.DirectMessage) return TimeSpan.Zero;
-        return platform == Platform.Discord ? TimeSpan.FromMinutes(10) : TimeSpan.FromMinutes(30);
+        if (platform == Platform.Discord || eventType == EventType.DirectMessage) return TimeSpan.FromMinutes(10);
+        return TimeSpan.FromMinutes(30);
     }
 }
