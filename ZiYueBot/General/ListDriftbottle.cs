@@ -23,7 +23,7 @@ public class ListDriftbottle : IGeneralCommand
         return """
                /查看我的云瓶
                查看你扔出的所有漂流云瓶的相关信息。不包括已删除的云瓶。
-               频率限制：QQ 群聊每次调用间隔 30 分钟，私聊不限；Discord 每次调用间隔 10 分钟。
+               频率限制：QQ 群聊每次调用间隔 30 分钟，私聊间隔 10 分钟；Discord 每次调用间隔 10 分钟。
                在线文档：https://docs.ziyuebot.cn/list-driftbottle.html
                """;
     }
@@ -31,29 +31,6 @@ public class ListDriftbottle : IGeneralCommand
     public string GetCommandShortDescription()
     {
         return "查看你所扔出的所有云瓶";
-    }
-
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（30 分钟 1 条）";
-        Logger.Info($"调用者：{userName} ({userId})");
-        
-        using MySqlCommand command = new MySqlCommand(
-            $"SELECT * FROM driftbottles WHERE userId = {userId} AND pickable = true",
-            ZiYueBot.Instance.Database);
-        using MySqlDataReader reader = command.ExecuteReader();
-        if (!reader.HasRows) return "没有属于你的瓶子！";
-        string result = $"{userName} 的云瓶列表：\n";
-        int i = 1;
-        while (reader.Read())
-        {
-            result +=
-                $"- 编号：{reader.GetInt32("id")}，创建时间：{reader.GetDateTime("created"):yyyy-MM-dd}，浏览量：{reader.GetInt32("views")}\n";
-            i++;
-        }
-
-        result += $"共计：{i - 1} 支瓶子";
-        return result;
     }
 
     public Platform GetSupportedPlatform()
@@ -83,7 +60,7 @@ public class ListDriftbottle : IGeneralCommand
 
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（30 分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return $"频率已达限制（{(eventType == EventType.DirectMessage ? 10 : 30)} 分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})");
         
         return Invoke(userName, userId);

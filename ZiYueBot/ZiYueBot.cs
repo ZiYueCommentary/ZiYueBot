@@ -20,7 +20,7 @@ public class ZiYueBot
 {
     public static readonly string Version = "0.0.1";
 
-    public static readonly ILog Logger = LogManager.GetLogger("主程序");
+    private static readonly ILog Logger = LogManager.GetLogger("主程序");
     public static ZiYueBot Instance;
 
     public readonly BotContext QQ;

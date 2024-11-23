@@ -20,11 +20,11 @@ public static class Events
     {
         ZiYueBot.Instance.QQ.Invoker.OnGroupMessageReceived += EventOnGroupMessageReceived;
         ZiYueBot.Instance.QQ.Invoker.OnFriendMessageReceived += EventOnFriendMessageReceived;
+        ZiYueBot.Instance.QQ.Invoker.OnTempMessageReceived += EventOnTempMessageReceived;
     }
 
     private static void EventHandler(BotContext context, EventType eventType, Message flatten, uint sender,
-        string username,
-        MetaMessageBuilder meta, IMessageEntity picfaceMessage)
+        string username, MetaMessageBuilder meta, IMessageEntity picfaceMessage, ulong groupUinOrFriendUin)
     {
         try
         {
@@ -41,6 +41,50 @@ public static class Events
 
             switch (args[0])
             {
+                case "开始俄罗斯轮盘":
+                {
+                    StartRevolver startRevolver = Commands.GetHarmonyCommand<StartRevolver>();
+                    args[0] = groupUinOrFriendUin.ToString(); // 群聊 ID
+                    context.SendMessage(meta().Text(startRevolver.Invoke(eventType, username, sender, args)).Build());
+                    break;
+                }
+                case "重置俄罗斯轮盘":
+                {
+                    RestartRevolver startRevolver = Commands.GetHarmonyCommand<RestartRevolver>();
+                    args[0] = groupUinOrFriendUin.ToString(); // 群聊 ID
+                    context.SendMessage(meta().Text(startRevolver.Invoke(eventType, username, sender, args)).Build());
+                    break;
+                }
+                case "开枪":
+                {
+                    Shooting shooting = Commands.GetHarmonyCommand<Shooting>();
+                    args[0] = groupUinOrFriendUin.ToString(); // 群聊 ID
+                    if (args.Length < 2)
+                    {
+                        List<string> list = args.ToList();
+                        list.Add($"\u2404{sender}\u2405");
+                        Message.MentionedUinAndName[sender] = $"@{username}";
+                        args = list.ToArray();
+                    }
+
+                    if (args[1].StartsWith('\u2404') && args[1].EndsWith('\u2405'))
+                    {
+                        args[1] = args[1][1..^1];
+                        context.SendMessage(meta().Text(shooting.Invoke(eventType, username, sender, args)).Build());
+                        break;
+                    }
+
+                    context.SendMessage(meta().Text("参数无效。使用“/help 开枪”查看命令用法。").Build());
+
+                    break;
+                }
+                case "转轮":
+                {
+                    Rotating rotating = Commands.GetHarmonyCommand<Rotating>();
+                    args[0] = groupUinOrFriendUin.ToString(); // 群聊 ID
+                    context.SendMessage(meta().Text(rotating.Invoke(eventType, username, sender, args)).Build());
+                    break;
+                }
                 case "xibao":
                 {
                     Xibao xibao = Commands.GetHarmonyCommand<Xibao>();
@@ -123,15 +167,21 @@ public static class Events
 
     private static void EventOnGroupMessageReceived(BotContext context, GroupMessageEvent e)
     {
-        context.RequestFriend(3198883438u);
         EventHandler(context, EventType.GroupMessage, Parser.FlattenMessage(context, e.Chain), e.Chain.FriendUin,
-            e.Chain.GroupMemberInfo.MemberName, () => MessageBuilder.Group((uint)e.Chain.GroupUin), e.Chain.First());
+            e.Chain.GroupMemberInfo.MemberName, () => MessageBuilder.Group((uint)e.Chain.GroupUin), e.Chain.First(),
+            (uint)e.Chain.GroupUin);
     }
-    
+
     private static void EventOnFriendMessageReceived(BotContext context, FriendMessageEvent e)
     {
         EventHandler(context, EventType.DirectMessage, Parser.FlattenMessage(context, e.Chain), e.Chain.FriendUin,
-            e.Chain.FriendInfo.Nickname, () => MessageBuilder.Friend(e.Chain.FriendUin), e.Chain.First());
+            e.Chain.FriendInfo.Nickname, () => MessageBuilder.Friend(e.Chain.FriendUin), e.Chain.First(),
+            e.Chain.FriendUin);
         context.FetchFriends(true);
+    }
+
+    private static void EventOnTempMessageReceived(BotContext context, TempMessageEvent e)
+    {
+        context.RequestFriend(e.Chain.FriendUin); // 我也不知道这个能不能工作
     }
 }

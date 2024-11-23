@@ -82,6 +82,17 @@ public static class Handler
         RegisterCommand(EasyCommandBuilder(new ListDriftbottle()));
         RegisterCommand(EasyCommandBuilder(new PickStraitbottle()));
         RegisterCommand(EasyCommandBuilder(new ListStraitbottle()));
+        RegisterCommand(EasyCommandBuilder(new StartRevolver()));
+        RegisterCommand(EasyCommandBuilder(new RestartRevolver()));
+        RegisterCommand(EasyCommandBuilder(new Rotating()));
+        {
+            SlashCommandBuilder builder = EasyCommandBuilder(new Shooting());
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
+            optionBuilder.WithName("user").WithDescription("开枪目标").WithRequired(false)
+                .WithType(ApplicationCommandOptionType.User);
+            builder.AddOption(optionBuilder);
+            RegisterCommand(builder);
+        }
         {
             SlashCommandBuilder builder = EasyCommandBuilder(new ThrowStraitbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
@@ -203,6 +214,43 @@ public static class Handler
             Message.MentionedUinAndName[userId] = command.User.GlobalName;
             switch (command.CommandName)
             {
+                case "开始俄罗斯轮盘":
+                {
+                    await command.RespondAsync(Commands.GetHarmonyCommand<StartRevolver>().Invoke(
+                        EventType.GroupMessage,
+                        userMention, userId,
+                        [((ulong)command.ChannelId).ToString()]));
+                    break;
+                }
+                case "重置俄罗斯轮盘":
+                {
+                    await command.RespondAsync(Commands.GetHarmonyCommand<RestartRevolver>().Invoke(
+                        EventType.GroupMessage,
+                        userMention, userId,
+                        [((ulong)command.ChannelId).ToString()]));
+                    break;
+                }
+                case "开枪":
+                {
+                    ulong target = 0;
+                    SocketSlashCommandDataOption? user = command.Data.Options.FirstOrDefault();
+                    if (user is not null && user.Value is not SocketGuildUser) user = null;
+                    target = ((SocketGuildUser)user?.Value)?.Id ?? command.User.Id;
+                    Message.MentionedUinAndName[target] = $" <@{target}>";
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Shooting>().Invoke(
+                        EventType.GroupMessage,
+                        userMention, userId,
+                        [((ulong)command.ChannelId).ToString(), target.ToString()]));
+                    break;
+                }
+                case "转轮":
+                {
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Rotating>().Invoke(
+                        EventType.GroupMessage,
+                        userMention, userId,
+                        [((ulong)command.ChannelId).ToString()]));
+                    break;
+                }
                 case "ask":
                 {
                     SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
@@ -289,8 +337,10 @@ public static class Handler
                 case "删除云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    RemoveDriftbottle removeDriftbottle = Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord);
-                    await command.RespondAsync(removeDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                    RemoveDriftbottle removeDriftbottle =
+                        Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord);
+                    await command.RespondAsync(removeDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention,
+                        userId,
                         [((long)content.Value).ToString()]));
                     break;
                 }
@@ -298,7 +348,8 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     ThrowDriftbottle throwDriftbottle = Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord);
-                    await command.RespondAsync(throwDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                    await command.RespondAsync(throwDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention,
+                        userId,
                         [(string)content.Value]));
                     break;
                 }
