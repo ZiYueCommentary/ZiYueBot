@@ -25,7 +25,7 @@ public class ZiYueBot
 
     public readonly BotContext QQ;
     public readonly DiscordSocketClient Discord;
-    public readonly MySqlConnection Database;
+
     private BotDeviceInfo _deviceInfo;
     private BotKeystore _keystore;
     private readonly bool _canAutoLogin;
@@ -52,20 +52,14 @@ public class ZiYueBot
         });
         Logger.Info("Discord - 初始化完毕");
 
-        Database = new MySqlConnection(
-            $"server={_config.DatabaseSource};port={_config.DatabasePort};database={_config.DatabaseName};user={_config.DatabaseUser};password={_config.DatabasePassword};Charset=utf8mb4;");
-        Database.Open();
         InitializeDatabase();
         Logger.Info("MySQL - 初始化完毕");
     }
 
-    ~ZiYueBot()
-    {
-        Instance.Database.Close();
-    }
-
     private void InitializeDatabase()
     {
+        using MySqlConnection database = ConnectDatabase();
+        
         try
         {
             MySqlCommand command = new MySqlCommand("""
@@ -79,7 +73,7 @@ public class ZiYueBot
                                                         pickable boolean           default true,
                                                         views    int                  default 0
                                                     ) CHARSET = utf8mb4;
-                                                    """, Database);
+                                                    """, database);
             command.ExecuteNonQuery();
         }
         catch (MySqlException)
@@ -99,7 +93,7 @@ public class ZiYueBot
                                                         fromDiscord   boolean                   null,
                                                         picked        boolean          default false
                                                     ) CHARSET = utf8mb4;
-                                                    """, Database);
+                                                    """, database);
             command.ExecuteNonQuery();
         }
         catch (MySqlException)
@@ -111,15 +105,15 @@ public class ZiYueBot
             MySqlCommand command = new MySqlCommand("""
                                                     create table win
                                                     (
-                                                        userid      bigint   unique primary key,
-                                                        username    tinytext               null,
-                                                        `group`     bigint                 null,
-                                                        date        datetime               null,
-                                                        score       tinyint                null,
-                                                        winLater    boolean       default false,
-                                                        miniWinDays tinyint           default 0
+                                                        userid      bigint            unique,
+                                                        username    tinytext            null,
+                                                        channel     bigint              null,
+                                                        date        datetime            null,
+                                                        score       tinyint             null,
+                                                        winLater    boolean    default false,
+                                                        miniWinDays tinyint        default 0
                                                     ) CHARSET = utf8mb4;
-                                                    """, Database);
+                                                    """, database);
             command.ExecuteNonQuery();
         }
         catch (MySqlException)
@@ -216,6 +210,22 @@ public class ZiYueBot
         {
             Logger.Error(e.Message, e);
         }
+    }
+
+    public MySqlConnection ConnectDatabase()
+    {
+        MySqlConnection connection = new MySqlConnection(
+            $"""
+             server={_config.DatabaseSource};
+             port={_config.DatabasePort};
+             database={_config.DatabaseName};
+             user={_config.DatabaseUser};
+             password={_config.DatabasePassword};
+             Charset=utf8mb4;
+             """
+            );
+        connection.Open();
+        return connection;
     }
 
     public static void Main()

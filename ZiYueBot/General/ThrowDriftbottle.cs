@@ -47,7 +47,8 @@ public class ThrowDriftbottle : IGeneralCommand
     
     private string Invoke(string userName, ulong userId, string content)
     {
-        using MySqlCommand command = new MySqlCommand("INSERT INTO driftbottles(userid, username, created, content) VALUE (@userid, @username, now(), @content)", ZiYueBot.Instance.Database);
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        using MySqlCommand command = new MySqlCommand("INSERT INTO driftbottles(userid, username, created, content) VALUE (@userid, @username, now(), @content)", database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
         command.Parameters.AddWithValue("@content", FriendlyMessage(content));

@@ -43,9 +43,10 @@ public class PickStraitbottle : IGeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         
         Logger.Info($"调用者：{userName} ({userId})");
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             "SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = true ORDER BY RAND() LIMIT 1",
-            ZiYueBot.Instance.Database);
+            database);
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
             
@@ -56,7 +57,7 @@ public class PickStraitbottle : IGeneralCommand
                          {reader.GetString("content")}
                          """;
             
-        using MySqlCommand addViews = new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", ZiYueBot.Instance.Database);
+        using MySqlCommand addViews = new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
         reader.Close();
         addViews.ExecuteNonQuery();
 
@@ -68,9 +69,10 @@ public class PickStraitbottle : IGeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         
         Logger.Info($"调用者：{userPing} ({userId})");
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             "SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = false ORDER BY RAND() LIMIT 1",
-            ZiYueBot.Instance.Database);
+            database);
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
         
@@ -81,7 +83,7 @@ public class PickStraitbottle : IGeneralCommand
                          {reader.GetString("content")}
                          """;
             
-        using MySqlCommand addViews = new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", ZiYueBot.Instance.Database);
+        using MySqlCommand addViews = new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
         reader.Close();
         addViews.ExecuteNonQuery();
 

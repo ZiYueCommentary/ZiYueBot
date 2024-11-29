@@ -49,7 +49,8 @@ public class ThrowStraitbottle : IGeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         
-        using MySqlCommand command = new MySqlCommand("INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, false)", ZiYueBot.Instance.Database);
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        using MySqlCommand command = new MySqlCommand("INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, false)", database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
         command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(args[1]));
@@ -65,7 +66,8 @@ public class ThrowStraitbottle : IGeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         
-        using MySqlCommand command = new MySqlCommand("INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, true)", ZiYueBot.Instance.Database);
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        using MySqlCommand command = new MySqlCommand("INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, true)", database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", Message.MentionedUinAndName[userId]);
         command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(args[1]));

@@ -35,16 +35,17 @@ public class RemoveDriftbottle : IGeneralCommand
 
     private string Invoke(ulong userId, int id)
     {
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand select = new MySqlCommand(
             $"SELECT * FROM driftbottles WHERE pickable = true AND id = {id}",
-            ZiYueBot.Instance.Database);
+            database);
         using MySqlDataReader reader = select.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
         if (reader.GetUInt64("userid") != userId) return "该瓶子不是由你扔出的！";
         reader.Close();
         using MySqlCommand command = new MySqlCommand(
             $"UPDATE driftbottles SET pickable = false WHERE id = {id}",
-            ZiYueBot.Instance.Database);
+            database);
         command.ExecuteNonQuery();
         return $"{id} 号瓶子已删除！";
     }
@@ -56,7 +57,7 @@ public class RemoveDriftbottle : IGeneralCommand
 
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        if (args.Length < 2) return "参数数量不足。使用 “/help 删除云瓶” 查看命令用法。";
+        if (args.Length < 2) return "参数数量不足。使用“/help 删除云瓶”查看命令用法。";
         int id = int.MinValue;
         try
         {

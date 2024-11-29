@@ -7,7 +7,7 @@ namespace ZiYueBot.General;
 public class ListDriftbottle : IGeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("查看我的云瓶");
-    
+
     public string GetCommandId()
     {
         return "查看我的云瓶";
@@ -40,9 +40,10 @@ public class ListDriftbottle : IGeneralCommand
 
     private string Invoke(string userName, ulong userId)
     {
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             $"SELECT * FROM driftbottles WHERE userid = {userId} AND pickable = true",
-            ZiYueBot.Instance.Database);
+            database);
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.HasRows) return "没有属于你的瓶子！";
         string result = $"{userName} 的云瓶列表：\n";
@@ -60,9 +61,10 @@ public class ListDriftbottle : IGeneralCommand
 
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return $"频率已达限制（{(eventType == EventType.DirectMessage ? 10 : 30)} 分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId))
+            return $"频率已达限制（{(eventType == EventType.DirectMessage ? 10 : 30)} 分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})");
-        
+
         return Invoke(userName, userId);
     }
 
@@ -70,7 +72,7 @@ public class ListDriftbottle : IGeneralCommand
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
         Logger.Info($"调用者：{userPing} ({userId})");
-        
+
         return Invoke(userPing, userId);
     }
 

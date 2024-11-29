@@ -41,11 +41,12 @@ public class PickDriftbottle : IGeneralCommand
 
     private string Invoke(int id)
     {
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             id == int.MinValue
                 ? "SELECT * FROM driftbottles WHERE pickable = true ORDER BY RAND() LIMIT 1"
                 : $"SELECT * FROM driftbottles WHERE pickable = true AND id = {id}",
-            ZiYueBot.Instance.Database);
+            database);
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
 
@@ -57,9 +58,9 @@ public class PickDriftbottle : IGeneralCommand
                          {reader.GetString("content")}
                          """;
 
-        using MySqlCommand addViews =
-            new MySqlCommand($"UPDATE driftbottles SET views = views + 1 WHERE id = {reader.GetInt32("id")}",
-                ZiYueBot.Instance.Database);
+        using MySqlCommand addViews = new MySqlCommand(
+            $"UPDATE driftbottles SET views = views + 1 WHERE id = {reader.GetInt32("id")}",
+            database);
         reader.Close();
         addViews.ExecuteNonQuery();
 
