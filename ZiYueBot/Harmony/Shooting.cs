@@ -49,9 +49,9 @@ public class Shooting : IHarmonyCommand
             return $"砰！枪声响起，{Message.MentionedUinAndName[ulong.Parse(args[1])][1..]} 倒下了";
         }
 
-        StartRevolver.Revolvers[group].ChamberIndex += 1;
-        if (StartRevolver.Revolvers[group].RestChambers() == 0) StartRevolver.Revolvers.Remove(group);
-        return $"咔哒，无事发生。轮盘中还剩 {StartRevolver.Revolvers[group].RestChambers()} 个膛室未击发。{(round.RestChambers() == 0 ? "本局俄罗斯轮盘结束。" : "")}";
+        round.ChamberIndex += 1;
+        if (round.RestChambers() == 0) StartRevolver.Revolvers.Remove(group);
+        return $"咔哒，无事发生。轮盘中还剩 {round.RestChambers()} 个膛室未击发。{(round.RestChambers() == 0 ? "本局俄罗斯轮盘结束。" : "")}";
     }
 
     public TimeSpan GetRateLimit(Platform platform, EventType eventType)

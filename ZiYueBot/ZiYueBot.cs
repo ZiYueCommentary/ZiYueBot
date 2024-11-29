@@ -72,7 +72,7 @@ public class ZiYueBot
                                                     CREATE TABLE driftbottles
                                                     (
                                                         id       int auto_increment primary key,
-                                                        userId   bigint                    null,
+                                                        userid   bigint                    null,
                                                         username tinytext                  null,
                                                         created  datetime                  null,
                                                         content  text                      null,
@@ -92,12 +92,32 @@ public class ZiYueBot
                                                     CREATE TABLE straitbottles
                                                     (
                                                         id            int auto_increment primary key,
-                                                        userId        bigint                    null,
+                                                        userid        bigint                    null,
                                                         username      tinytext                  null,
                                                         created       datetime                  null,
                                                         content       text                      null,
                                                         fromDiscord   boolean                   null,
                                                         picked        boolean          default false
+                                                    ) CHARSET = utf8mb4;
+                                                    """, Database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
+
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    create table win
+                                                    (
+                                                        userid      bigint   unique primary key,
+                                                        username    tinytext               null,
+                                                        `group`     bigint                 null,
+                                                        date        datetime               null,
+                                                        score       tinyint                null,
+                                                        winLater    boolean       default false,
+                                                        miniWinDays tinyint           default 0
                                                     ) CHARSET = utf8mb4;
                                                     """, Database);
             command.ExecuteNonQuery();
@@ -160,35 +180,42 @@ public class ZiYueBot
 
     private async void Login()
     {
-        if (_canAutoLogin)
+        try
         {
-            Logger.Info("QQ - 正在进行自动登录...");
-            await QQ.LoginByPassword();
-            _keystore = QQ.UpdateKeystore();
-        }
-        else
-        {
-            Logger.Info("QQ - 正在进行扫码登录...");
-            var qrCode = await QQ.FetchQrCode();
-            QRCodeGenerator qrGenerator = new QRCodeGenerator();
-            QRCodeData data = qrGenerator.CreateQrCode(qrCode.Value.Url, QRCodeGenerator.ECCLevel.Q);
-            AsciiQRCode image = new AsciiQRCode(data);
-            foreach (string graph in image.GetLineByLineGraphic(1))
+            if (_canAutoLogin)
             {
-                Console.WriteLine(graph);
+                Logger.Info("QQ - 正在进行自动登录...");
+                await QQ.LoginByPassword();
+                _keystore = QQ.UpdateKeystore();
+            }
+            else
+            {
+                Logger.Info("QQ - 正在进行扫码登录...");
+                var qrCode = await QQ.FetchQrCode();
+                QRCodeGenerator qrGenerator = new QRCodeGenerator();
+                QRCodeData data = qrGenerator.CreateQrCode(qrCode.Value.Url, QRCodeGenerator.ECCLevel.Q);
+                AsciiQRCode image = new AsciiQRCode(data);
+                foreach (string graph in image.GetLineByLineGraphic(1))
+                {
+                    Console.WriteLine(graph);
+                }
+
+                await QQ.LoginByQrCode();
             }
 
-            await QQ.LoginByQrCode();
+            SerializeBotConfigs();
+            Logger.Info("QQ - 登录成功！");
+            Events.Initialize();
+
+            await Discord.LoginAsync(TokenType.Bot, _config.DiscordToken);
+            await Discord.StartAsync();
+            Logger.Info("Discord - 登录成功！");
+            Handler.Initialize();
         }
-
-        SerializeBotConfigs();
-        Logger.Info("QQ - 登录成功！");
-        Events.Initialize();
-
-        await Discord.LoginAsync(TokenType.Bot, _config.DiscordToken);
-        await Discord.StartAsync();
-        Logger.Info("Discord - 登录成功！");
-        Handler.Initialize();
+        catch (Exception e)
+        {
+            Logger.Error(e.Message, e);
+        }
     }
 
     public static void Main()

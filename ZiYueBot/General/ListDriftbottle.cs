@@ -41,7 +41,7 @@ public class ListDriftbottle : IGeneralCommand
     private string Invoke(string userName, ulong userId)
     {
         using MySqlCommand command = new MySqlCommand(
-            $"SELECT * FROM driftbottles WHERE userId = {userId} AND pickable = true",
+            $"SELECT * FROM driftbottles WHERE userid = {userId} AND pickable = true",
             ZiYueBot.Instance.Database);
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.HasRows) return "没有属于你的瓶子！";

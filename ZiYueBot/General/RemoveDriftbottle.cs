@@ -40,7 +40,7 @@ public class RemoveDriftbottle : IGeneralCommand
             ZiYueBot.Instance.Database);
         using MySqlDataReader reader = select.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
-        if (reader.GetUInt64("userId") != userId) return "该瓶子不是由你扔出的！";
+        if (reader.GetUInt64("userid") != userId) return "该瓶子不是由你扔出的！";
         reader.Close();
         using MySqlCommand command = new MySqlCommand(
             $"UPDATE driftbottles SET pickable = false WHERE id = {id}",

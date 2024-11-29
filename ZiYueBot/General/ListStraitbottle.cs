@@ -47,7 +47,7 @@ public class ListStraitbottle : IGeneralCommand
         int self = 0;
         while (reader.Read())
         {
-            if (reader.GetUInt64("userId") == userId) self++;
+            if (reader.GetUInt64("userid") == userId) self++;
             if (reader.GetBoolean("fromDiscord")) pickable++;
             i++;
         }
@@ -69,7 +69,7 @@ public class ListStraitbottle : IGeneralCommand
         int self = 0;
         while (reader.Read())
         {
-            if (reader.GetUInt64("userId") == userId) self++;
+            if (reader.GetUInt64("userid") == userId) self++;
             if (!reader.GetBoolean("fromDiscord")) pickable++;
             i++;
         }
