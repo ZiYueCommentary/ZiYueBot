@@ -52,6 +52,25 @@ public static class Events
 
             switch (args[0])
             {
+                case "win":
+                {
+                    Win win = Commands.GetGeneralCommand<Win>(Platform.QQ);
+                    args[0] = sourceUin.ToString(); // 群聊 ID
+                    
+                    context.SendMessage(meta().Text(win.QQInvoke(eventType, userName, userId, args)).Build());
+                    if (win.SeekWinningCouple(userId, userName, args[0], out string coupleText))
+                    {
+                        context.SendMessage(meta().Text(coupleText).Build());
+                        context.SendMessage(meta().Image("resources/zvv.jpeg").Build());
+                    }
+
+                    if (win.TryCommonProsperity(userId, userName, args[0], out string prosperityText))
+                    {
+                        context.SendMessage(meta().Text(prosperityText).Build());
+                    }
+
+                    break;
+                }
                 case "开始俄罗斯轮盘":
                 {
                     StartRevolver startRevolver = Commands.GetHarmonyCommand<StartRevolver>();

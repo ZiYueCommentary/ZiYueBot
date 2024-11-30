@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using log4net;
@@ -19,8 +20,7 @@ public static class Handler
             //todo 换成全局
             try
             {
-                await ZiYueBot.Instance.Discord.GetGuild(1152562772941484118)
-                    .CreateApplicationCommandAsync(builder.Build());
+                await ZiYueBot.Instance.Discord.CreateGlobalApplicationCommandAsync(builder.Build());
             }
             catch (HttpRequestException e)
             {
@@ -85,6 +85,7 @@ public static class Handler
         RegisterCommand(EasyCommandBuilder(new StartRevolver()));
         RegisterCommand(EasyCommandBuilder(new RestartRevolver()));
         RegisterCommand(EasyCommandBuilder(new Rotating()));
+        RegisterCommand(EasyCommandBuilder(new Win()));
         {
             SlashCommandBuilder builder = EasyCommandBuilder(new Shooting());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
@@ -212,12 +213,35 @@ public static class Handler
             string userMention = command.User.Mention;
             ulong userId = command.User.Id;
             Message.MentionedUinAndName[userId] = command.User.GlobalName;
+            EventType eventType = command.GuildId is null ? EventType.DirectMessage : EventType.GroupMessage;
             switch (command.CommandName)
             {
+                case "win":
+                {
+                    Win win = Commands.GetGeneralCommand<Win>(Platform.Discord);
+                    string guildId = eventType == EventType.GroupMessage ? ((ulong)command.GuildId).ToString() : "-1";
+                    await command.RespondAsync(win.DiscordInvoke(
+                        eventType,
+                        userMention, userId,
+                        [guildId]));
+                    if (win.SeekWinningCouple(userId, userMention, guildId, out string coupleText))
+                    {
+                        await command.Channel.SendFileAsync(
+                            new FileAttachment("resources/zvv.jpeg", "zvv.jpeg"),
+                            coupleText);
+                    }
+
+                    if (win.TryCommonProsperity(userId, userMention, guildId, out string prosperityText))
+                    {
+                        await command.Channel.SendMessageAsync(prosperityText);
+                    }
+
+                    break;
+                }
                 case "开始俄罗斯轮盘":
                 {
                     await command.RespondAsync(Commands.GetHarmonyCommand<StartRevolver>().Invoke(
-                        EventType.GroupMessage,
+                        eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId).ToString()]));
                     break;
@@ -225,7 +249,7 @@ public static class Handler
                 case "重置俄罗斯轮盘":
                 {
                     await command.RespondAsync(Commands.GetHarmonyCommand<RestartRevolver>().Invoke(
-                        EventType.GroupMessage,
+                        eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId).ToString()]));
                     break;
@@ -238,7 +262,7 @@ public static class Handler
                     target = ((SocketGuildUser)user?.Value)?.Id ?? command.User.Id;
                     Message.MentionedUinAndName[target] = $" <@{target}>";
                     await command.RespondAsync(Commands.GetHarmonyCommand<Shooting>().Invoke(
-                        EventType.GroupMessage,
+                        eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId).ToString(), target.ToString()]));
                     break;
@@ -246,7 +270,7 @@ public static class Handler
                 case "转轮":
                 {
                     await command.RespondAsync(Commands.GetHarmonyCommand<Rotating>().Invoke(
-                        EventType.GroupMessage,
+                        eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId).ToString()]));
                     break;
@@ -254,7 +278,7 @@ public static class Handler
                 case "ask":
                 {
                     SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(EventType.GroupMessage,
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(eventType,
                         userMention, userId,
                         ["ask", question is null ? "" : (string)question.Value]));
                     break;
@@ -263,7 +287,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)
-                        .DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                        .DiscordInvoke(eventType, userMention, userId,
                             ["help", first is null ? "" : (string)first.Value]));
                     break;
                 }
@@ -272,7 +296,7 @@ public static class Handler
                     SocketSlashCommandDataOption? left = command.Data.Options.ToList()[0];
                     SocketSlashCommandDataOption? right = command.Data.Options.ToList()[1];
                     BALogo baLogo = Commands.GetHarmonyCommand<BALogo>();
-                    string result = baLogo.Invoke(EventType.GroupMessage, userMention, userId,
+                    string result = baLogo.Invoke(eventType, userMention, userId,
                         ["balogo", (string)left.Value, (string)right.Value]);
                     if (result == "")
                     {
@@ -288,7 +312,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     Xibao xibao = Commands.GetHarmonyCommand<Xibao>();
-                    string result = xibao.Invoke(EventType.GroupMessage, userMention, userId,
+                    string result = xibao.Invoke(eventType, userMention, userId,
                         ["xibao", (string)content.Value]);
                     if (result == "")
                     {
@@ -304,7 +328,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     Beibao beibao = Commands.GetHarmonyCommand<Beibao>();
-                    string result = beibao.Invoke(EventType.GroupMessage, userMention, userId,
+                    string result = beibao.Invoke(eventType, userMention, userId,
                         ["beibao", (string)content.Value]);
                     if (result == "")
                     {
@@ -321,7 +345,7 @@ public static class Handler
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     ThrowStraitbottle throwStraitbottle =
                         Commands.GetGeneralCommand<ThrowStraitbottle>(Platform.Discord);
-                    await command.RespondAsync(throwStraitbottle.DiscordInvoke(EventType.GroupMessage, userMention,
+                    await command.RespondAsync(throwStraitbottle.DiscordInvoke(eventType, userMention,
                         userId,
                         ["扔海峡云瓶", (string)content.Value]));
                     break;
@@ -330,7 +354,7 @@ public static class Handler
                 {
                     PickStraitbottle pickStraitbottle = Commands.GetGeneralCommand<PickStraitbottle>(Platform.Discord);
                     string result =
-                        pickStraitbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId, ["捞海峡云瓶"]);
+                        pickStraitbottle.DiscordInvoke(eventType, userMention, userId, ["捞海峡云瓶"]);
                     await SendComplexMessage(command, result);
                     break;
                 }
@@ -339,7 +363,7 @@ public static class Handler
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     RemoveDriftbottle removeDriftbottle =
                         Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord);
-                    await command.RespondAsync(removeDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention,
+                    await command.RespondAsync(removeDriftbottle.DiscordInvoke(eventType, userMention,
                         userId,
                         [((long)content.Value).ToString()]));
                     break;
@@ -348,7 +372,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     ThrowDriftbottle throwDriftbottle = Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord);
-                    await command.RespondAsync(throwDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention,
+                    await command.RespondAsync(throwDriftbottle.DiscordInvoke(eventType, userMention,
                         userId,
                         [(string)content.Value]));
                     break;
@@ -357,7 +381,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     PickDriftbottle pickDriftbottle = Commands.GetGeneralCommand<PickDriftbottle>(Platform.Discord);
-                    string result = pickDriftbottle.DiscordInvoke(EventType.GroupMessage, userMention, userId,
+                    string result = pickDriftbottle.DiscordInvoke(eventType, userMention, userId,
                         [content == null ? int.MinValue.ToString() : ((long)content.Value).ToString()]);
                     await SendComplexMessage(command, result);
                     break;
@@ -367,7 +391,7 @@ public static class Handler
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(command.CommandName);
                     if (harmony is not null)
                     {
-                        await command.RespondAsync(harmony.Invoke(EventType.GroupMessage, userMention, userId, []));
+                        await command.RespondAsync(harmony.Invoke(eventType, userMention, userId, []));
                     }
                     else
                     {
@@ -375,7 +399,7 @@ public static class Handler
                             Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName);
                         if (general is not null)
                         {
-                            await command.RespondAsync(general.DiscordInvoke(EventType.GroupMessage, userMention,
+                            await command.RespondAsync(general.DiscordInvoke(eventType, userMention,
                                 userId, []));
                         }
                         else

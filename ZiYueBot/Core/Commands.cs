@@ -133,5 +133,6 @@ public static class Commands
         RegisterGeneralCommand(new ThrowStraitbottle());
         RegisterGeneralCommand(new PickStraitbottle());
         RegisterGeneralCommand(new ListStraitbottle());
+        RegisterGeneralCommand(new Win());
     }
 }

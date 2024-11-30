@@ -10,15 +10,19 @@ using Lagrange.Core.Common.Interface.Api;
 using log4net;
 using QRCoder;
 using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
+using Discord.Net.Rest;
+using Discord.Rest;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Asn1.Ocsp;
 using ZiYueBot.Core;
 
 namespace ZiYueBot;
 
 public class ZiYueBot
 {
-    public static readonly string Version = "0.0.1";
+    public const string Version = "0.0.1";
 
     private static readonly ILog Logger = LogManager.GetLogger("主程序");
     public static ZiYueBot Instance;
@@ -45,10 +49,9 @@ public class ZiYueBot
         {
             Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword)
         };
-        Discord = new DiscordSocketClient(new DiscordSocketConfig
+        Discord = new DiscordSocketClient(new DiscordSocketConfig()
         {
-            //todo
-            //WebSocketProvider = DefaultWebSocketProvider.Create(proxy)
+            WebSocketProvider = DefaultWebSocketProvider.Create(proxy)
         });
         Logger.Info("Discord - 初始化完毕");
 
@@ -59,7 +62,7 @@ public class ZiYueBot
     private void InitializeDatabase()
     {
         using MySqlConnection database = ConnectDatabase();
-        
+
         try
         {
             MySqlCommand command = new MySqlCommand("""
@@ -108,9 +111,9 @@ public class ZiYueBot
                                                         userid      bigint            unique,
                                                         username    tinytext            null,
                                                         channel     bigint              null,
-                                                        date        datetime            null,
+                                                        date        date                null,
                                                         score       tinyint             null,
-                                                        winLater    boolean    default false,
+                                                        prospered   boolean    default false,
                                                         miniWinDays tinyint        default 0
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
@@ -221,9 +224,10 @@ public class ZiYueBot
              database={_config.DatabaseName};
              user={_config.DatabaseUser};
              password={_config.DatabasePassword};
-             Charset=utf8mb4;
+             charset=utf8mb4;
+             allowuservariables=True;
              """
-            );
+        );
         connection.Open();
         return connection;
     }
