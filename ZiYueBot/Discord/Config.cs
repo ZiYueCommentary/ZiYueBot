@@ -8,10 +8,11 @@
 [Serializable]
 public struct Config
 {
-    public string DiscordProxy { get; set; }
+    //public string DiscordProxy { get; set; }
+    //public int ProxyPort { get; set; }
+    //public string ProxyUsername { get; set; }
+    //public string ProxyPassword { get; set; }
     public string DiscordToken { get; set; }
-    public string ProxyUsername { get; set; }
-    public string ProxyPassword { get; set; }
     public string DatabaseSource { get; set; }
     public int DatabasePort { get; set; }
     public string DatabaseName { get; set; }

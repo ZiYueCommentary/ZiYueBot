@@ -10,12 +10,9 @@ using Lagrange.Core.Common.Interface.Api;
 using log4net;
 using QRCoder;
 using System.Net;
-using System.Net.Sockets;
 using System.Text.Json;
 using Discord.Net.Rest;
-using Discord.Rest;
 using MySql.Data.MySqlClient;
-using Org.BouncyCastle.Asn1.Ocsp;
 using ZiYueBot.Core;
 
 namespace ZiYueBot;
@@ -44,14 +41,11 @@ public class ZiYueBot
         {
             _config = JsonSerializer.Deserialize<Config>(stream);
         }
-
-        WebProxy proxy = new WebProxy(_config.DiscordProxy)
+        
+        Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
-            Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword)
-        };
-        Discord = new DiscordSocketClient(new DiscordSocketConfig()
-        {
-            WebSocketProvider = DefaultWebSocketProvider.Create(proxy)
+            RestClientProvider = DefaultRestClientProvider.Create(true),
+            WebSocketProvider = DefaultWebSocketProvider.Create(new WebProxy("http://127.0.0.1:7890"))
         });
         Logger.Info("Discord - 初始化完毕");
 
@@ -234,7 +228,7 @@ public class ZiYueBot
 
     public static void Main()
     {
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        //System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         log4net.Config.XmlConfigurator.Configure();
         Directory.CreateDirectory("data");
         Directory.CreateDirectory("temp");

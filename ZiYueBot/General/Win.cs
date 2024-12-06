@@ -158,7 +158,7 @@ public class Win : IGeneralCommand
         using MySqlCommand insert = new MySqlCommand(
             hasRecord
                 ? $"UPDATE win SET date = current_date(), username = '{userName}', score = {rate}, prospered = false WHERE userid = {userId} AND channel = {channel}"
-                : $"INSERT INTO win VALUE({userId}, '{userName}', {channel}, '{DateTime.Today:yyyy-MM-dd}', {rate}, false, 0)",
+                : $"INSERT INTO win VALUE({userId}, '{userName}', {channel}, current_date(), {rate}, false, 0)",
             database);
         insert.ExecuteNonQuery();
         int level = GetWinLevel(rate);
