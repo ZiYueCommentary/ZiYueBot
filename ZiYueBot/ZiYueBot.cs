@@ -102,13 +102,14 @@ public class ZiYueBot
             MySqlCommand command = new MySqlCommand("""
                                                     create table win
                                                     (
-                                                        userid      bigint            unique,
-                                                        username    tinytext            null,
-                                                        channel     bigint              null,
-                                                        date        date                null,
-                                                        score       tinyint             null,
-                                                        prospered   boolean    default false,
-                                                        miniWinDays tinyint        default 0
+                                                        id          int auto_increment primary key,
+                                                        userid      bigint                    null,
+                                                        username    tinytext                  null,
+                                                        channel     bigint                    null,
+                                                        date        date                      null,
+                                                        score       tinyint                   null,
+                                                        prospered   boolean          default false,
+                                                        miniWinDays tinyint              default 0
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();
@@ -153,7 +154,7 @@ public class ZiYueBot
             Logger.Warn("QQ - 未找到data/deviceinfo.json");
             _deviceInfo = new BotDeviceInfo()
             {
-                Guid = new Guid(),
+                Guid = Guid.NewGuid(),
                 DeviceName = "ZiYueBot Service",
                 SystemKernel = "Windows 10.0.19042",
                 KernelVersion = "10.0.19042.0"
@@ -228,7 +229,7 @@ public class ZiYueBot
 
     public static void Main()
     {
-        //System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         log4net.Config.XmlConfigurator.Configure();
         Directory.CreateDirectory("data");
         Directory.CreateDirectory("temp");

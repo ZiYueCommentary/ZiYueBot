@@ -108,7 +108,7 @@ public class Win : IGeneralCommand
         return """
                /win
                以张维为教授为主题的“今日人品”命令。
-               本命令包括的事件有：共同富 win、精准扶win、风口飞 win，以及心心相 win。详细信息请查看在线文档。
+               本命令包括的事件有：精准扶 win、共同富 win、风口飞 win，以及心心相 win。详细信息请查看在线文档。
                在线文档：https://docs.ziyuebot.cn/win.html
                """;
     }
@@ -148,17 +148,18 @@ public class Win : IGeneralCommand
 
         reader.Close();
         int rate = Random.Shared.Next(0, 100);
-        bool blowed = DateTime.Now.Hour == GetWindWindowHour() && (_windWindow.Blowed = false);
+        bool blowed = DateTime.Now.Hour == GetWindWindowHour() && _windWindow.Blowed == false;
         if (blowed)
         {
             rate = (int)Math.Ceiling(rate * 1.4);
             _windWindow.Blowed = true;
         }
+        if (targetedPovertyAlleviation) rate = (int)Math.Ceiling(rate * 1.5);
 
         using MySqlCommand insert = new MySqlCommand(
             hasRecord
                 ? $"UPDATE win SET date = current_date(), username = '{userName}', score = {rate}, prospered = false WHERE userid = {userId} AND channel = {channel}"
-                : $"INSERT INTO win VALUE({userId}, '{userName}', {channel}, current_date(), {rate}, false, 0)",
+                : $"INSERT INTO win(userid, username, channel, date, score) VALUE({userId}, '{userName}', {channel}, current_date(), {rate})",
             database);
         insert.ExecuteNonQuery();
         int level = GetWinLevel(rate);
@@ -188,7 +189,7 @@ public class Win : IGeneralCommand
             );
             update.ExecuteNonQuery();
             return $"""
-                    恭喜 {userName} 在 {DateTime.Today:MM 月 dd 日}受到精准扶 win，赢级提高 40%！
+                    恭喜 {userName} 在 {DateTime.Today:MM 月 dd 日}受到精准扶 win，赢级提高 50%！
                     {userName} 的赢级是：{rate}%，属于{Levels[level]}
                     维为寄语：{GetReview(7)}
                     """;
