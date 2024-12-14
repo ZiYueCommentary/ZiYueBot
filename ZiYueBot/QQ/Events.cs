@@ -1,8 +1,7 @@
-﻿using Lagrange.Core.Event.EventArg;
-using Lagrange.Core.Message.Entity;
-using Lagrange.Core.Message;
-using Lagrange.Core;
-using Lagrange.Core.Common.Interface.Api;
+﻿using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using log4net;
 using ZiYueBot.Harmony;
 using ZiYueBot.Core;
@@ -12,41 +11,76 @@ namespace ZiYueBot.QQ;
 
 public static class Events
 {
-    public delegate MessageBuilder MetaMessageBuilder();
-
     private static readonly ILog Logger = LogManager.GetLogger("QQ 消息解析");
 
-    public static void Initialize()
+    public static async Task Initialize()
     {
-        ZiYueBot.Instance.QQ.Invoker.OnGroupMessageReceived += EventOnGroupMessageReceived;
-        ZiYueBot.Instance.QQ.Invoker.OnFriendMessageReceived += EventOnFriendMessageReceived;
-        ZiYueBot.Instance.QQ.Invoker.OnTempMessageReceived += EventOnTempMessageReceived;
+        byte[] buffer = new byte[4096];
+        while (ZiYueBot.Instance.QqEvent.State == WebSocketState.Open)
+        {
+            try
+            {
+                WebSocketReceiveResult result =
+                    await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer),
+                        CancellationToken.None);
+                string receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                JsonNode? message = JsonNode.Parse(receivedMessage);
+                if (message is null) continue;
+                switch (message["message_type"]!.ToString())
+                {
+                    case "private":
+                        await EventHandler(
+                            EventType.DirectMessage,
+                            message["message"]!,
+                            message["user_id"]!.GetValue<uint>(),
+                            message["sender"]!["nickname"]!.GetValue<string>(),
+                            message["user_id"]!.GetValue<ulong>()
+                        );
+                        break;
+                    case "group":
+                        await EventHandler(
+                            EventType.GroupMessage,
+                            message["message"]!,
+                            message["user_id"]!.GetValue<uint>(),
+                            message["sender"]!["nickname"]!.GetValue<string>(),
+                            message["group_id"]!.GetValue<ulong>()
+                        );
+                        break;
+                }
+            }
+            catch (NullReferenceException)
+            {
+                
+            }
+            catch (Exception e)
+            {
+                Logger.Warn(e.Message, e);
+            }
+        }
     }
 
     /// <summary>
     /// 处理 QQ 消息。
     /// </summary>
-    /// <param name="context">机器人本体</param>
     /// <param name="eventType">消息来源</param>
-    /// <param name="message">消息内容</param>
+    /// <param name="message">消息 JSON</param>
     /// <param name="userId">来源用户 ID</param>
     /// <param name="userName">来源用户昵称</param>
-    /// <param name="meta">消息构建元，用于构建消息</param>
     /// <param name="sourceUin">消息所在群 ID 或好友 ID</param>
-    private static void EventHandler(BotContext context, EventType eventType, MessageChain message, uint userId,
-        string userName, MetaMessageBuilder meta, ulong sourceUin)
+    private static async Task EventHandler(EventType eventType, JsonNode message, uint userId, string userName,
+        ulong sourceUin)
     {
         try
         {
-            if (context.BotUin == userId) return;
-            Message flatten = Parser.FlattenMessage(context, message);
+            Message flatten = Parser.FlattenMessage(message);
             if (flatten.Text == "/") return;
             string[] args = Parser.Parse(flatten.Text);
-            if (message.First() is ImageEntity image && PicFace.Users.Contains(userId))
+            if (message.AsArray()[0]!["type"]!.GetValue<string>() == "image" && PicFace.Users.Contains(userId))
             {
-                context.SendMessage(meta().Image(WebUtils.DownloadFile(image.ImageUrl)).Text(image.ImageUrl).Build());
+                string url = message.AsArray()[0]!["data"]!["file"]!.GetValue<string>();
+                await Parser.SendMessage(eventType, sourceUin, $"\u2402{url}\u2403\\r{url}");
                 PicFace.Users.Remove(userId);
-                PicFace.Logger.Info($"{userName} 的表情转图片已完成：{image.ImageUrl}");
+                PicFace.Logger.Info($"{userName} 的表情转图片已完成：{url}");
                 return;
             }
 
@@ -56,17 +90,17 @@ public static class Events
                 {
                     Win win = Commands.GetGeneralCommand<Win>(Platform.QQ);
                     args[0] = sourceUin.ToString(); // 群聊 ID
-                    
-                    context.SendMessage(meta().Text(win.QQInvoke(eventType, userName, userId, args)).Build());
+
+                    await Parser.SendMessage(eventType, sourceUin, win.QQInvoke(eventType, userName, userId, args));
                     if (win.SeekWinningCouple(userId, userName, args[0], out string coupleText))
                     {
-                        context.SendMessage(meta().Text(coupleText).Build());
-                        context.SendMessage(meta().Image("resources/zvv.jpeg").Build());
+                        await Parser.SendMessage(eventType, sourceUin, coupleText);
+                        await Parser.SendMessage(eventType, sourceUin, "\u2402file:///./resources/zvv.jpeg\u2403");
                     }
 
                     if (win.TryCommonProsperity(userId, userName, args[0], out string prosperityText))
                     {
-                        context.SendMessage(meta().Text(prosperityText).Build());
+                        await Parser.SendMessage(eventType, sourceUin, prosperityText);
                     }
 
                     break;
@@ -75,14 +109,14 @@ public static class Events
                 {
                     StartRevolver startRevolver = Commands.GetHarmonyCommand<StartRevolver>();
                     args[0] = sourceUin.ToString(); // 群聊 ID
-                    context.SendMessage(meta().Text(startRevolver.Invoke(eventType, userName, userId, args)).Build());
+                    await Parser.SendMessage(eventType, sourceUin, startRevolver.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "重置俄罗斯轮盘":
                 {
                     RestartRevolver startRevolver = Commands.GetHarmonyCommand<RestartRevolver>();
                     args[0] = sourceUin.ToString(); // 群聊 ID
-                    context.SendMessage(meta().Text(startRevolver.Invoke(eventType, userName, userId, args)).Build());
+                    await Parser.SendMessage(eventType, sourceUin, startRevolver.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "开枪":
@@ -100,11 +134,11 @@ public static class Events
                     if (args[1].StartsWith('\u2404') && args[1].EndsWith('\u2405'))
                     {
                         args[1] = args[1][1..^1];
-                        context.SendMessage(meta().Text(shooting.Invoke(eventType, userName, userId, args)).Build());
+                        await Parser.SendMessage(eventType, sourceUin, shooting.Invoke(eventType, userName, userId, args));
                         break;
                     }
 
-                    context.SendMessage(meta().Text("参数无效。使用“/help 开枪”查看命令用法。").Build());
+                    await Parser.SendMessage(eventType, sourceUin, "参数无效。使用“/help 开枪”查看命令用法。");
 
                     break;
                 }
@@ -112,7 +146,7 @@ public static class Events
                 {
                     Rotating rotating = Commands.GetHarmonyCommand<Rotating>();
                     args[0] = sourceUin.ToString(); // 群聊 ID
-                    context.SendMessage(meta().Text(rotating.Invoke(eventType, userName, userId, args)).Build());
+                    await Parser.SendMessage(eventType, sourceUin, rotating.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "xibao":
@@ -121,11 +155,11 @@ public static class Events
                     string result = xibao.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
-                        context.SendMessage(meta().Text(result).Build());
+                        await Parser.SendMessage(eventType, sourceUin, result);
                         break;
                     }
 
-                    context.SendMessage(meta().Image(Xibao.Render(true, args[1])).Build());
+                    await Parser.SendMessage(eventType, sourceUin, $"\u2402base64://{Convert.ToBase64String(Xibao.Render(true, args[1]))}\u2403");
                     break;
                 }
                 case "beibao":
@@ -134,11 +168,11 @@ public static class Events
                     string result = beibao.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
-                        context.SendMessage(meta().Text(result).Build());
+                        await Parser.SendMessage(eventType, sourceUin, result);
                         break;
                     }
 
-                    context.SendMessage(meta().Image(Xibao.Render(false, args[1])).Build());
+                    await Parser.SendMessage(eventType, sourceUin, $"\u2402base64://{Convert.ToBase64String(Xibao.Render(false, args[1]))}\u2403");
                     break;
                 }
                 case "balogo":
@@ -147,40 +181,38 @@ public static class Events
                     string result = baLogo.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
-                        context.SendMessage(meta().Text(result).Build());
+                        await Parser.SendMessage(eventType, sourceUin, result);
                         break;
                     }
 
-                    context.SendMessage(meta().Image(baLogo.Render(args[1], args[2])).Build());
+                    await Parser.SendMessage(eventType, sourceUin, $"\u2402base64://{Convert.ToBase64String(baLogo.Render(args[1], args[2]))}\u2403");
                     break;
                 }
                 default:
                 {
                     if (args[0].Contains("云瓶") && flatten.HasForward)
                     {
-                        context.SendMessage(meta().Text("使用云瓶命令时不可回复消息！").Build());
+                        await Parser.SendMessage(eventType, sourceUin, "使用云瓶命令时不可回复消息！");
                         break;
                     }
 
                     IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(args[0]);
                     if (harmony is not null)
                     {
-                        context.SendMessage(
-                            Parser.HierarchizeMessage(meta, harmony.Invoke(eventType, userName, userId, args)
-                            ).Build());
+                        await Parser.SendMessage(eventType, sourceUin,
+                            harmony.Invoke(eventType, userName, userId, args));
                     }
                     else
                     {
                         IGeneralCommand? general = Commands.GetGeneralCommand<IGeneralCommand>(Platform.QQ, args[0]);
                         if (general is not null)
                         {
-                            context.SendMessage(
-                                Parser.HierarchizeMessage(meta, general.QQInvoke(eventType, userName, userId, args)
-                                ).Build());
+                            await Parser.SendMessage(eventType, sourceUin,
+                                general.QQInvoke(eventType, userName, userId, args));
                         }
                         else if (flatten.Text.StartsWith('/'))
                         {
-                            context.SendMessage(meta().Text("未知命令。请使用 /help 查看命令列表。").Build());
+                            await Parser.SendMessage(eventType, sourceUin, "未知命令。请使用 /help 查看命令列表。");
                         }
                     }
 
@@ -191,27 +223,7 @@ public static class Events
         catch (Exception ex)
         {
             Logger.Error(ex.Message, ex);
-            context.SendMessage(meta().Text("命令解析错误。").Build());
+            await Parser.SendMessage(eventType, sourceUin, "命令解析错误。");
         }
-    }
-
-    private static void EventOnGroupMessageReceived(BotContext context, GroupMessageEvent e)
-    {
-        EventHandler(context, EventType.GroupMessage, e.Chain,
-            e.Chain.FriendUin, e.Chain.GroupMemberInfo.MemberName, () => MessageBuilder.Group((uint)e.Chain.GroupUin),
-            (uint)e.Chain.GroupUin);
-    }
-
-    private static void EventOnFriendMessageReceived(BotContext context, FriendMessageEvent e)
-    {
-        EventHandler(context, EventType.DirectMessage, e.Chain,
-            e.Chain.FriendUin, e.Chain.FriendInfo.Nickname, () => MessageBuilder.Friend(e.Chain.FriendUin),
-            0);
-        context.FetchFriends(true); // 刷新好友列表
-    }
-
-    private static void EventOnTempMessageReceived(BotContext context, TempMessageEvent e)
-    {
-        context.RequestFriend(e.Chain.FriendUin); // 我也不知道这个能不能工作
     }
 }

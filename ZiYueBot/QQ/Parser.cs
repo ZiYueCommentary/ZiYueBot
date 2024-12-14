@@ -1,7 +1,6 @@
-﻿using Lagrange.Core;
-using Lagrange.Core.Common.Interface.Api;
-using Lagrange.Core.Message;
-using Lagrange.Core.Message.Entity;
+﻿using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json.Nodes;
 using ZiYueBot.Core;
 
 namespace ZiYueBot.QQ;
@@ -51,71 +50,82 @@ public static class Parser
     /// <summary>
     /// 扁平化 QQ 消息，以便于传输给各命令。
     /// </summary>
-    public static Message FlattenMessage(BotContext context, MessageChain chain, bool ignoreForward = false)
+    public static Message FlattenMessage(JsonNode node, bool ignoreForward = false)
     {
         Message message = new Message();
-        string result = "";
         string forwardMessage = ""; // 被引用的消息内容
-        bool hasForwardMessage = false;
         bool wasMention = false; // 如果上一个消息是提及，则删除一个空格，以便把前后消息看成一个整体。
-        for (int i = 0; i < chain.Count; i++)
+        foreach (JsonObject segment in node.AsArray())
         {
-            // 除纯文本外，其他类型的特殊消息将被控制字符包裹，以便于发送时层级化。
-            switch (chain[i])
+            switch (segment!["type"]!.GetValue<string>())
             {
-                case ForwardEntity forward:
-                    if (ignoreForward)
-                    {
-                        result = "";
-                        continue;
-                    }
-
-                    forwardMessage = FlattenMessage(context,
-                        context.GetGroupMessage((uint)chain.GroupUin, forward.Sequence, forward.Sequence)
-                            .GetAwaiter().GetResult().First(), true).Text;
-                    result = "";
-                    hasForwardMessage = true;
+                case "reply":
+                {
+                    if (ignoreForward) continue;
+                    message.HasForward = true;
+                    JsonNode response = SendApiRequest("""
+                                                       {
+                                                           "action": "get_msg",
+                                                           "params": {
+                                                               "message_id": %id%
+                                                           }
+                                                       }
+                                                       """.Replace("%id%", segment["data"]!["id"]!.GetValue<string>()))
+                        .GetAwaiter().GetResult();
+                    forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text;
                     wasMention = false;
                     break;
-                case TextEntity text:
-                    result += text.Text[(wasMention && text.Text.StartsWith(' ') ? 1 : 0) ..];
+                }
+                case "text":
+                {
+                    message.Text += segment["data"]!["text"]!.GetValue<string>()[(wasMention ? 1 : 0)..];
                     wasMention = false;
                     break;
-                case ImageEntity image:
-                    result += $"\u2402{image.ImageUrl}\u2403";
+                }
+                case "image":
+                {
+                    message.Text += $"\u2402{segment["data"]!["url"]!.GetValue<string>()}\u2403";
                     wasMention = false;
                     break;
-                case MentionEntity mention:
-                    if (ignoreForward && i == 0) continue;
-                    result += $"\u2404{mention.Uin}\u2405";
-                    Message.MentionedUinAndName[mention.Uin] = mention.Name;
+                }
+                case "at":
+                {
+                    string qq = segment["data"]!["qq"]!.GetValue<string>();
+                    message.Text += $"\u2404{qq}\u2405";
+                    JsonNode response = SendApiRequest("""
+                                                       {
+                                                           "action": "get_stranger_info",
+                                                           "params": {
+                                                               "user_id": %qq%,
+                                                               "no_cache": false
+                                                           }
+                                                       }
+                                                       """.Replace("%qq%", qq)).GetAwaiter().GetResult();
+                    Message.MentionedUinAndName[ulong.Parse(qq)] = response["data"]!["nickname"]!.GetValue<string>();
                     wasMention = true;
                     break;
-                case FaceEntity face:
-                    result += $"\u2406{face.FaceId}\u2407";
+                }
+                case "face":
+                {
+                    message.Text += $"\u2406{segment["data"]!["id"]!.GetValue<string>()}\u2407";
                     wasMention = false;
                     break;
+                }
             }
         }
 
-        if (!hasForwardMessage)
-        {
-            message.HasForward = false;
-            message.Text = result;
-            return message;
-        }
+        if (!message.HasForward) return message;
 
-        message.HasForward = true;
-        message.Text = result.Contains(' ')
-            ? result.Insert(result.IndexOf(' '), $" \"{forwardMessage}\" ")
-            : $"{result} \"{forwardMessage}\"";
+        message.Text = message.Text.Contains(' ')
+            ? message.Text.Insert(message.Text.IndexOf(' '), $" \"{forwardMessage}\" ")
+            : $"{message.Text} \"{forwardMessage}\"";
         return message;
     }
 
-    public static MessageBuilder HierarchizeMessage(Events.MetaMessageBuilder meta, string message)
+    public static string HierarchizeMessage(string message)
     {
         bool simpleMessage = true;
-        MessageBuilder builder = meta();
+        string result = "";
         int pos = 0;
         for (int i = 0; i < message.Length; i++)
         {
@@ -123,36 +133,36 @@ public static class Parser
             {
                 case '\u2402': // 图片
                 {
-                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
+                    result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2403', i + 1);
-                    builder.Image(WebUtils.DownloadFile(message.Substring(i + 1, end - i - 1)));
+                    result += $"[CQ:image,file={message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")}]";
                     i = pos = end;
                     simpleMessage = false;
                     continue;
                 }
                 case '\u2404': // 提及
                 {
-                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
+                    result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2405', i + 1);
-                    builder.Mention(uint.Parse(message.Substring(i + 1, end - i - 1))).Text(" "); // 提及后面必须加空格，否则会显示出错。
+                    result += $"[CQ:at,qq={message.Substring(i + 1, end - i - 1)}] "; // 提及后面必须加空格，否则会显示出错。
                     i = pos = end;
                     simpleMessage = false;
                     continue;
                 }
                 case '\u2406': // 表情
                 {
-                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
+                    result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2407', i + 1);
-                    builder.Face(ushort.Parse(message.Substring(i + 1, end - i - 1)));
+                    result += $"[CQ:face,id={message.Substring(i + 1, end - i - 1)}]";
                     i = pos = end;
                     simpleMessage = false;
                     continue;
                 }
-                case '\u2408': // 本地图片，仅在云瓶中使用
+                case '\u2408': // 本地图片，只在捞云瓶中使用
                 {
-                    builder.Text(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1)));
+                    result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2409', i + 1);
-                    builder.Image(message.Substring(i + 1, end - i - 1));
+                    result += $"[CQ:image,file=file:///./{message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")}]";
                     i = pos = end;
                     simpleMessage = false;
                     continue;
@@ -160,9 +170,47 @@ public static class Parser
             }
         }
 
-        if (simpleMessage) return builder.Text(message);
+        if (simpleMessage) return message;
 
-        if (pos < message.Length - 1) builder.Text(message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..]);
-        return builder;
+        if (pos < message.Length - 1) result += message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..];
+        return result;
+    }
+
+    public static async Task SendMessage(EventType eventType, ulong target, string message)
+    {
+        message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;");
+        string request = eventType == EventType.DirectMessage
+            ? """
+              {
+                 "action": "send_private_msg",
+                 "params": {
+                    "user_id": %target%,
+                    "message": "%message%"
+                 }
+              }
+              """
+            : """
+              {
+                 "action": "send_group_msg",
+                 "params": {
+                    "group_id": %target%,
+                    "message": "%message%"
+                 }
+              }
+              """;
+        request = request.Replace("%target%", target.ToString());
+        request = request.Replace("%message%", HierarchizeMessage(message).Replace("\t", "\\t").Replace("\r\n", "\r").Replace("\r", "\\r").Replace("\n", "\\r"));
+        ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(request));
+        await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
+    }
+
+    private static async Task<JsonNode> SendApiRequest(string json)
+    {
+        ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
+        await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
+        byte[] buffer = new byte[1024];
+        WebSocketReceiveResult result =
+            await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+        return JsonNode.Parse(Encoding.UTF8.GetString(buffer, 0, result.Count))!;
     }
 }
