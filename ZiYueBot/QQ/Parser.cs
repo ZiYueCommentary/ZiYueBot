@@ -135,7 +135,7 @@ public static class Parser
                 {
                     result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2403', i + 1);
-                    result += $"[CQ:image,file={message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")}]";
+                    result += $"[CQ:image,url={message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")}]";
                     i = pos = end;
                     simpleMessage = false;
                     continue;
@@ -162,7 +162,7 @@ public static class Parser
                 {
                     result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2409', i + 1);
-                    result += $"[CQ:image,file=file:///./{message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")}]";
+                    result += $"[CQ:image,url=file:///{Path.GetFullPath(message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")).Replace("\\", "/")}]";
                     i = pos = end;
                     simpleMessage = false;
                     continue;
@@ -200,17 +200,17 @@ public static class Parser
               """;
         request = request.Replace("%target%", target.ToString());
         request = request.Replace("%message%", HierarchizeMessage(message).Replace("\t", "\\t").Replace("\r\n", "\r").Replace("\r", "\\r").Replace("\n", "\\r"));
-        ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(request));
-        await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
+        await SendApiRequest(request);
     }
 
-    private static async Task<JsonNode> SendApiRequest(string json)
+    public static async Task<JsonNode> SendApiRequest(string json)
     {
         ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
         await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[4096];
         WebSocketReceiveResult result =
             await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-        return JsonNode.Parse(Encoding.UTF8.GetString(buffer, 0, result.Count))!;
+        JsonNode response = JsonNode.Parse(Encoding.UTF8.GetString(buffer, 0, result.Count))!;
+        return response;
     }
 }

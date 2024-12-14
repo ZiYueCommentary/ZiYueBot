@@ -15,10 +15,7 @@
       <PackageReference Include="MySql.Data" Version="9.1.0" />
       <PackageReference Include="QRCoder" Version="1.6.0" />
       <PackageReference Include="SkiaSharp" Version="3.118.0-preview.1.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Lagrange.Core\Lagrange.Core\Lagrange.Core.csproj" />
+      <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.118.0-preview.2.3" />
     </ItemGroup>
 
     <ItemGroup>

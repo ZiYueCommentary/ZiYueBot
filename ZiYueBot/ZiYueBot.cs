@@ -41,8 +41,8 @@ public class ZiYueBot
 
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
-            //RestClientProvider = DefaultRestClientProvider.Create(true),
-            //WebSocketProvider = DefaultWebSocketProvider.Create(new WebProxy("http://127.0.0.1:7890"))
+            RestClientProvider = DefaultRestClientProvider.Create(true),
+            WebSocketProvider = DefaultWebSocketProvider.Create(new WebProxy("http://127.0.0.1:7890"))
         });
         Discord.LoginAsync(TokenType.Bot, _config.DiscordToken).Wait();
         Discord.StartAsync().Wait();

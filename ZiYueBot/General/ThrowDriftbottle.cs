@@ -90,7 +90,7 @@ public class ThrowDriftbottle : IGeneralCommand
                     result += arg.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = arg.IndexOf('\u2403', i + 1);
                     string path = $"data/images/{Guid.NewGuid()}.png";
-                    WebUtils.DownloadFile(arg.Substring(i + 1, end - i - 1), path);
+                    WebUtils.DownloadFile(arg.Substring(i + 1, end - i - 1), path).GetAwaiter().GetResult();
                     result += $"\u2408{path}\u2409";
                     i = pos = end;
                     simpleMessage = false;

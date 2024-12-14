@@ -25,7 +25,8 @@ public static class Events
                         CancellationToken.None);
                 string receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 JsonNode? message = JsonNode.Parse(receivedMessage);
-                if (message is null) continue;
+                
+                if (message?["message_type"] is null) continue;
                 switch (message["message_type"]!.ToString())
                 {
                     case "private":
@@ -50,7 +51,6 @@ public static class Events
             }
             catch (NullReferenceException)
             {
-                
             }
             catch (Exception e)
             {
@@ -77,7 +77,7 @@ public static class Events
             string[] args = Parser.Parse(flatten.Text);
             if (message.AsArray()[0]!["type"]!.GetValue<string>() == "image" && PicFace.Users.Contains(userId))
             {
-                string url = message.AsArray()[0]!["data"]!["file"]!.GetValue<string>();
+                string url = message.AsArray()[0]!["data"]!["url"]!.GetValue<string>();
                 await Parser.SendMessage(eventType, sourceUin, $"\u2402{url}\u2403\\r{url}");
                 PicFace.Users.Remove(userId);
                 PicFace.Logger.Info($"{userName} 的表情转图片已完成：{url}");
@@ -95,7 +95,8 @@ public static class Events
                     if (win.SeekWinningCouple(userId, userName, args[0], out string coupleText))
                     {
                         await Parser.SendMessage(eventType, sourceUin, coupleText);
-                        await Parser.SendMessage(eventType, sourceUin, "\u2402file:///./resources/zvv.jpeg\u2403");
+                        await Parser.SendMessage(eventType, sourceUin,
+                            $"\u2402file:///{Path.GetFullPath("resources/zvv.jpeg").Replace("\\", "/")}\u2403");
                     }
 
                     if (win.TryCommonProsperity(userId, userName, args[0], out string prosperityText))
@@ -109,14 +110,16 @@ public static class Events
                 {
                     StartRevolver startRevolver = Commands.GetHarmonyCommand<StartRevolver>();
                     args[0] = sourceUin.ToString(); // 群聊 ID
-                    await Parser.SendMessage(eventType, sourceUin, startRevolver.Invoke(eventType, userName, userId, args));
+                    await Parser.SendMessage(eventType, sourceUin,
+                        startRevolver.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "重置俄罗斯轮盘":
                 {
                     RestartRevolver startRevolver = Commands.GetHarmonyCommand<RestartRevolver>();
                     args[0] = sourceUin.ToString(); // 群聊 ID
-                    await Parser.SendMessage(eventType, sourceUin, startRevolver.Invoke(eventType, userName, userId, args));
+                    await Parser.SendMessage(eventType, sourceUin,
+                        startRevolver.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "开枪":
@@ -134,7 +137,8 @@ public static class Events
                     if (args[1].StartsWith('\u2404') && args[1].EndsWith('\u2405'))
                     {
                         args[1] = args[1][1..^1];
-                        await Parser.SendMessage(eventType, sourceUin, shooting.Invoke(eventType, userName, userId, args));
+                        await Parser.SendMessage(eventType, sourceUin,
+                            shooting.Invoke(eventType, userName, userId, args));
                         break;
                     }
 
@@ -159,7 +163,8 @@ public static class Events
                         break;
                     }
 
-                    await Parser.SendMessage(eventType, sourceUin, $"\u2402base64://{Convert.ToBase64String(Xibao.Render(true, args[1]))}\u2403");
+                    await Parser.SendMessage(eventType, sourceUin,
+                        $"\u2402base64://{Convert.ToBase64String(Xibao.Render(true, args[1]))}\u2403");
                     break;
                 }
                 case "beibao":
@@ -172,7 +177,8 @@ public static class Events
                         break;
                     }
 
-                    await Parser.SendMessage(eventType, sourceUin, $"\u2402base64://{Convert.ToBase64String(Xibao.Render(false, args[1]))}\u2403");
+                    await Parser.SendMessage(eventType, sourceUin,
+                        $"\u2402base64://{Convert.ToBase64String(Xibao.Render(false, args[1]))}\u2403");
                     break;
                 }
                 case "balogo":
@@ -185,7 +191,8 @@ public static class Events
                         break;
                     }
 
-                    await Parser.SendMessage(eventType, sourceUin, $"\u2402base64://{Convert.ToBase64String(baLogo.Render(args[1], args[2]))}\u2403");
+                    await Parser.SendMessage(eventType, sourceUin,
+                        $"\u2402base64://{Convert.ToBase64String(baLogo.Render(args[1], args[2]))}\u2403");
                     break;
                 }
                 default:
