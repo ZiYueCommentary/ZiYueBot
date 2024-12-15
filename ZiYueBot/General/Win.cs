@@ -217,7 +217,7 @@ public class Win : IGeneralCommand
             {
                 scoreReader.Close();
                 using MySqlCommand query = new MySqlCommand(
-                    $"SELECT * FROM win WHERE userid != {userId} AND channel = {channel} ORDER BY score DESC LIMIT 1",
+                    $"SELECT * FROM win WHERE userid != {userId} AND channel = {channel} AND date = current_date() ORDER BY score DESC LIMIT 1",
                     database
                 );
                 using MySqlDataReader queryReader = query.ExecuteReader();
