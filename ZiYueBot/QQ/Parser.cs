@@ -178,6 +178,11 @@ public static class Parser
 
     public static async Task SendMessage(EventType eventType, ulong target, string message)
     {
+        if (message == "")
+        {
+            Events.Logger.Warn("尝试发送空内容！");
+            return;
+        }
         message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;");
         string request = eventType == EventType.DirectMessage
             ? """

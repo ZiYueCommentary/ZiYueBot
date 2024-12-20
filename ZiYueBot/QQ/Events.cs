@@ -11,7 +11,7 @@ namespace ZiYueBot.QQ;
 
 public static class Events
 {
-    private static readonly ILog Logger = LogManager.GetLogger("QQ 消息解析");
+    internal static readonly ILog Logger = LogManager.GetLogger("QQ 消息解析");
 
     public static async Task Initialize()
     {

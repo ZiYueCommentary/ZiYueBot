@@ -68,8 +68,7 @@ public class ThrowDriftbottle : IGeneralCommand
 
     public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
-        if (args.Length < 1) return "参数数量不足。使用“/help 扔云瓶”查看命令用法。";
-        if (Regex.IsMatch(args[1], "<:.*:\\d+>")) return "云瓶内容禁止包含表情！";
+        if (Regex.IsMatch(args[0], "<:.*:\\d+>")) return "云瓶内容禁止包含表情！";
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
 
