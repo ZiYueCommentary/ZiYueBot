@@ -46,7 +46,7 @@ public class Shooting : IHarmonyCommand
         if (round.ChamberIndex == round.BulletPos)
         {
             StartRevolver.Revolvers.Remove(group);
-            return $"砰！枪声响起，{Message.MentionedUinAndName[ulong.Parse(args[1])][1..]} 倒下了";
+            return $"砰！枪声响起，{Message.MentionedUinAndName[ulong.Parse(args[1])]} 倒下了";
         }
 
         round.ChamberIndex += 1;
