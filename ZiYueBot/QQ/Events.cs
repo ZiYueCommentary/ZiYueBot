@@ -15,16 +15,21 @@ public static class Events
 
     public static async Task Initialize()
     {
-        byte[] buffer = new byte[4096];
         while (ZiYueBot.Instance.QqEvent.State == WebSocketState.Open)
         {
             try
             {
-                WebSocketReceiveResult result =
-                    await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer),
-                        CancellationToken.None);
-                string receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                JsonNode? message = JsonNode.Parse(receivedMessage);
+                byte[] buffer = new byte[4096];
+                StringBuilder builder = new StringBuilder();
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    builder.Append(chunk);
+                }
+                while (!result.EndOfMessage);
+                JsonNode? message = JsonNode.Parse(builder.ToString());
 
                 if (message?["message_type"] is null) continue;
                 switch (message["message_type"]!.ToString())
@@ -231,13 +236,6 @@ public static class Events
         {
             Logger.Error(ex.Message, ex);
             await Parser.SendMessage(eventType, sourceUin, "命令解析错误。");
-
-            // 尝试清空 API 侧数据包
-            byte[] buffer = new byte[4096];
-            while (ZiYueBot.Instance.QqApi.State == WebSocketState.Open)
-            {
-                await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
         }
     }
 }

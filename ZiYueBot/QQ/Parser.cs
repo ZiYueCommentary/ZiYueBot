@@ -213,9 +213,16 @@ public static class Parser
         ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
         await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
         byte[] buffer = new byte[4096];
-        WebSocketReceiveResult result =
-            await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-        JsonNode response = JsonNode.Parse(Encoding.UTF8.GetString(buffer, 0, result.Count))!;
+        StringBuilder builder = new StringBuilder();
+        WebSocketReceiveResult result;
+        do
+        {
+            result = await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            builder.Append(chunk);
+        }
+        while (!result.EndOfMessage);
+        JsonNode response = JsonNode.Parse(builder.ToString())!;
         return response;
     }
 }
