@@ -210,19 +210,25 @@ public static class Parser
 
     public static async Task<JsonNode> SendApiRequest(string json)
     {
-        ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
-        await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
-        byte[] buffer = new byte[4096];
-        StringBuilder builder = new StringBuilder();
-        WebSocketReceiveResult result;
-        do
+        for (int i = 0; i < 3; i++)
         {
-            result = await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            builder.Append(chunk);
+            ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
+            await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
+            byte[] buffer = new byte[4096];
+            StringBuilder builder = new StringBuilder();
+            WebSocketReceiveResult result;
+            do
+            {
+                result = await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                builder.Append(chunk);
+            }
+            while (!result.EndOfMessage);
+            JsonNode? response = JsonNode.Parse(builder.ToString());
+            if (response is not null) return response;
         }
-        while (!result.EndOfMessage);
-        JsonNode response = JsonNode.Parse(builder.ToString())!;
-        return response;
+
+        Events.Logger.Error($"API 请求失败：{json}");
+        throw new HttpRequestException();
     }
 }

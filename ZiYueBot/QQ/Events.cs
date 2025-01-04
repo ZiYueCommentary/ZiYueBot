@@ -232,6 +232,15 @@ public static class Events
                 }
             }
         }
+        catch (HttpRequestException)
+        {
+            await Parser.SendMessage(eventType, sourceUin, "与服务器通讯失败。");
+            await ZiYueBot.Instance.QqEvent.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+            await ZiYueBot.Instance.QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"), CancellationToken.None);
+            await ZiYueBot.Instance.QqApi.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+            await ZiYueBot.Instance.QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None);
+            Logger.Info("已重新建立与 QQ 的连接");
+        }
         catch (Exception ex)
         {
             Logger.Error(ex.Message, ex);
