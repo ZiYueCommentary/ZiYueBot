@@ -32,6 +32,7 @@ public static class Parser
                 case '"':
                 {
                     int nextQuote = line.IndexOf('"', i + 1);
+                    if (nextQuote == -1) nextQuote = line.Length - 1;
                     args.Add(line.Substring(i + 1, nextQuote - i - 1));
                     i = pos = nextQuote + 2;
                     continue;
