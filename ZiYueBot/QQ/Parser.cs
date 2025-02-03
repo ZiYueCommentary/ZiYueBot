@@ -92,17 +92,27 @@ public static class Parser
                 case "at":
                 {
                     string qq = segment["data"]!["qq"]!.GetValue<string>();
-                    message.Text += $"\u2404{qq}\u2405";
-                    JsonNode response = SendApiRequest("""
-                                                       {
-                                                           "action": "get_stranger_info",
-                                                           "params": {
-                                                               "user_id": %qq%,
-                                                               "no_cache": false
+                    if (qq != "all")
+                    {
+                        message.Text += $"\u2404{qq}\u2405";
+                        JsonNode response = SendApiRequest("""
+                                                           {
+                                                               "action": "get_stranger_info",
+                                                               "params": {
+                                                                   "user_id": %qq%,
+                                                                   "no_cache": false
+                                                               }
                                                            }
-                                                       }
-                                                       """.Replace("%qq%", qq)).GetAwaiter().GetResult();
-                    Message.MentionedUinAndName[ulong.Parse(qq)] = response["data"]!["nickname"]!.GetValue<string>();
+                                                           """.Replace("%qq%", qq)).GetAwaiter().GetResult();
+                        Message.MentionedUinAndName[ulong.Parse(qq)] =
+                            response["data"]!["nickname"]!.GetValue<string>();
+                    }
+                    else
+                    {
+                        message.Text += "\u24040\u2405";
+                        Message.MentionedUinAndName[0] = "全体成员";
+                    }
+
                     wasMention = true;
                     break;
                 }
@@ -145,7 +155,16 @@ public static class Parser
                 {
                     result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2405', i + 1);
-                    result += $"[CQ:at,qq={message.Substring(i + 1, end - i - 1)}] "; // 提及后面必须加空格，否则会显示出错。
+                    string id = message.Substring(i + 1, end - i - 1);
+                    if (id == "0")
+                    {
+                        result += "@全体成员 ";
+                    }
+                    else
+                    {
+                        result += $"[CQ:at,qq={id}] "; // 提及后面必须加空格，否则会显示出错。
+                    }
+
                     i = pos = end;
                     simpleMessage = false;
                     continue;
@@ -163,7 +182,8 @@ public static class Parser
                 {
                     result += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = message.IndexOf('\u2409', i + 1);
-                    result += $"[CQ:image,url=file:///{Path.GetFullPath(message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")).Replace("\\", "/")}]";
+                    result +=
+                        $"[CQ:image,url=file:///{Path.GetFullPath(message.Substring(i + 1, end - i - 1).Replace(",", "&#44;")).Replace("\\", "/")}]";
                     i = pos = end;
                     simpleMessage = false;
                     continue;
@@ -184,6 +204,7 @@ public static class Parser
             Events.Logger.Warn("尝试发送空内容！");
             return;
         }
+
         message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;");
         string request = eventType == EventType.DirectMessage
             ? """
@@ -205,7 +226,9 @@ public static class Parser
               }
               """;
         request = request.Replace("%target%", target.ToString());
-        request = request.Replace("%message%", HierarchizeMessage(message).Replace("\t", "\\t").Replace("\r\n", "\r").Replace("\r", "\\r").Replace("\n", "\\r"));
+        request = request.Replace("%message%",
+            HierarchizeMessage(message).Replace("\t", "\\t").Replace("\r\n", "\r").Replace("\r", "\\r")
+                .Replace("\n", "\\r"));
         await SendApiRequest(request);
     }
 
@@ -214,17 +237,19 @@ public static class Parser
         for (int i = 0; i < 3; i++)
         {
             ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
-            await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
+            await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true,
+                CancellationToken.None);
             byte[] buffer = new byte[4096];
             StringBuilder builder = new StringBuilder();
             WebSocketReceiveResult result;
             do
             {
-                result = await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                result = await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer),
+                    CancellationToken.None);
                 string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 builder.Append(chunk);
-            }
-            while (!result.EndOfMessage);
+            } while (!result.EndOfMessage);
+
             JsonNode? response = JsonNode.Parse(builder.ToString());
             if (response is not null) return response;
         }
