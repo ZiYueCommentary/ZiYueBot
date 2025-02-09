@@ -1,4 +1,6 @@
-﻿using Discord;
+﻿using System.Text;
+using System.Text.Json.Nodes;
+using Discord;
 using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
@@ -17,7 +19,6 @@ public static class Handler
     {
         try
         {
-            //todo 换成全局
             try
             {
                 await ZiYueBot.Instance.Discord.CreateGlobalApplicationCommandAsync(builder.Build());
@@ -86,6 +87,14 @@ public static class Handler
         RegisterCommand(EasyCommandBuilder(new RestartRevolver()));
         RegisterCommand(EasyCommandBuilder(new Rotating()));
         RegisterCommand(EasyCommandBuilder(new Win()));
+        {
+            SlashCommandBuilder builder = EasyCommandBuilder(new Chat());
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
+            optionBuilder.WithName("question").WithDescription("问题内容").WithRequired(true)
+                .WithType(ApplicationCommandOptionType.String);
+            builder.AddOption(optionBuilder);
+            RegisterCommand(builder);
+        }
         {
             SlashCommandBuilder builder = EasyCommandBuilder(new Shooting());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
@@ -218,8 +227,8 @@ public static class Handler
             {
                 case "win":
                 {
-                    Win win = Commands.GetGeneralCommand<Win>(Platform.Discord);
-                    string guildId = eventType == EventType.GroupMessage ? ((ulong)command.GuildId).ToString() : "-1";
+                    Win win = Commands.GetGeneralCommand<Win>(Platform.Discord)!;
+                    string guildId = eventType == EventType.GroupMessage ? ((ulong)command.GuildId!).ToString() : "-1";
                     await command.RespondAsync(win.DiscordInvoke(
                         eventType,
                         userMention, userId,
@@ -243,7 +252,7 @@ public static class Handler
                     await command.RespondAsync(Commands.GetHarmonyCommand<StartRevolver>().Invoke(
                         eventType,
                         userMention, userId,
-                        [((ulong)command.ChannelId).ToString()]));
+                        [((ulong)command.ChannelId!).ToString()]));
                     break;
                 }
                 case "重置俄罗斯轮盘":
@@ -251,7 +260,7 @@ public static class Handler
                     await command.RespondAsync(Commands.GetHarmonyCommand<RestartRevolver>().Invoke(
                         eventType,
                         userMention, userId,
-                        [((ulong)command.ChannelId).ToString()]));
+                        [((ulong)command.ChannelId!).ToString()]));
                     break;
                 }
                 case "开枪":
@@ -259,12 +268,12 @@ public static class Handler
                     ulong target = 0;
                     SocketSlashCommandDataOption? user = command.Data.Options.FirstOrDefault();
                     if (user is not null && user.Value is not SocketGuildUser) user = null;
-                    target = ((SocketGuildUser)user?.Value)?.Id ?? command.User.Id;
+                    target = ((SocketGuildUser)user!.Value)?.Id ?? command.User.Id;
                     Message.MentionedUinAndName[target] = $" <@{target}>";
                     await command.RespondAsync(Commands.GetHarmonyCommand<Shooting>().Invoke(
                         eventType,
                         userMention, userId,
-                        [((ulong)command.ChannelId).ToString(), target.ToString()]));
+                        [((ulong)command.ChannelId!).ToString(), target.ToString()]));
                     break;
                 }
                 case "转轮":
@@ -272,7 +281,7 @@ public static class Handler
                     await command.RespondAsync(Commands.GetHarmonyCommand<Rotating>().Invoke(
                         eventType,
                         userMention, userId,
-                        [((ulong)command.ChannelId).ToString()]));
+                        [((ulong)command.ChannelId!).ToString()]));
                     break;
                 }
                 case "ask":
@@ -286,7 +295,7 @@ public static class Handler
                 case "help":
                 {
                     SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)
+                    await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)!
                         .DiscordInvoke(eventType, userMention, userId,
                             ["help", first is null ? "" : (string)first.Value]));
                     break;
@@ -313,7 +322,7 @@ public static class Handler
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     Xibao xibao = Commands.GetHarmonyCommand<Xibao>();
                     string result = xibao.Invoke(eventType, userMention, userId,
-                        ["xibao", (string)content.Value]);
+                        ["xibao", (string)content!.Value]);
                     if (result == "")
                     {
                         await command.RespondWithFileAsync(new FileAttachment(
@@ -329,7 +338,7 @@ public static class Handler
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     Beibao beibao = Commands.GetHarmonyCommand<Beibao>();
                     string result = beibao.Invoke(eventType, userMention, userId,
-                        ["beibao", (string)content.Value]);
+                        ["beibao", (string)content!.Value]);
                     if (result == "")
                     {
                         await command.RespondWithFileAsync(new FileAttachment(
@@ -340,19 +349,59 @@ public static class Handler
                     await command.RespondAsync(result);
                     break;
                 }
+                case "chat":
+                {
+                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
+                    Chat chat = Commands.GetGeneralCommand<Chat>(Platform.Discord)!;
+                    string result = chat.DiscordInvoke(eventType, userMention, userId, [(string)content!.Value]);
+                    if (result != "")
+                    {
+                        await command.RespondAsync(result);
+                    }
+                    else
+                    {
+                        await command.RespondAsync("深度思考中...");
+                        try
+                        {
+                            DateTime prev = DateTime.Now;
+                            JsonNode node = chat.PostQuestion(false, (string)content.Value)["choices"]![0]!["message"]!;
+                            DateTime last = DateTime.Now;
+                            
+                            string think = node["reasoning_content"]!.GetValue<string>();
+                            if (think.StartsWith('\n')) think = think[1..];
+                            if (think.EndsWith('\n')) think = think[..^1];
+                            
+                            string[] reason = think.Split('\n');
+                            StringBuilder builder = new StringBuilder();
+                            builder.Append($"`已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
+                            foreach (string se in reason)
+                            {
+                                builder.Append("> ").Append(se).Append('\n');
+                            }
+
+                            builder.Append('\n').Append(node["content"]!.GetValue<string>());
+                            await command.Channel.SendMessageAsync(builder.ToString());
+                        }
+                        catch (TimeoutException)
+                        {
+                            await command.Channel.SendMessageAsync("DeepSeek 服务连接超时。");
+                        }
+                    }
+                    break;
+                }
                 case "扔海峡云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     ThrowStraitbottle throwStraitbottle =
-                        Commands.GetGeneralCommand<ThrowStraitbottle>(Platform.Discord);
+                        Commands.GetGeneralCommand<ThrowStraitbottle>(Platform.Discord)!;
                     await command.RespondAsync(throwStraitbottle.DiscordInvoke(eventType, userMention,
                         userId,
-                        ["扔海峡云瓶", (string)content.Value]));
+                        ["扔海峡云瓶", (string)content!.Value]));
                     break;
                 }
                 case "捞海峡云瓶":
                 {
-                    PickStraitbottle pickStraitbottle = Commands.GetGeneralCommand<PickStraitbottle>(Platform.Discord);
+                    PickStraitbottle pickStraitbottle = Commands.GetGeneralCommand<PickStraitbottle>(Platform.Discord)!;
                     string result =
                         pickStraitbottle.DiscordInvoke(eventType, userMention, userId, ["捞海峡云瓶"]);
                     await SendComplexMessage(command, result);
@@ -362,25 +411,25 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     RemoveDriftbottle removeDriftbottle =
-                        Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord);
+                        Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord)!;
                     await command.RespondAsync(removeDriftbottle.DiscordInvoke(eventType, userMention,
                         userId,
-                        [((long)content.Value).ToString()]));
+                        [((long)content!.Value).ToString()]));
                     break;
                 }
                 case "扔云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    ThrowDriftbottle throwDriftbottle = Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord);
+                    ThrowDriftbottle throwDriftbottle = Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord)!;
                     await command.RespondAsync(throwDriftbottle.DiscordInvoke(eventType, userMention,
                         userId,
-                        [(string)content.Value]));
+                        [(string)content!.Value]));
                     break;
                 }
                 case "捞云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    PickDriftbottle pickDriftbottle = Commands.GetGeneralCommand<PickDriftbottle>(Platform.Discord);
+                    PickDriftbottle pickDriftbottle = Commands.GetGeneralCommand<PickDriftbottle>(Platform.Discord)!;
                     string result = pickDriftbottle.DiscordInvoke(eventType, userMention, userId,
                         [content == null ? int.MinValue.ToString() : ((long)content.Value).ToString()]);
                     await SendComplexMessage(command, result);

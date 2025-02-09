@@ -24,7 +24,7 @@ public class ZiYueBot
     public readonly ClientWebSocket QqApi;
     public readonly DiscordSocketClient Discord;
 
-    private readonly Config _config;
+    public readonly Config Config;
 
     private ZiYueBot()
     {
@@ -36,7 +36,7 @@ public class ZiYueBot
 
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
-            _config = JsonSerializer.Deserialize<Config>(stream);
+            Config = JsonSerializer.Deserialize<Config>(stream);
         }
 
         Discord = new DiscordSocketClient(new DiscordSocketConfig
@@ -44,7 +44,7 @@ public class ZiYueBot
             RestClientProvider = DefaultRestClientProvider.Create(true),
             WebSocketProvider = DefaultWebSocketProvider.Create(new WebProxy("http://127.0.0.1:7890"))
         });
-        Discord.LoginAsync(TokenType.Bot, _config.DiscordToken).Wait();
+        Discord.LoginAsync(TokenType.Bot, Config.DiscordToken).Wait();
         Discord.StartAsync().Wait();
         Logger.Info("Discord - 登录成功！");
 
@@ -122,11 +122,11 @@ public class ZiYueBot
     {
         MySqlConnection connection = new MySqlConnection(
             $"""
-             server={_config.DatabaseSource};
-             port={_config.DatabasePort};
-             database={_config.DatabaseName};
-             user={_config.DatabaseUser};
-             password={_config.DatabasePassword};
+             server={Config.DatabaseSource};
+             port={Config.DatabasePort};
+             database={Config.DatabaseName};
+             user={Config.DatabaseUser};
+             password={Config.DatabasePassword};
              charset=utf8mb4;
              allowuservariables=True;
              """

@@ -1,4 +1,4 @@
-﻿namespace ZiYueBot.Discord;
+﻿namespace ZiYueBot.Core;
 
 /// <summary>
 /// Discord 及 MySQL 的相关配置。
@@ -18,4 +18,5 @@ public struct Config
     public string DatabaseName { get; set; }
     public string DatabaseUser { get; set; }
     public string DatabasePassword { get; set; }
+    public string DeepSeekKey { get; set; }
 }

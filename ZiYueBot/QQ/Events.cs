@@ -24,11 +24,12 @@ public static class Events
                 WebSocketReceiveResult result;
                 do
                 {
-                    result = await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    result = await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer),
+                        CancellationToken.None);
                     string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     builder.Append(chunk);
-                }
-                while (!result.EndOfMessage);
+                } while (!result.EndOfMessage);
+
                 JsonNode? message = JsonNode.Parse(builder.ToString());
 
                 if (message?["message_type"] is null) continue;
@@ -91,9 +92,37 @@ public static class Events
 
             switch (args[0])
             {
+                case "chat":
+                {
+                    Chat chat = Commands.GetGeneralCommand<Chat>(Platform.QQ)!;
+                    string result = chat.QQInvoke(eventType, userName, userId, args);
+                    if (result != "")
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, result);
+                    }
+                    else
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, "深度思考中...");
+                        try
+                        {
+                            DateTime prev = DateTime.Now;
+                            string answer = chat.PostQuestion(true, args[1])["choices"]![0]!["message"]!["content"]!
+                                .GetValue<string>();
+                            DateTime last = DateTime.Now;
+                            await Parser.SendMessage(eventType, sourceUin,
+                                $"已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒\n\n{answer}");
+                        }
+                        catch (TimeoutException)
+                        {
+                            await Parser.SendMessage(eventType, sourceUin, "DeepSeek 服务连接超时。");
+                        }
+                    }
+
+                    break;
+                }
                 case "win":
                 {
-                    Win win = Commands.GetGeneralCommand<Win>(Platform.QQ);
+                    Win win = Commands.GetGeneralCommand<Win>(Platform.QQ)!;
                     args[0] = sourceUin.ToString(); // 群聊 ID
 
                     await Parser.SendMessage(eventType, sourceUin, win.QQInvoke(eventType, userName, userId, args));
@@ -235,9 +264,11 @@ public static class Events
         catch (HttpRequestException)
         {
             await Parser.SendMessage(eventType, sourceUin, "与服务器通讯失败。");
-            await ZiYueBot.Instance.QqEvent.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+            await ZiYueBot.Instance.QqEvent.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty,
+                CancellationToken.None);
             await ZiYueBot.Instance.QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"), CancellationToken.None);
-            await ZiYueBot.Instance.QqApi.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+            await ZiYueBot.Instance.QqApi.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty,
+                CancellationToken.None);
             await ZiYueBot.Instance.QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None);
             Logger.Info("已重新建立与 QQ 的连接");
         }
