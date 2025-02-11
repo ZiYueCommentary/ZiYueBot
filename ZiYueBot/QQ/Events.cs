@@ -36,7 +36,7 @@ public static class Events
                 switch (message["message_type"]!.ToString())
                 {
                     case "private":
-                        await EventHandler(
+                        EventHandler(
                             EventType.DirectMessage,
                             message["message"]!,
                             message["user_id"]!.GetValue<uint>(),
@@ -45,7 +45,7 @@ public static class Events
                         );
                         break;
                     case "group":
-                        await EventHandler(
+                        EventHandler(
                             EventType.GroupMessage,
                             message["message"]!,
                             message["user_id"]!.GetValue<uint>(),
