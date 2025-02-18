@@ -109,7 +109,7 @@ public class Win : IGeneralCommand
                /win
                以张维为教授为主题的“今日人品”命令。
                本命令包括的事件有：精准扶 win、共同富 win、风口飞 win，以及心心相 win。详细信息请查看在线文档。
-               在线文档：https://docs.ziyuebot.cn/win.html
+               在线文档：https://docs.ziyuebot.cn/timeline/anniversary/win.html
                """;
     }
 
@@ -125,80 +125,11 @@ public class Win : IGeneralCommand
 
     private string Invoke(string userName, ulong userId, string channel) // 这里 channel 不再转换成 ulong，因为跟数据库交互不需要转换
     {
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand query = new MySqlCommand(
-            $"SELECT * FROM win WHERE userid = {userId} AND channel = {channel} LIMIT 1",
-            database);
-        using MySqlDataReader reader = query.ExecuteReader();
-        bool hasRecord;
-        bool targetedPovertyAlleviation = false;
-        if (hasRecord = reader.Read())
-        {
-            DateTime queryDate = reader.GetDateTime("date");
-            int score = reader.GetInt16("score");
-            targetedPovertyAlleviation = reader.GetInt16("miniWinDays") >= 3;
-            if (queryDate == DateTime.Today && score > 0)
-            {
-                return $"""
-                        {userName} 已经在 {queryDate:MM 月 dd 日}赢过了，请明天再继续赢。
-                        你今天的赢级是：{score}%，属于{Levels[GetWinLevel(score)]}
-                        """;
-            }
-        }
-
-        reader.Close();
-        int rate = Random.Shared.Next(0, 100);
-        bool blowed = DateTime.Now.Hour == GetWindWindowHour() && _windWindow.Blowed == false;
-        if (blowed)
-        {
-            rate = (int)Math.Ceiling(rate * 1.4);
-            _windWindow.Blowed = true;
-        }
-        if (targetedPovertyAlleviation) rate = (int)Math.Ceiling(rate * 1.5);
-
-        using MySqlCommand insert = new MySqlCommand(
-            hasRecord
-                ? $"UPDATE win SET date = current_date(), username = '{userName}', score = {rate}, prospered = false WHERE userid = {userId} AND channel = {channel}"
-                : $"INSERT INTO win(userid, username, channel, date, score) VALUE({userId}, '{userName}', {channel}, current_date(), {rate})",
-            database);
-        insert.ExecuteNonQuery();
-        int level = GetWinLevel(rate);
-        if (level == 1)
-        {
-            using MySqlCommand update = new MySqlCommand(
-                $"UPDATE win SET miniWinDays = miniWinDays + 1, prospered = false WHERE userid = {userId} AND channel = {channel}",
-                database
-            );
-            update.ExecuteNonQuery();
-        }
-
-        if (blowed)
-        {
-            return $"""
-                    恭喜 {userName} 在 {DateTime.Today:MM 月 dd 日}乘上风口，赢级提高 40%！
-                    {userName} 的赢级是：{rate}%，属于{Levels[level]}
-                    维为寄语：{GetReview(level)}
-                    """;
-        }
-
-        if (targetedPovertyAlleviation)
-        {
-            using MySqlCommand update = new MySqlCommand(
-                $"UPDATE win SET miniWinDays = 0, prospered = true WHERE userid = {userId} AND channel = {channel}",
-                database
-            );
-            update.ExecuteNonQuery();
-            return $"""
-                    恭喜 {userName} 在 {DateTime.Today:MM 月 dd 日}受到精准扶 win，赢级提高 50%！
-                    {userName} 的赢级是：{rate}%，属于{Levels[level]}
-                    维为寄语：{GetReview(7)}
-                    """;
-        }
-
         return $"""
                 恭喜 {userName} 在 {DateTime.Today:MM 月 dd 日}赢了一次！
-                {userName} 的赢级是：{rate}%，属于{Levels[level]}
-                维为寄语：{GetReview(level)}
+                {userName} 的赢级是：100%，属于特大赢！
+                今天是子悦机器的一岁生日，祝你节日快乐，永远稳赢不亏！
+                子悦寄语：建议捞一下云瓶。
                 """;
     }
 

@@ -33,7 +33,7 @@ public class Jrrp : IHarmonyCommand
     {
         return """
                /jrrp
-               获取今日人品。人品值范围由 0 到 100。
+               获取今日人品。人品值范围由 100 到 100。
                在线文档：https://docs.ziyuebot.cn/jrrp.html
                """;
     }
@@ -56,14 +56,6 @@ public class Jrrp : IHarmonyCommand
     public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
-        StringBuilder builder = new StringBuilder();
-        builder.Append(userId).Append(DateTime.Now.DayOfYear).Append(42);
-        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
-        int luck = Math.Abs(BitConverter.ToInt32(bytes, 0)) % 101;
-        string comment = Jackpots.TryGetValue(luck, out string? value)
-            ? value
-            : Levels.Last(level => level.Key <= luck).Value;
-
-        return $"{userName} 的今日人品是 {luck}。{comment}";
+        return $"{userName} 的今日人品是 100。今天是子悦机器的一岁生日，祝你节日快乐！";
     }
 }

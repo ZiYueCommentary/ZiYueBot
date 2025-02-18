@@ -232,18 +232,8 @@ public static class Handler
                         eventType,
                         userMention, userId,
                         [guildId]));
-                    if (win.SeekWinningCouple(userId, userMention, guildId, out string coupleText))
-                    {
-                        await command.Channel.SendFileAsync(
-                            new FileAttachment("resources/zvv.jpeg", "zvv.jpeg"),
-                            coupleText);
-                    }
-
-                    if (win.TryCommonProsperity(userId, userMention, guildId, out string prosperityText))
-                    {
-                        await command.Channel.SendMessageAsync(prosperityText);
-                    }
-
+                    await command.Channel.SendFileAsync(
+                        new FileAttachment("resources/wink.jpeg", "wink.jpeg"));
                     break;
                 }
                 case "开始俄罗斯轮盘":

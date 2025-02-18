@@ -130,18 +130,8 @@ public static class Events
                     args[0] = sourceUin.ToString(); // 群聊 ID
 
                     await Parser.SendMessage(eventType, sourceUin, win.QQInvoke(eventType, userName, userId, args));
-                    if (win.SeekWinningCouple(userId, userName, args[0], out string coupleText))
-                    {
-                        await Parser.SendMessage(eventType, sourceUin, coupleText);
-                        await Parser.SendMessage(eventType, sourceUin,
-                            $"\u2402file:///{Path.GetFullPath("resources/zvv.jpeg").Replace("\\", "/")}\u2403");
-                    }
-
-                    if (win.TryCommonProsperity(userId, userName, args[0], out string prosperityText))
-                    {
-                        await Parser.SendMessage(eventType, sourceUin, prosperityText);
-                    }
-
+                    await Parser.SendMessage(eventType, sourceUin,
+                        $"\u2402file:///{Path.GetFullPath("resources/wink.jpeg").Replace("\\", "/")}\u2403");
                     break;
                 }
                 case "开始俄罗斯轮盘":
