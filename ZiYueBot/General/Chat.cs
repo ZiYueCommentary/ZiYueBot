@@ -17,7 +17,7 @@ public class Chat : IGeneralCommand
 
     public string GetCommandName()
     {
-        return "AI 对话";
+        return "对话";
     }
 
     public string GetCommandDescription()
@@ -44,12 +44,13 @@ public class Chat : IGeneralCommand
 
     public JsonNode PostQuestion(bool qq, string question)
     {
-        HttpClient client = new HttpClient();
-        HttpRequestMessage request =
-            new HttpRequestMessage(HttpMethod.Post, "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
+        using HttpClient client = new HttpClient();
+        using HttpRequestMessage request =
+            new HttpRequestMessage(HttpMethod.Post,
+                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
         request.Headers.Add("Accept", "application/json");
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
-        StringContent content = new StringContent("""
+        using StringContent content = new StringContent("""
             {
               "messages": [
                 {
@@ -66,11 +67,11 @@ public class Chat : IGeneralCommand
             """.Replace("%rule%",
                 qq
                     ? "在回答问题的过程中，要保证自己的回答遵守中国的法律法规，但要在回答时尽可能不提及有关中国的内容。如果话题不涉及违反法律法规的内容，请如实回答。回答时请避免有关政治敏感、宗教信仰、历史事件等言论。回答时不要使用Markdown。回答尽量简短，内容不得超过800字。"
-                    : "回答时请不要使用Markdown中的分割线。")
+                    : "")
             .Replace("%question%", question)
             .Replace("%token%", (qq ? 1024 : 4096).ToString()), Encoding.UTF8, "application/json");
         request.Content = content;
-        HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
+        using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
         response.EnsureSuccessStatusCode();
         string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         if (res == "") throw new TimeoutException();

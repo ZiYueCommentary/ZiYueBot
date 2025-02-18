@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json.Nodes;
 using Discord;
-using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using log4net;
@@ -366,11 +365,11 @@ public static class Handler
                             DateTime prev = DateTime.Now;
                             JsonNode node = chat.PostQuestion(false, (string)content.Value)["choices"]![0]!["message"]!;
                             DateTime last = DateTime.Now;
-                            
+
                             string think = node["reasoning_content"]!.GetValue<string>();
                             if (think.StartsWith('\n')) think = think[1..];
                             if (think.EndsWith('\n')) think = think[..^1];
-                            
+
                             string[] reason = think.Split('\n');
                             StringBuilder builder = new StringBuilder();
                             builder.Append($"`已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
@@ -380,13 +379,28 @@ public static class Handler
                             }
 
                             builder.Append('\n').Append(node["content"]!.GetValue<string>());
+                            if (builder.Length > 1900)
+                            {
+                                builder.Remove(1900, builder.Length - 1900);
+                                builder.Append("\n**内容超过 Discord 消息限制，以下内容已被截断。**");
+                            }
+
                             await command.Channel.SendMessageAsync(builder.ToString());
                         }
                         catch (TimeoutException)
                         {
                             await command.Channel.SendMessageAsync("DeepSeek 服务连接超时。");
                         }
+                        catch (TaskCanceledException)
+                        {
+                            await command.Channel.SendMessageAsync("DeepSeek 回答超时。");
+                        }
+                        catch (Exception)
+                        {
+                            await command.Channel.SendMessageAsync("命令内部错误。");
+                        }
                     }
+
                     break;
                 }
                 case "扔海峡云瓶":

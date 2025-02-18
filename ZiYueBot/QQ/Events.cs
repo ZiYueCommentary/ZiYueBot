@@ -116,6 +116,10 @@ public static class Events
                         {
                             await Parser.SendMessage(eventType, sourceUin, "DeepSeek 服务连接超时。");
                         }
+                        catch (TaskCanceledException)
+                        {
+                            await Parser.SendMessage(eventType, sourceUin, "DeepSeek 回答超时。");
+                        }
                     }
 
                     break;

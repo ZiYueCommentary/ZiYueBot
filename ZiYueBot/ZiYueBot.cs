@@ -99,7 +99,7 @@ public class ZiYueBot
         try
         {
             MySqlCommand command = new MySqlCommand("""
-                                                    create table win
+                                                    CREATE TABLE win
                                                     (
                                                         id          int auto_increment primary key,
                                                         userid      bigint                    null,
