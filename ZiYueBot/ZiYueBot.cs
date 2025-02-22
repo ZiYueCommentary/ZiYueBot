@@ -101,14 +101,31 @@ public class ZiYueBot
             MySqlCommand command = new MySqlCommand("""
                                                     CREATE TABLE win
                                                     (
-                                                        id          int auto_increment primary key,
                                                         userid      bigint                    null,
                                                         username    tinytext                  null,
                                                         channel     bigint                    null,
                                                         date        date                      null,
                                                         score       tinyint                   null,
                                                         prospered   boolean          default false,
-                                                        miniWinDays tinyint              default 0
+                                                        miniWinDays tinyint              default 0,
+                                                        PRIMARY KEY (userid, channel)
+                                                    ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
+        
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE aprilbottles
+                                                    (
+                                                        id       int auto_increment primary key,
+                                                        username tinytext                  null,
+                                                        created  date                      null,
+                                                        content  text                      null
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();
