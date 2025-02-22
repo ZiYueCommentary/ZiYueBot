@@ -42,7 +42,7 @@ public class PickDriftbottle : IGeneralCommand
     private string Invoke(int id)
     {
         return $"""
-                你捞到了 -1 号瓶子！
+                你捞到了 0 号瓶子！
                 来自：我是谁我来干嘛
                 日期：2025年2月18日
 
