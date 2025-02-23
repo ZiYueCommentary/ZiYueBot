@@ -4,6 +4,7 @@ using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 using log4net;
+using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 using ZiYueBot.General;
 using ZiYueBot.Harmony;
@@ -222,6 +223,54 @@ public static class Handler
             ulong userId = command.User.Id;
             Message.MentionedUinAndName[userId] = command.User.GlobalName;
             EventType eventType = command.GuildId is null ? EventType.DirectMessage : EventType.GroupMessage;
+
+            if (!Commands.HarmonyCommands.ContainsKey(command.CommandName))
+            {
+                if (Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName) is null)
+                {
+                    await command.RespondAsync("未知命令。请使用 /help 查看命令列表。");
+                    return;
+                }
+            }
+
+            await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+            {
+                await using MySqlCommand command1 = new MySqlCommand(
+                    $"SELECT * FROM blacklists WHERE userid = {userId} AND command = 'all'",
+                    connection);
+                await using MySqlDataReader reader = command1.ExecuteReader();
+                if (reader.Read())
+                {
+                    await command.RespondAsync($"""
+                                                您已被禁止使用子悦机器！
+                                                时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                                                原因：{reader.GetString("reason")}
+                                                用户协议：https://docs.ziyuebot.cn/tos.html
+                                                """);
+                    return;
+                }
+            }
+
+            await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+            {
+                await using MySqlCommand command1 = new MySqlCommand(
+                    "SELECT * FROM blacklists WHERE userid = @userid AND command = @command",
+                    connection);
+                command1.Parameters.AddWithValue("@userid", userId);
+                command1.Parameters.AddWithValue("@command", command.CommandName);
+                await using MySqlDataReader reader = command1.ExecuteReader();
+                if (reader.Read())
+                {
+                    await command.RespondAsync($"""
+                                                您已被禁止使用该命令！
+                                                时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                                                原因：{reader.GetString("reason")}
+                                                用户协议：https://docs.ziyuebot.cn/tos.html
+                                                """);
+                    return;
+                }
+            }
+
             switch (command.CommandName)
             {
                 case "win":
@@ -464,10 +513,6 @@ public static class Handler
                         {
                             await command.RespondAsync(general.DiscordInvoke(eventType, userMention,
                                 userId, []));
-                        }
-                        else
-                        {
-                            await command.RespondAsync("未知命令。请使用 ``/help`` 查看命令列表。");
                         }
                     }
 

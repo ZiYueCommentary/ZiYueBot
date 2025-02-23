@@ -15,7 +15,7 @@ namespace ZiYueBot;
 
 public class ZiYueBot
 {
-    public const string Version = "0.1.0";
+    public const string Version = "0.1.1";
 
     private static readonly ILog Logger = LogManager.GetLogger("主程序");
     public static ZiYueBot Instance;
