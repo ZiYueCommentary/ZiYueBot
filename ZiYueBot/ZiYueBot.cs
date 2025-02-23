@@ -101,13 +101,13 @@ public class ZiYueBot
             MySqlCommand command = new MySqlCommand("""
                                                     CREATE TABLE win
                                                     (
-                                                        userid      bigint                    null,
-                                                        username    tinytext                  null,
-                                                        channel     bigint                    null,
-                                                        date        date                      null,
-                                                        score       tinyint                   null,
-                                                        prospered   boolean          default false,
-                                                        miniWinDays tinyint              default 0,
+                                                        userid      bigint      default 0,
+                                                        username    tinytext         null,
+                                                        channel     bigint      default 0,
+                                                        date        date             null,
+                                                        score       tinyint          null,
+                                                        prospered   boolean default false,
+                                                        miniWinDays tinyint     default 0,
                                                         PRIMARY KEY (userid, channel)
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
@@ -116,7 +116,7 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
-        
+
         try
         {
             MySqlCommand command = new MySqlCommand("""
@@ -133,19 +133,38 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
+
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE blacklists
+                                                    (
+                                                        userid  bigint          default 0,
+                                                        command varchar(50) default 'all',
+                                                        time    datetime             null,
+                                                        reason  text                 null,
+                                                        PRIMARY KEY (userid, command)
+                                                    ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
     }
 
     public MySqlConnection ConnectDatabase()
     {
         MySqlConnection connection = new MySqlConnection(
             $"""
-             server={Config.DatabaseSource};
-             port={Config.DatabasePort};
-             database={Config.DatabaseName};
-             user={Config.DatabaseUser};
-             password={Config.DatabasePassword};
-             charset=utf8mb4;
-             allowuservariables=True;
+             Server={Config.DatabaseSource};
+             Port={Config.DatabasePort};
+             Database={Config.DatabaseName};
+             User={Config.DatabaseUser};
+             Password={Config.DatabasePassword};
+             Charset=utf8mb4;
+             AllowUserVariables=True;
+             Pooling=true;
              """
         );
         connection.Open();

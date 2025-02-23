@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using log4net;
+using MySql.Data.MySqlClient;
 using ZiYueBot.Harmony;
 using ZiYueBot.Core;
 using ZiYueBot.General;
@@ -88,6 +89,56 @@ public static class Events
                 PicFace.Users.Remove(userId);
                 PicFace.Logger.Info($"{userName} 的表情转图片已完成：{url}");
                 return;
+            }
+
+            if (!Commands.HarmonyCommands.ContainsKey(args[0]))
+            {
+                if (Commands.GetGeneralCommand<IGeneralCommand>(Platform.QQ, args[0]) is null)
+                {
+                    if (flatten.Text.StartsWith('/'))
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, "未知命令。请使用 /help 查看命令列表。");
+                    }
+                    return;
+                }
+            }
+            
+            await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+            {
+                await using MySqlCommand command = new MySqlCommand(
+                    $"SELECT * FROM blacklists WHERE userid = {userId} AND command = 'all'",
+                    connection);
+                await using MySqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    await Parser.SendMessage(eventType, sourceUin, $"""
+                                                                    您已被禁止使用子悦机器！
+                                                                    时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                                                                    原因：{reader.GetString("reason")}
+                                                                    用户协议：https://docs.ziyuebot.cn/tos.html
+                                                                    """);
+                    return;
+                }
+            }
+
+            await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+            {
+                await using MySqlCommand command = new MySqlCommand(
+                    "SELECT * FROM blacklists WHERE userid = @userid AND command = @command",
+                    connection);
+                command.Parameters.AddWithValue("@userid", userId);
+                command.Parameters.AddWithValue("@command", args[0]);
+                await using MySqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    await Parser.SendMessage(eventType, sourceUin, $"""
+                                                                    您已被禁止使用该命令！
+                                                                    时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                                                                    原因：{reader.GetString("reason")}
+                                                                    用户协议：https://docs.ziyuebot.cn/tos.html
+                                                                    """);
+                    return;
+                }
             }
 
             switch (args[0])
@@ -254,10 +305,6 @@ public static class Events
                         {
                             await Parser.SendMessage(eventType, sourceUin,
                                 general.QQInvoke(eventType, userName, userId, args));
-                        }
-                        else if (flatten.Text.StartsWith('/'))
-                        {
-                            await Parser.SendMessage(eventType, sourceUin, "未知命令。请使用 /help 查看命令列表。");
                         }
                     }
 

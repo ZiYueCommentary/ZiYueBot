@@ -23,6 +23,7 @@ public static class Commands
     /// <summary>
     /// 注册鸿蒙命令，并将其与指定的命令名绑定。该方式不会将鸿蒙命令与GetCommandId()的命令名绑定。
     /// </summary>
+    [Obsolete]
     private static void RegisterHarmonyCommand(IHarmonyCommand command, params string[] names)
     {
         foreach (string name in names)
@@ -43,7 +44,7 @@ public static class Commands
                 return t;
             }
         }
-        throw new KeyNotFoundException($"鸿蒙命令未找到！");
+        throw new KeyNotFoundException("鸿蒙命令未找到！");
     }
 
     /// <summary>
@@ -69,6 +70,7 @@ public static class Commands
     /// <summary>
     /// 注册一般命令，并将其与指定的命令名绑定。该方式不会将一般命令与GetCommandId()的命令名绑定。
     /// </summary>
+    [Obsolete]
     private static void RegisterGeneralCommand(IGeneralCommand command, params string[] names)
     {
         foreach (string name in names)
