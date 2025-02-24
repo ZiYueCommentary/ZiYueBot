@@ -45,12 +45,12 @@ public class Shooting : IHarmonyCommand
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         if (round.ChamberIndex == round.BulletPos)
         {
-            StartRevolver.Revolvers.Remove(group);
+            StartRevolver.Revolvers.Remove(group, out _);
             return $"砰！枪声响起，{Message.MentionedUinAndName[ulong.Parse(args[1])]} 倒下了";
         }
 
-        round.ChamberIndex += 1;
-        if (round.RestChambers() == 0) StartRevolver.Revolvers.Remove(group);
+        Interlocked.Increment(ref round.ChamberIndex);
+        if (round.RestChambers() == 0) StartRevolver.Revolvers.Remove(group, out _);
         return $"咔哒，无事发生。轮盘中还剩 {round.RestChambers()} 个膛室未击发。{(round.RestChambers() == 0 ? "本局俄罗斯轮盘结束。" : "")}";
     }
 

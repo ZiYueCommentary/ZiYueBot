@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using log4net;
 using ZiYueBot.Core;
 using ZiYueBot.General;
@@ -18,7 +19,7 @@ public class RevolverRound()
     /// <summary>
     /// 当前膛室位置
     /// </summary>
-    public int ChamberIndex { get; set; } = 1;
+    public int ChamberIndex = 1;
 
     /// <summary>
     /// 子弹所在膛室
@@ -28,7 +29,7 @@ public class RevolverRound()
     /// <summary>
     /// 本局开始时间
     /// </summary>
-    public DateTime StartTime = DateTime.Now;
+    public readonly DateTime StartTime = DateTime.Now;
 
     /// <summary>
     /// 返回剩余格数。
@@ -41,7 +42,7 @@ public class RevolverRound()
 
 public class StartRevolver : IHarmonyCommand
 {
-    internal static readonly Dictionary<ulong, RevolverRound> Revolvers = [];
+    internal static readonly ConcurrentDictionary<ulong, RevolverRound> Revolvers = [];
     private static readonly ILog Logger = LogManager.GetLogger("开始俄罗斯轮盘");
 
     public string GetCommandId()
@@ -80,7 +81,7 @@ public class StartRevolver : IHarmonyCommand
         if (Revolvers.TryGetValue(group, out RevolverRound round) &&
             DateTime.Now - round.StartTime > TimeSpan.FromDays(1))
         {
-            Revolvers.Remove(group);
+            Revolvers.Remove(group, out _);
         }
 
         return Revolvers.TryAdd(group, new RevolverRound()) ? "俄罗斯轮盘开始了，今天轮到谁倒霉呢" : "俄罗斯轮盘已开始";
