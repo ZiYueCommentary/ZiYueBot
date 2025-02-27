@@ -145,7 +145,7 @@ public static class Events
             {
                 case "chat":
                 {
-                    Chat chat = Commands.GetGeneralCommand<Chat>(Platform.QQ)!;
+                    Chat chat = Commands.GetGeneralCommand<Chat>(Platform.QQ, "chat")!;
                     string result = chat.QQInvoke(eventType, userName, userId, args);
                     if (result != "")
                     {
@@ -177,7 +177,7 @@ public static class Events
                 }
                 case "win":
                 {
-                    Win win = Commands.GetGeneralCommand<Win>(Platform.QQ)!;
+                    Win win = Commands.GetGeneralCommand<Win>(Platform.QQ, "win")!;
                     args[0] = sourceUin.ToString(); // 群聊 ID
 
                     await Parser.SendMessage(eventType, sourceUin, win.QQInvoke(eventType, userName, userId, args));
@@ -197,7 +197,7 @@ public static class Events
                 }
                 case "开始俄罗斯轮盘":
                 {
-                    StartRevolver startRevolver = Commands.GetHarmonyCommand<StartRevolver>();
+                    StartRevolver startRevolver = Commands.GetHarmonyCommand<StartRevolver>("开始俄罗斯轮盘")!;
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     await Parser.SendMessage(eventType, sourceUin,
                         startRevolver.Invoke(eventType, userName, userId, args));
@@ -205,7 +205,7 @@ public static class Events
                 }
                 case "重置俄罗斯轮盘":
                 {
-                    RestartRevolver startRevolver = Commands.GetHarmonyCommand<RestartRevolver>();
+                    RestartRevolver startRevolver = Commands.GetHarmonyCommand<RestartRevolver>("重置俄罗斯轮盘")!;
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     await Parser.SendMessage(eventType, sourceUin,
                         startRevolver.Invoke(eventType, userName, userId, args));
@@ -213,7 +213,7 @@ public static class Events
                 }
                 case "开枪":
                 {
-                    Shooting shooting = Commands.GetHarmonyCommand<Shooting>();
+                    Shooting shooting = Commands.GetHarmonyCommand<Shooting>("开枪");
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     if (args.Length < 2)
                     {
@@ -237,14 +237,14 @@ public static class Events
                 }
                 case "转轮":
                 {
-                    Rotating rotating = Commands.GetHarmonyCommand<Rotating>();
+                    Rotating rotating = Commands.GetHarmonyCommand<Rotating>("转轮")!;
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     await Parser.SendMessage(eventType, sourceUin, rotating.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "xibao":
                 {
-                    Xibao xibao = Commands.GetHarmonyCommand<Xibao>();
+                    Xibao xibao = Commands.GetHarmonyCommand<Xibao>("xibao")!;
                     string result = xibao.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
@@ -258,7 +258,7 @@ public static class Events
                 }
                 case "beibao":
                 {
-                    Beibao beibao = Commands.GetHarmonyCommand<Beibao>();
+                    Beibao beibao = Commands.GetHarmonyCommand<Beibao>("beibao")!;
                     string result = beibao.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
@@ -272,7 +272,7 @@ public static class Events
                 }
                 case "balogo":
                 {
-                    BALogo baLogo = Commands.GetHarmonyCommand<BALogo>();
+                    BALogo baLogo = Commands.GetHarmonyCommand<BALogo>("balogo")!;
                     string result = baLogo.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {

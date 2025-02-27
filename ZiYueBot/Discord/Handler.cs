@@ -275,7 +275,7 @@ public static class Handler
             {
                 case "win":
                 {
-                    Win win = Commands.GetGeneralCommand<Win>(Platform.Discord)!;
+                    Win win = Commands.GetGeneralCommand<Win>(Platform.Discord, "win")!;
                     string guildId = eventType == EventType.GroupMessage ? ((ulong)command.GuildId!).ToString() : "-1";
                     await command.RespondAsync(win.DiscordInvoke(
                         eventType,
@@ -297,7 +297,7 @@ public static class Handler
                 }
                 case "开始俄罗斯轮盘":
                 {
-                    await command.RespondAsync(Commands.GetHarmonyCommand<StartRevolver>().Invoke(
+                    await command.RespondAsync(Commands.GetHarmonyCommand<StartRevolver>("开始俄罗斯轮盘")!.Invoke(
                         eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId!).ToString()]));
@@ -305,7 +305,7 @@ public static class Handler
                 }
                 case "重置俄罗斯轮盘":
                 {
-                    await command.RespondAsync(Commands.GetHarmonyCommand<RestartRevolver>().Invoke(
+                    await command.RespondAsync(Commands.GetHarmonyCommand<RestartRevolver>("重置俄罗斯轮盘")!.Invoke(
                         eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId!).ToString()]));
@@ -313,12 +313,11 @@ public static class Handler
                 }
                 case "开枪":
                 {
-                    ulong target = 0;
                     SocketSlashCommandDataOption? user = command.Data.Options.FirstOrDefault();
                     if (user is not null && user.Value is not SocketGuildUser) user = null;
-                    target = ((SocketGuildUser)user!.Value)?.Id ?? command.User.Id;
+                    ulong target = ((SocketGuildUser)user!.Value)?.Id ?? command.User.Id;
                     Message.MentionedUinAndName[target] = $" <@{target}>";
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Shooting>().Invoke(
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Shooting>("开枪")!.Invoke(
                         eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId!).ToString(), target.ToString()]));
@@ -326,7 +325,7 @@ public static class Handler
                 }
                 case "转轮":
                 {
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Rotating>().Invoke(
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Rotating>("转轮")!.Invoke(
                         eventType,
                         userMention, userId,
                         [((ulong)command.ChannelId!).ToString()]));
@@ -335,7 +334,7 @@ public static class Handler
                 case "ask":
                 {
                     SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>().Invoke(eventType,
+                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>("ask")!.Invoke(eventType,
                         userMention, userId,
                         ["ask", question is null ? "" : (string)question.Value]));
                     break;
@@ -343,7 +342,7 @@ public static class Handler
                 case "help":
                 {
                     SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord)!
+                    await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord, "help")!
                         .DiscordInvoke(eventType, userMention, userId,
                             ["help", first is null ? "" : (string)first.Value]));
                     break;
@@ -352,7 +351,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? left = command.Data.Options.ToList()[0];
                     SocketSlashCommandDataOption? right = command.Data.Options.ToList()[1];
-                    BALogo baLogo = Commands.GetHarmonyCommand<BALogo>();
+                    BALogo baLogo = Commands.GetHarmonyCommand<BALogo>("balogo")!;
                     string result = baLogo.Invoke(eventType, userMention, userId,
                         ["balogo", (string)left.Value, (string)right.Value]);
                     if (result == "")
@@ -368,7 +367,7 @@ public static class Handler
                 case "xibao":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    Xibao xibao = Commands.GetHarmonyCommand<Xibao>();
+                    Xibao xibao = Commands.GetHarmonyCommand<Xibao>("xibao")!;
                     string result = xibao.Invoke(eventType, userMention, userId,
                         ["xibao", (string)content!.Value]);
                     if (result == "")
@@ -384,7 +383,7 @@ public static class Handler
                 case "beibao":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    Beibao beibao = Commands.GetHarmonyCommand<Beibao>();
+                    Beibao beibao = Commands.GetHarmonyCommand<Beibao>("beibao")!;
                     string result = beibao.Invoke(eventType, userMention, userId,
                         ["beibao", (string)content!.Value]);
                     if (result == "")
@@ -400,7 +399,7 @@ public static class Handler
                 case "chat":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    Chat chat = Commands.GetGeneralCommand<Chat>(Platform.Discord)!;
+                    Chat chat = Commands.GetGeneralCommand<Chat>(Platform.Discord, "chat")!;
                     string result = chat.DiscordInvoke(eventType, userMention, userId, [(string)content!.Value]);
                     if (result != "")
                     {
@@ -456,7 +455,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     ThrowStraitbottle throwStraitbottle =
-                        Commands.GetGeneralCommand<ThrowStraitbottle>(Platform.Discord)!;
+                        Commands.GetGeneralCommand<ThrowStraitbottle>(Platform.Discord, "扔海峡云瓶")!;
                     await command.RespondAsync(throwStraitbottle.DiscordInvoke(eventType, userMention,
                         userId,
                         ["扔海峡云瓶", (string)content!.Value]));
@@ -464,7 +463,8 @@ public static class Handler
                 }
                 case "捞海峡云瓶":
                 {
-                    PickStraitbottle pickStraitbottle = Commands.GetGeneralCommand<PickStraitbottle>(Platform.Discord)!;
+                    PickStraitbottle pickStraitbottle =
+                        Commands.GetGeneralCommand<PickStraitbottle>(Platform.Discord, "捞海峡云瓶")!;
                     string result =
                         pickStraitbottle.DiscordInvoke(eventType, userMention, userId, ["捞海峡云瓶"]);
                     await SendComplexMessage(command, result);
@@ -474,7 +474,7 @@ public static class Handler
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     RemoveDriftbottle removeDriftbottle =
-                        Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord)!;
+                        Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord, "删除云瓶")!;
                     await command.RespondAsync(removeDriftbottle.DiscordInvoke(eventType, userMention,
                         userId,
                         [((long)content!.Value).ToString()]));
@@ -483,7 +483,8 @@ public static class Handler
                 case "扔云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    ThrowDriftbottle throwDriftbottle = Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord)!;
+                    ThrowDriftbottle throwDriftbottle =
+                        Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord, "扔云瓶")!;
                     await command.RespondAsync(throwDriftbottle.DiscordInvoke(eventType, userMention,
                         userId,
                         [(string)content!.Value]));
@@ -492,7 +493,8 @@ public static class Handler
                 case "捞云瓶":
                 {
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    PickDriftbottle pickDriftbottle = Commands.GetGeneralCommand<PickDriftbottle>(Platform.Discord)!;
+                    PickDriftbottle pickDriftbottle =
+                        Commands.GetGeneralCommand<PickDriftbottle>(Platform.Discord, "捞云瓶")!;
                     string result = pickDriftbottle.DiscordInvoke(eventType, userMention, userId,
                         [content == null ? int.MinValue.ToString() : ((long)content.Value).ToString()]);
                     await SendComplexMessage(command, result);
