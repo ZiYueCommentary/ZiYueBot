@@ -42,6 +42,26 @@ public class PickDriftbottle : IGeneralCommand
     private string Invoke(int id)
     {
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
+        {
+            if (Random.Shared.Next(2) == 1) // 50% 概率捞到愚人云瓶
+            {
+                using MySqlCommand aprilCommand = new MySqlCommand(
+                    "SELECT * FROM aprilbottles ORDER BY RAND() LIMIT 1",
+                    database);
+                using MySqlDataReader aprilReader = aprilCommand.ExecuteReader();
+                if (!aprilReader.Read()) return "找不到愚人云瓶！";
+
+                return $"""
+                        你捞到了 -{aprilReader.GetInt32("id")} 号瓶子！
+                        来自：{aprilReader.GetString("username")}
+                        日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
+
+                        {aprilReader.GetString("content")}
+                        """;
+            }
+        }
+
         using MySqlCommand command = new MySqlCommand(
             id == int.MinValue
                 ? "SELECT * FROM driftbottles WHERE pickable = true ORDER BY RAND() LIMIT 1"
