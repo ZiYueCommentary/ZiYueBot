@@ -39,7 +39,7 @@ public class Rotating : IHarmonyCommand
         if (eventType == EventType.DirectMessage) return "俄罗斯轮盘命令只能在群聊中使用！";
 
         ulong group = ulong.Parse(args[0]);
-        if (!StartRevolver.Revolvers.TryGetValue(group, out RevolverRound round)) return "游戏未开始，发送“开始俄罗斯轮盘”来开始";
+        if (!StartRevolver.Revolvers.TryGetValue(group, out RevolverRound? round)) return "游戏未开始，发送“开始俄罗斯轮盘”来开始";
         if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每 3 秒 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");

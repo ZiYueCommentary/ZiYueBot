@@ -9,7 +9,7 @@ namespace ZiYueBot.Harmony;
 /// <summary>
 /// 一局俄罗斯轮盘游戏。所有位置从 1 开始。
 /// </summary>
-public class RevolverRound()
+public class RevolverRound
 {
     /// <summary>
     /// 一般而言，左轮有 6 个膛室。
@@ -78,7 +78,7 @@ public class StartRevolver : IHarmonyCommand
         if (!RateLimit.TryPassRateLimit(this, eventType, group)) return "频率已达限制（整个群聊内 30 秒 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        if (Revolvers.TryGetValue(group, out RevolverRound round) &&
+        if (Revolvers.TryGetValue(group, out RevolverRound? round) &&
             DateTime.Now - round.StartTime > TimeSpan.FromDays(1))
         {
             Revolvers.Remove(group, out _);

@@ -68,7 +68,7 @@ public class Xibao : IHarmonyCommand
         return output.ToArray();
     }
 
-    public static void DrawCenteredText(SKCanvas canvas, string text, float width, float x, float y, SKFont font, SKPaint paint)
+    private static void DrawCenteredText(SKCanvas canvas, string text, float width, float x, float y, SKFont font, SKPaint paint)
     {
         List<string> lines = [];
         while (!string.IsNullOrEmpty(text))
