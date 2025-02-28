@@ -44,11 +44,22 @@ public class ThrowDriftbottle : IGeneralCommand
     {
         return Platform.Both;
     }
-    
+
     private string Invoke(string userName, ulong userId, string content)
     {
+        if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
+        {
+            if (Random.Shared.Next(3) == 1) // 25% 概率瓶子飘回来
+            {
+                return "你的瓶子飘回来了，没有扔出去！";
+            }
+        }
+
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command = new MySqlCommand("INSERT INTO driftbottles(userid, username, created, content) VALUE (@userid, @username, now(), @content)", database);
+        using MySqlCommand command =
+            new MySqlCommand(
+                "INSERT INTO driftbottles(userid, username, created, content) VALUE (@userid, @username, now(), @content)",
+                database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
         command.Parameters.AddWithValue("@content", FriendlyMessage(content));
@@ -112,7 +123,7 @@ public class ThrowDriftbottle : IGeneralCommand
                     {
                         continue;
                     }
-                    
+
                     int end = arg.IndexOf('>', i + 1);
                     result += $" {Message.MentionedUinAndName[ulong.Parse(arg.Substring(i + 2, end - i - 2))]} ";
                     if (i == 0) result = result[1..];
