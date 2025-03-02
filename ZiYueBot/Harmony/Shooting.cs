@@ -43,7 +43,7 @@ public class Shooting : IHarmonyCommand
         if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每 3 秒 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        if (round.ChamberIndex == round.BulletPos)
+        if ((round.ChamberIndex == round.BulletPos) || (DateTime.Today.Month == 4 && DateTime.Today.Day == 1))
         {
             StartRevolver.Revolvers.Remove(group, out _);
             return $"砰！枪声响起，{Message.MentionedUinAndName[ulong.Parse(args[1])]} 倒下了";

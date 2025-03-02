@@ -1,4 +1,4 @@
-﻿namespace ZiYueBot.Core;
+﻿namespace ZiYueBot.Utils;
 
 /// <summary>
 /// 网络相关。

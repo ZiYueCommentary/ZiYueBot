@@ -54,7 +54,7 @@ public class Chat : IGeneralCommand
             {
               "messages": [
                 {
-                  "content": "你是一个聊天软件中的机器人，你叫“子悦机器”。你的创作者是“子悦解说”（又称“子悦”）。%rule%",
+                  "content": "你是一个聊天软件中的机器人，你叫“子悦机器”。你的创作者是“子悦解说”（又称“子悦”）。%rule%%april%",
                   "role": "system"
                 },
                 {
@@ -68,8 +68,9 @@ public class Chat : IGeneralCommand
                 qq
                     ? "在回答问题的过程中，要保证自己的回答遵守中国的法律法规，但要在回答时尽可能不提及有关中国的内容。如果话题不涉及违反法律法规的内容，请如实回答。回答时请避免有关政治敏感、宗教信仰、历史事件等言论。回答时不要使用Markdown。回答尽量简短，内容不得超过800字。"
                     : "")
+            .Replace("%april%", DateTime.Today.Month == 4 && DateTime.Today.Day == 1 ? "用贴吧风格回答之后的问题，要尽量刻薄。" : "")
             .Replace("%question%", question)
-            .Replace("%token%", (qq ? 1024 : 4096).ToString()), Encoding.UTF8, "application/json");
+            /*.Replace("%token%", (qq ? 1024 : 4096).ToString())*/, Encoding.UTF8, "application/json");
         request.Content = content;
         using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
         response.EnsureSuccessStatusCode();
