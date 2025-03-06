@@ -99,10 +99,11 @@ public static class Events
                     {
                         await Parser.SendMessage(eventType, sourceUin, "未知命令。请使用 /help 查看命令列表。");
                     }
+
                     return;
                 }
             }
-            
+
             await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
             {
                 await using MySqlCommand command = new MySqlCommand(
@@ -178,6 +179,19 @@ public static class Events
                 case "win":
                 {
                     Win win = Commands.GetGeneralCommand<Win>(Platform.QQ, "win")!;
+                    if (DateTime.Today.Month == 3 && DateTime.Today.Day == 10)
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, $"""
+                                                                        恭喜 {userName} 在 2025年3月10日 赢了一次！
+                                                                        {userName} 的赢级是：100%，属于特大赢。
+                                                                        今天是子悦机器的一岁生日，祝你节日快乐，稳赢不亏！
+                                                                        子悦寄语：建议捞云瓶。
+                                                                        """);
+                        await Parser.SendMessage(eventType, sourceUin,
+                            $"\u2402file:///{Path.GetFullPath("resources/wink.png").Replace("\\", "/")}\u2403");
+                        break;
+                    }
+
                     args[0] = sourceUin.ToString(); // 群聊 ID
 
                     await Parser.SendMessage(eventType, sourceUin, win.QQInvoke(eventType, userName, userId, args));

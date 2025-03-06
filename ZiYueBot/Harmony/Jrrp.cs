@@ -57,6 +57,10 @@ public class Jrrp : IHarmonyCommand
     {
         Logger.Info($"调用者：{userName} ({userId})");
 
+        if (DateTime.Today.Month == 3 && DateTime.Today.Day == 10)
+        {
+            return $"{userName} 的人日人品是 100。今天是子悦机器的一岁生日，祝你节日快乐！";
+        }
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
             return $"{userName} 的今日人品是 {Random.Shared.Next(Int32.MinValue, 0)}。子悦机器不予评价。";

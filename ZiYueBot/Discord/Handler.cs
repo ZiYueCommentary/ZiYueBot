@@ -275,6 +275,19 @@ public static class Handler
             {
                 case "win":
                 {
+                    if (DateTime.Today.Month == 3 && DateTime.Today.Day == 10)
+                    {
+                        await command.RespondWithFileAsync(
+                            new FileAttachment("resources/wink.png", "wink.png"),
+                            $"""
+                             恭喜 {userMention} 在 2025年3月10日 赢了一次！
+                             {userMention} 的赢级是：100%，属于特大赢。
+                             今天是子悦机器的一岁生日，祝你节日快乐，稳赢不亏！
+                             子悦寄语：建议捞云瓶。
+                             """);
+                        break;
+                    }
+
                     Win win = Commands.GetGeneralCommand<Win>(Platform.Discord, "win")!;
                     string guildId = eventType == EventType.GroupMessage ? ((ulong)command.GuildId!).ToString() : "-1";
                     await command.RespondAsync(win.DiscordInvoke(

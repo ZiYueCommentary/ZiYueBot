@@ -41,6 +41,17 @@ public class PickDriftbottle : IGeneralCommand
 
     private string Invoke(int id)
     {
+        if (DateTime.Today.Month == 3 && DateTime.Today.Day == 10)
+        {
+            return """
+                   你捞到了 0 号瓶子！
+                   来自：DeliciousH2O（秘密实验室 官方翻译者）
+                   日期：2025年2月18日
+
+                   若敢来犯，必叫你大败而归！
+                   """;
+        }
+        
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
