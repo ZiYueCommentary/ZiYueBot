@@ -1,0 +1,11 @@
+不如 Rust
+让 MSDN 为此解释吧
+恩情课文
+不安全，应该使用 Rust
+赢赢赢
+你说得不对
+这是 unsafe 的
+交给 Java 点评吧
+建议 push 到 GitHub
+建议写入原神剧情
+Made in heaven
