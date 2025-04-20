@@ -8,6 +8,7 @@ using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 using ZiYueBot.General;
 using ZiYueBot.Harmony;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.Discord;
 
@@ -91,6 +92,14 @@ public static class Handler
             SlashCommandBuilder builder = EasyCommandBuilder(new Chat());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("question").WithDescription("问题内容").WithRequired(true)
+                .WithType(ApplicationCommandOptionType.String);
+            builder.AddOption(optionBuilder);
+            RegisterCommand(builder);
+        }
+        {
+            SlashCommandBuilder builder = EasyCommandBuilder(new Draw());
+            SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
+            optionBuilder.WithName("prompt").WithDescription("正向提示词").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
             RegisterCommand(builder);
@@ -273,6 +282,83 @@ public static class Handler
 
             switch (command.CommandName)
             {
+                case "draw":
+                {
+                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
+                    Draw draw = Commands.GetGeneralCommand<Draw>(Platform.Discord, "draw")!;
+                    string result = draw.DiscordInvoke(eventType, userMention, userId, [(string)content!.Value]);
+                    if (result != "")
+                    {
+                        await command.RespondAsync(result);
+                    }
+                    else
+                    {
+                        await command.RespondAsync("机器绘画中...");
+                        try
+                        {
+                            JsonNode output = draw.PostRequest((string)content.Value);
+                            string taskId = output["task_id"]!.GetValue<string>();
+                            ISocketMessageChannel channel = command.Channel;
+                            Task task = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    for (;;)
+                                    {
+                                        Thread.Sleep(5000);
+                                        
+                                        using HttpClient client = new HttpClient();
+                                        using HttpRequestMessage request =
+                                            new HttpRequestMessage(HttpMethod.Get,
+                                                $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
+                                        request.Headers.Add("Authorization",
+                                            $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
+                                        using HttpResponseMessage response =
+                                            client.SendAsync(request).GetAwaiter().GetResult();
+                                        response.EnsureSuccessStatusCode();
+                                        string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                                        if (res == "") throw new TimeoutException();
+                                        JsonNode output = JsonNode.Parse(res)!["output"]!;
+                                        string taskStatus = output["task_status"]!.GetValue<string>();
+                                        switch (taskStatus)
+                                        {
+                                            case "SUCCEEDED":
+                                            {
+                                                await WebUtils.DownloadFile(
+                                                    output["results"]![0]!["url"]!.GetValue<string>(), "temp/result.png");
+                                                await channel.SendFileAsync(new FileAttachment("temp/result.png",
+                                                    "result.png"));
+                                                File.Delete("temp/result.png");
+                                                return;
+                                            }
+                                            case "FAILED":
+                                            {
+                                                await channel.SendMessageAsync(
+                                                    $"任务执行失败：{output["message"]!.GetValue<string>()}");
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Error(e.Message, e);
+                                    await command.Channel.SendMessageAsync("命令内部错误。");
+                                }
+                            });
+                        }
+                        catch (TimeoutException)
+                        {
+                            await command.Channel.SendMessageAsync("服务连接超时。");
+                        }
+                        catch (Exception)
+                        {
+                            await command.Channel.SendMessageAsync("命令内部错误。");
+                        }
+                    }
+
+                    break;
+                }
                 case "win":
                 {
                     Win win = Commands.GetGeneralCommand<Win>(Platform.Discord, "win")!;

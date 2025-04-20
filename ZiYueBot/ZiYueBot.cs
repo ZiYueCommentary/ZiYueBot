@@ -151,6 +151,21 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
+        
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE sponsors
+                                                    (
+                                                        userid  bigint default 0 primary key,
+                                                        date    date                    null
+                                                    ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
     }
 
     public MySqlConnection ConnectDatabase()

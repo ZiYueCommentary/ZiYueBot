@@ -7,6 +7,7 @@ using MySql.Data.MySqlClient;
 using ZiYueBot.Harmony;
 using ZiYueBot.Core;
 using ZiYueBot.General;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.QQ;
 
@@ -99,10 +100,11 @@ public static class Events
                     {
                         await Parser.SendMessage(eventType, sourceUin, "未知命令。请使用 /help 查看命令列表。");
                     }
+
                     return;
                 }
             }
-            
+
             await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
             {
                 await using MySqlCommand command = new MySqlCommand(
@@ -143,6 +145,82 @@ public static class Events
 
             switch (args[0])
             {
+                case "draw":
+                {
+                    Draw draw = Commands.GetGeneralCommand<Draw>(Platform.Discord, "draw")!;
+                    string result = draw.DiscordInvoke(eventType, userName, userId, args);
+                    if (result != "")
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, result);
+                    }
+                    else
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, "机器绘画中...");
+                        try
+                        {
+                            JsonNode output = draw.PostRequest(args[1]);
+                            string taskId = output["task_id"]!.GetValue<string>();
+                            Task task = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    for (;;)
+                                    {
+                                        Thread.Sleep(5000);
+
+                                        using HttpClient client = new HttpClient();
+                                        using HttpRequestMessage request =
+                                            new HttpRequestMessage(HttpMethod.Get,
+                                                $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
+                                        request.Headers.Add("Authorization",
+                                            $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
+                                        using HttpResponseMessage response =
+                                            client.SendAsync(request).GetAwaiter().GetResult();
+                                        response.EnsureSuccessStatusCode();
+                                        string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                                        if (res == "") throw new TimeoutException();
+                                        JsonNode output = JsonNode.Parse(res)!["output"]!;
+                                        string taskStatus = output["task_status"]!.GetValue<string>();
+                                        switch (taskStatus)
+                                        {
+                                            case "SUCCEEDED":
+                                            {
+                                                await WebUtils.DownloadFile(
+                                                    output["results"]![0]!["url"]!.GetValue<string>(),
+                                                    "temp/result.png");
+                                                await Parser.SendMessage(eventType, sourceUin,
+                                                    $"\u2402file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}\u2403");
+                                                File.Delete("temp/result.png");
+                                                return;
+                                            }
+                                            case "FAILED":
+                                            {
+                                                await Parser.SendMessage(eventType, sourceUin,
+                                                    $"任务执行失败：{output["message"]!.GetValue<string>()}");
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Error(e.Message, e);
+                                    await Parser.SendMessage(eventType, sourceUin, "命令内部错误。");
+                                }
+                            });
+                        }
+                        catch (TimeoutException)
+                        {
+                            await Parser.SendMessage(eventType, sourceUin, "服务连接超时。");
+                        }
+                        catch (Exception)
+                        {
+                            await Parser.SendMessage(eventType, sourceUin, "命令内部错误。");
+                        }
+                    }
+
+                    break;
+                }
                 case "chat":
                 {
                     Chat chat = Commands.GetGeneralCommand<Chat>(Platform.QQ, "chat")!;
