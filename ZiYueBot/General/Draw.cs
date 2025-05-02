@@ -63,7 +63,7 @@ public class Draw : IGeneralCommand
                                                             "size": "1024*1024",
                                                             "n": 1
                                                         }
-                                                        """.Replace("%prompt%", prompt), Encoding.UTF8,
+                                                        """.Replace("%prompt%", prompt.Replace("\\", "\\\\")), Encoding.UTF8,
             "application/json");
         request.Content = content;
         using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
