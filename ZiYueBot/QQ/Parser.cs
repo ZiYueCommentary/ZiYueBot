@@ -205,7 +205,7 @@ public static class Parser
             return;
         }
 
-        message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;");
+        message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;").Replace(@"\", @"\\");
         string request = eventType == EventType.DirectMessage
             ? """
               {
