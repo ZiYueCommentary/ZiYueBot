@@ -12,7 +12,7 @@ public class Xibao : IHarmonyCommand
     private static readonly SKBitmap ImageXibao = SKBitmap.Decode("resources/xibao.jpg");
     private static readonly SKBitmap ImageBeibao = SKBitmap.Decode("resources/beibao.jpg");
     private static readonly ILog Logger = LogManager.GetLogger("喜报");
-    
+
     public string GetCommandId()
     {
         return "xibao";
@@ -41,7 +41,7 @@ public class Xibao : IHarmonyCommand
     public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用 “/help xibao” 查看命令用法。";
-        if (!MessageUtils.IsSimpleMessage(args[0]) || !MessageUtils.IsSimpleMessage(args[1])) return "请输入纯文字参数。";
+        if (!MessageUtils.IsSimpleMessage(string.Join(' ', args))) return "请输入纯文字参数。";
         if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         return "";
@@ -68,7 +68,8 @@ public class Xibao : IHarmonyCommand
         return output.ToArray();
     }
 
-    private static void DrawCenteredText(SKCanvas canvas, string text, float width, float x, float y, SKFont font, SKPaint paint)
+    private static void DrawCenteredText(SKCanvas canvas, string text, float width, float x, float y, SKFont font,
+        SKPaint paint)
     {
         List<string> lines = [];
         while (!string.IsNullOrEmpty(text))

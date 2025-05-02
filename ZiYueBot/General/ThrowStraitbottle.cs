@@ -45,7 +45,8 @@ public class ThrowStraitbottle : IGeneralCommand
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
-        if (args[1].Contains('\u2406')) return "云瓶内容禁止包含表情！";
+        string arguments = string.Join(' ', args);
+        if (arguments.Contains('\u2406')) return "云瓶内容禁止包含表情！";
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         
@@ -53,7 +54,7 @@ public class ThrowStraitbottle : IGeneralCommand
         using MySqlCommand command = new MySqlCommand("INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, false)", database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
-        command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(args[1]));
+        command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(arguments));
         command.ExecuteNonQuery();
         return "你的海峡云瓶扔出去了！";
 

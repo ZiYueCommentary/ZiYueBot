@@ -147,8 +147,8 @@ public static class Events
             {
                 case "draw":
                 {
-                    Draw draw = Commands.GetGeneralCommand<Draw>(Platform.Discord, "draw")!;
-                    string result = draw.DiscordInvoke(eventType, userName, userId, args);
+                    Draw draw = Commands.GetGeneralCommand<Draw>(Platform.QQ, "draw")!;
+                    string result = draw.QQInvoke(eventType, userName, userId, args);
                     if (result != "")
                     {
                         await Parser.SendMessage(eventType, sourceUin, result);
@@ -158,63 +158,53 @@ public static class Events
                         await Parser.SendMessage(eventType, sourceUin, "机器绘画中...");
                         try
                         {
-                            JsonNode output = draw.PostRequest(args[1]);
-                            string taskId = output["task_id"]!.GetValue<string>();
-                            Task task = Task.Run(async () =>
+                            JsonNode posted = draw.PostRequest(string.Join(' ', args[1..]));
+                            string taskId = posted["task_id"]!.GetValue<string>();
+                            for (;;)
                             {
-                                try
-                                {
-                                    for (;;)
-                                    {
-                                        Thread.Sleep(5000);
+                                Thread.Sleep(5000);
 
-                                        using HttpClient client = new HttpClient();
-                                        using HttpRequestMessage request =
-                                            new HttpRequestMessage(HttpMethod.Get,
-                                                $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
-                                        request.Headers.Add("Authorization",
-                                            $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
-                                        using HttpResponseMessage response =
-                                            client.SendAsync(request).GetAwaiter().GetResult();
-                                        response.EnsureSuccessStatusCode();
-                                        string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                                        if (res == "") throw new TimeoutException();
-                                        JsonNode output = JsonNode.Parse(res)!["output"]!;
-                                        string taskStatus = output["task_status"]!.GetValue<string>();
-                                        switch (taskStatus)
-                                        {
-                                            case "SUCCEEDED":
-                                            {
-                                                await WebUtils.DownloadFile(
-                                                    output["results"]![0]!["url"]!.GetValue<string>(),
-                                                    "temp/result.png");
-                                                await Parser.SendMessage(eventType, sourceUin,
-                                                    $"\u2402file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}\u2403");
-                                                File.Delete("temp/result.png");
-                                                return;
-                                            }
-                                            case "FAILED":
-                                            {
-                                                await Parser.SendMessage(eventType, sourceUin,
-                                                    $"任务执行失败：{output["message"]!.GetValue<string>()}");
-                                                return;
-                                            }
-                                        }
+                                using HttpClient client = new HttpClient();
+                                using HttpRequestMessage request =
+                                    new HttpRequestMessage(HttpMethod.Get,
+                                        $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
+                                request.Headers.Add("Authorization",
+                                    $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
+                                using HttpResponseMessage response =
+                                    client.SendAsync(request).GetAwaiter().GetResult();
+                                response.EnsureSuccessStatusCode();
+                                string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                                if (res == "") throw new TimeoutException();
+                                JsonNode output = JsonNode.Parse(res)!["output"]!;
+                                string taskStatus = output["task_status"]!.GetValue<string>();
+                                switch (taskStatus)
+                                {
+                                    case "SUCCEEDED":
+                                    {
+                                        await WebUtils.DownloadFile(
+                                            output["results"]![0]!["url"]!.GetValue<string>(),
+                                            "temp/result.png");
+                                        await Parser.SendMessage(eventType, sourceUin,
+                                            $"\u2402file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}\u2403");
+                                        File.Delete("temp/result.png");
+                                        return;
+                                    }
+                                    case "FAILED":
+                                    {
+                                        await Parser.SendMessage(eventType, sourceUin,
+                                            $"任务执行失败：{output["message"]!.GetValue<string>()}");
+                                        return;
                                     }
                                 }
-                                catch (Exception e)
-                                {
-                                    Logger.Error(e.Message, e);
-                                    await Parser.SendMessage(eventType, sourceUin, "命令内部错误。");
-                                }
-                            });
+                            }
                         }
                         catch (TimeoutException)
                         {
                             await Parser.SendMessage(eventType, sourceUin, "服务连接超时。");
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
+                            Logger.Error(e.Message, e);
                             await Parser.SendMessage(eventType, sourceUin, "命令内部错误。");
                         }
                     }
@@ -235,8 +225,10 @@ public static class Events
                         try
                         {
                             DateTime prev = DateTime.Now;
-                            string answer = chat.PostQuestion(true, args[1])["choices"]![0]!["message"]!["content"]!
-                                .GetValue<string>();
+                            string answer =
+                                chat.PostQuestion(true, string.Join(' ', args[1..]))["choices"]![0]!["message"]![
+                                        "content"]!
+                                    .GetValue<string>();
                             DateTime last = DateTime.Now;
                             await Parser.SendMessage(eventType, sourceUin,
                                 $"已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒\n\n{answer}");
@@ -331,7 +323,7 @@ public static class Events
                     }
 
                     await Parser.SendMessage(eventType, sourceUin,
-                        $"\u2402base64://{Convert.ToBase64String(Xibao.Render(true, args[1]))}\u2403");
+                        $"\u2402base64://{Convert.ToBase64String(Xibao.Render(true, string.Join(' ', args[1..])))}\u2403");
                     break;
                 }
                 case "beibao":
@@ -345,7 +337,7 @@ public static class Events
                     }
 
                     await Parser.SendMessage(eventType, sourceUin,
-                        $"\u2402base64://{Convert.ToBase64String(Xibao.Render(false, args[1]))}\u2403");
+                        $"\u2402base64://{Convert.ToBase64String(Xibao.Render(false, string.Join(' ', args[1..])))}\u2403");
                     break;
                 }
                 case "balogo":
