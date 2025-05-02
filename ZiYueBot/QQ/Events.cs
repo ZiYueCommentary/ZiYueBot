@@ -155,6 +155,22 @@ public static class Events
                     }
                     else
                     {
+                        if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
+                        {
+                            await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
+                            await using MySqlCommand command =
+                                new MySqlCommand($"SELECT * FROM sponsors WHERE userid = {userId}", connection);
+                            await using MySqlDataReader reader = command.ExecuteReader();
+                            if (!reader.Read())
+                            {
+                                await Parser.SendMessage(eventType, sourceUin, """
+                                                                               今天是子悦的生日，赞助者命令“绘画”对所有人开放。
+                                                                               喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
+                                                                               https://afdian.com/a/ziyuecommentary2020"
+                                                                               """);
+                            }
+                        }
+
                         await Parser.SendMessage(eventType, sourceUin, "机器绘画中...");
                         try
                         {
@@ -211,6 +227,7 @@ public static class Events
 
                     break;
                 }
+
                 case "chat":
                 {
                     Chat chat = Commands.GetGeneralCommand<Chat>(Platform.QQ, "chat")!;
@@ -309,7 +326,8 @@ public static class Events
                 {
                     Rotating rotating = Commands.GetHarmonyCommand<Rotating>("转轮")!;
                     args[0] = sourceUin.ToString(); // 群聊 ID
-                    await Parser.SendMessage(eventType, sourceUin, rotating.Invoke(eventType, userName, userId, args));
+                    await Parser.SendMessage(eventType, sourceUin,
+                        rotating.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "xibao":
@@ -370,7 +388,8 @@ public static class Events
                     }
                     else
                     {
-                        IGeneralCommand? general = Commands.GetGeneralCommand<IGeneralCommand>(Platform.QQ, args[0]);
+                        IGeneralCommand? general =
+                            Commands.GetGeneralCommand<IGeneralCommand>(Platform.QQ, args[0]);
                         if (general is not null)
                         {
                             await Parser.SendMessage(eventType, sourceUin,
@@ -382,12 +401,14 @@ public static class Events
                 }
             }
         }
-        catch (HttpRequestException)
+        catch
+            (HttpRequestException)
         {
             await Parser.SendMessage(eventType, sourceUin, "与服务器通讯失败。");
             await ZiYueBot.Instance.QqEvent.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty,
                 CancellationToken.None);
-            await ZiYueBot.Instance.QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"), CancellationToken.None);
+            await ZiYueBot.Instance.QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"),
+                CancellationToken.None);
             await ZiYueBot.Instance.QqApi.CloseAsync(WebSocketCloseStatus.InternalServerError, String.Empty,
                 CancellationToken.None);
             await ZiYueBot.Instance.QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None);

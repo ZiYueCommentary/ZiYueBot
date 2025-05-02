@@ -293,6 +293,22 @@ public static class Handler
                     }
                     else
                     {
+                        if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
+                        {
+                            await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
+                            await using MySqlCommand command1 =
+                                new MySqlCommand($"SELECT * FROM sponsors WHERE userid = {userId}", connection);
+                            await using MySqlDataReader reader = command1.ExecuteReader();
+                            if (!reader.Read())
+                            {
+                                await command.Channel.SendMessageAsync("""
+                                                                       今天是子悦的生日，赞助者命令“绘画”对所有人开放。
+                                                                       喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
+                                                                       https://afdian.com/a/ziyuecommentary2020"
+                                                                       """);
+                            }
+                        }
+
                         await command.RespondAsync("机器绘画中...");
                         try
                         {
@@ -306,7 +322,7 @@ public static class Handler
                                     for (;;)
                                     {
                                         Thread.Sleep(5000);
-                                        
+
                                         using HttpClient client = new HttpClient();
                                         using HttpRequestMessage request =
                                             new HttpRequestMessage(HttpMethod.Get,
@@ -325,7 +341,8 @@ public static class Handler
                                             case "SUCCEEDED":
                                             {
                                                 await WebUtils.DownloadFile(
-                                                    output["results"]![0]!["url"]!.GetValue<string>(), "temp/result.png");
+                                                    output["results"]![0]!["url"]!.GetValue<string>(),
+                                                    "temp/result.png");
                                                 await channel.SendFileAsync(new FileAttachment("temp/result.png",
                                                     "result.png"));
                                                 File.Delete("temp/result.png");

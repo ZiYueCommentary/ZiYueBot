@@ -82,7 +82,7 @@ public class Draw : IGeneralCommand
         using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
         {
             using MySqlCommand command = new MySqlCommand(
-                $"SELECT * FROM sponsors WHERE userid = {userId}",
+                $"SELECT * FROM sponsors WHERE userid = {userId} OR DATE_FORMAT(current_date(), '%m-%d') = '05-03' LIMIT 1",
                 connection);
             using MySqlDataReader reader = command.ExecuteReader();
             if (!reader.Read())

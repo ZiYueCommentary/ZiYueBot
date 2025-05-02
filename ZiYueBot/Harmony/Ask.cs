@@ -45,7 +45,7 @@ public class Ask : IHarmonyCommand
         {
             Logger.Error("愚人节语录库（子悦）加载失败！", ex);
         }
-        
+
         try
         {
             using FileStream stream = new FileStream("resources/easytt.txt", FileMode.OpenOrCreate);
@@ -62,7 +62,7 @@ public class Ask : IHarmonyCommand
         {
             Logger.Error("愚人节语录库（义贼哥）加载失败！", ex);
         }
-        
+
         try
         {
             using FileStream stream = new FileStream("resources/asriel.txt", FileMode.OpenOrCreate);
@@ -79,7 +79,7 @@ public class Ask : IHarmonyCommand
         {
             Logger.Error("愚人节语录库（山羊）加载失败！", ex);
         }
-        
+
         try
         {
             using FileStream stream = new FileStream("resources/capybara.txt", FileMode.OpenOrCreate);
@@ -128,18 +128,21 @@ public class Ask : IHarmonyCommand
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)
         {
             (string, List<string>) aprilReview = AprilReviews[Random.Shared.Next(0, AprilReviews.Count)];
-            if (args.Length >= 2 && args[1] != "")
+            if (args.Length < 2)
             {
                 return
-                    $"{aprilReview.Item1}对 {args[1]} 的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
+                    $"{aprilReview.Item1}的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
             }
 
-            return $"{aprilReview.Item1}的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
+            string arguments = string.Join(' ', args[1..]);
+            return
+                $"{aprilReview.Item1}对 {arguments} 的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
         }
 
-        if (args.Length >= 2 && args[1] != "")
+        if (args.Length >= 2)
         {
-            return $"张教授对 {args[1]} 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
+            string arguments = string.Join(' ', args[1..]);
+            return $"张教授对 {arguments} 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
         }
 
         return $"张教授的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
