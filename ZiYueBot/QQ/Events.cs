@@ -166,7 +166,7 @@ public static class Events
                                 await Parser.SendMessage(eventType, sourceUin, """
                                                                                今天是子悦的生日，赞助者命令“绘画”对所有人开放。
                                                                                喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
-                                                                               https://afdian.com/a/ziyuecommentary2020"
+                                                                               https://afdian.com/a/ziyuecommentary2020
                                                                                """);
                             }
                         }
@@ -217,6 +217,10 @@ public static class Events
                         catch (TimeoutException)
                         {
                             await Parser.SendMessage(eventType, sourceUin, "服务连接超时。");
+                        }
+                        catch (HttpRequestException)
+                        {
+                            await Parser.SendMessage(eventType, sourceUin, "第三方拒绝：涉嫌知识产权风险。");
                         }
                         catch (Exception e)
                         {

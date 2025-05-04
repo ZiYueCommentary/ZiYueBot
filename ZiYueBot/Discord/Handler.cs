@@ -368,6 +368,10 @@ public static class Handler
                         {
                             await command.Channel.SendMessageAsync("服务连接超时。");
                         }
+                        catch (HttpRequestException)
+                        {
+                            await command.Channel.SendMessageAsync("第三方拒绝：涉嫌知识产权风险。");
+                        }
                         catch (Exception)
                         {
                             await command.Channel.SendMessageAsync("命令内部错误。");
