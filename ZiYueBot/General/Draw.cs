@@ -94,7 +94,7 @@ public class Draw : IGeneralCommand
                        """;
             }
 
-            if (DateTime.Today - reader.GetDateTime("date") > TimeSpan.FromDays(365))
+            if (DateTime.Today > reader.GetDateTime("date"))
             {
                 return $"""
                        您的赞助已过期（{reader.GetDateTime("date"):yyyy年MM月dd日}）
@@ -128,7 +128,7 @@ public class Draw : IGeneralCommand
                        """;
             }
 
-            if (DateTime.Today - reader.GetDateTime("date") > TimeSpan.FromDays(365))
+            if (DateTime.Today > reader.GetDateTime("date"))
             {
                 return $"""
                         您的赞助已过期（{reader.GetDateTime("date"):yyyy年MM月dd日}）

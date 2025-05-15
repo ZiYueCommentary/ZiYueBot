@@ -45,7 +45,7 @@ public class ThrowStraitbottle : IGeneralCommand
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
-        string arguments = string.Join(' ', args);
+        string arguments = string.Join(' ', args[1..]);
         if (arguments.Contains('\u2406')) return "云瓶内容禁止包含表情！";
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
