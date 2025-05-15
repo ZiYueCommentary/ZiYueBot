@@ -88,6 +88,7 @@ public static class Handler
         RegisterCommand(EasyCommandBuilder(new RestartRevolver()));
         RegisterCommand(EasyCommandBuilder(new Rotating()));
         RegisterCommand(EasyCommandBuilder(new Win()));
+        RegisterCommand(EasyCommandBuilder(new Stat()));
         {
             SlashCommandBuilder builder = EasyCommandBuilder(new Chat());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();

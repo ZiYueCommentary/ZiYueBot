@@ -138,5 +138,6 @@ public static class Commands
         RegisterGeneralCommand(new Win());
         RegisterGeneralCommand(new Chat());
         RegisterGeneralCommand(new Draw());
+        RegisterGeneralCommand(new Stat());
     }
 }
