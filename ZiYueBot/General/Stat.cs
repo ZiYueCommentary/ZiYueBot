@@ -7,7 +7,7 @@ namespace ZiYueBot.General;
 public class Stat : IGeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("统计");
-    
+
     public string GetCommandId()
     {
         return "stat";
@@ -42,70 +42,90 @@ public class Stat : IGeneralCommand
     public string Collect(string userName, ulong userId, Platform platform)
     {
         // 云瓶
-        // 暂不显示总浏览量。
-        using MySqlCommand driftbottlesQuery = new MySqlCommand($"""
-                                                                 SELECT (SELECT COUNT(*) FROM driftbottles WHERE userid = {userId})                AS bottle_counts,
-                                                                        (SELECT COALESCE(SUM(views), 0) FROM driftbottles WHERE userid = {userId}) AS total_views,
-                                                                        (SELECT id FROM driftbottles ORDER BY id DESC LIMIT 1)                     AS last_bottle_id
-                                                                 """, ZiYueBot.Instance.ConnectDatabase());
-        using MySqlDataReader driftbottlesReader = driftbottlesQuery.ExecuteReader();
-        driftbottlesReader.Read();
-        string driftbottlesPercent = ((double)driftbottlesReader.GetInt32("bottle_counts") /
-            driftbottlesReader.GetInt32("last_bottle_id") * 100).ToString("F4") + "%";
-        string driftbottlesStat =
-            $"您共扔出了 {driftbottlesReader.GetInt32("bottle_counts")} 支云瓶，占全部云瓶的 {driftbottlesPercent}。";
-
-        // 赞助
-        using MySqlCommand sponsorQuery = new MySqlCommand(
-            $"SELECT * FROM sponsors WHERE userid = {userId} OR DATE_FORMAT(current_date(), '%m-%d') = '05-03' LIMIT 1",
-            ZiYueBot.Instance.ConnectDatabase());
-        using MySqlDataReader sponsorReader = sponsorQuery.ExecuteReader();
-        string sponsorStat = "";
-        if (sponsorReader.Read())
+        string? driftbottlesStat = null;
+        using (MySqlCommand query = new MySqlCommand($"""
+                                                      SELECT (SELECT COUNT(*) FROM driftbottles WHERE userid = {userId})                AS bottle_counts,
+                                                             (SELECT COALESCE(SUM(views), 0) FROM driftbottles WHERE userid = {userId}) AS total_views,
+                                                             (SELECT id FROM driftbottles ORDER BY id DESC LIMIT 1)                     AS last_bottle_id
+                                                      """,
+                   ZiYueBot.Instance.ConnectDatabase()))
         {
-            DateTime sponsorDate = sponsorReader.GetDateTime("date");
-            if (DateTime.Today > sponsorDate)
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
             {
-                sponsorStat =
-                    $"赞助到期时间：{sponsorDate:yyyy年MM月dd日}（已到期 {(int)(DateTime.Today - sponsorDate).TotalDays} 天）";
-            }
-            else
-            {
-                sponsorStat = $"赞助到期时间：{sponsorDate:yyyy年MM月dd日}（{(int)(sponsorDate - DateTime.Today).TotalDays} 天）";
+                int bottleCounts = reader.GetInt32("bottle_counts");
+                double percent = (double)bottleCounts / reader.GetInt32("last_bottle_id") * 100;
+                driftbottlesStat = $"您共扔出了 {bottleCounts} 支云瓶，占全部云瓶的 {percent:F4}%，总浏览量 {reader.GetInt32("total_views")} 次。";
             }
         }
-        else
+        
+        // 海峡云瓶
+        string? straitbottlesStat = null;
+        using (MySqlCommand query = new MySqlCommand($"""
+                                                       SELECT (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId})                    AS bottle_counts,
+                                                              (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId} AND picked = false) AS unpicked_bottles,
+                                                              (SELECT id FROM straitbottles ORDER BY id DESC LIMIT 1)                         AS last_bottle_id
+                                                       """,
+                   ZiYueBot.Instance.ConnectDatabase()))
         {
-            sponsorStat = "您不是子悦机器的赞助者。";
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
+            {
+                int bottleCounts = reader.GetInt32("bottle_counts");
+                double percent = (double)bottleCounts / reader.GetInt32("last_bottle_id") * 100;
+                straitbottlesStat = $"您共扔出了 {bottleCounts} 支海峡云瓶，占全部海峡云瓶的 {percent:F4}%，其中有 {reader.GetInt32("unpicked_bottles")} 支仍在海峡漂流。";
+            }
+        }
+
+        // 赞助
+        string? sponsorStatus = null;
+        using (MySqlCommand query = new MySqlCommand(
+                   $"SELECT * FROM sponsors WHERE userid = {userId} LIMIT 1",
+                   ZiYueBot.Instance.ConnectDatabase()))
+        {
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
+            {
+                DateTime sponsorDate = reader.GetDateTime("date");
+                sponsorStatus = $"赞助到期时间：{sponsorDate:yyyy年MM月dd日}";
+                if (DateTime.Today > sponsorDate)
+                {
+                    sponsorStatus += $"（已到期 {(int)(DateTime.Today - sponsorDate).TotalDays} 天）";
+                }
+                else
+                {
+                    sponsorStatus += $"（{(int)(sponsorDate - DateTime.Today).TotalDays} 天）";
+                }
+            }
         }
 
         // 黑名单
-        using MySqlCommand blacklistQuery = new MySqlCommand(
-            $"SELECT * FROM blacklists WHERE userid = {userId}",
-            ZiYueBot.Instance.ConnectDatabase());
-        using MySqlDataReader blacklistReader = blacklistQuery.ExecuteReader();
-        string blacklistStat = "您被列入黑名单的命令有：";
-        if (blacklistReader.Read())
+        string? blacklists = null;
+        using (MySqlCommand query = new MySqlCommand(
+                   $"SELECT * FROM blacklists WHERE userid = {userId}",
+                   ZiYueBot.Instance.ConnectDatabase()))
         {
-            do
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
             {
-                blacklistStat += $"/{blacklistReader.GetString("command")}、";
-            } while (blacklistReader.Read());
+                blacklists = "您被列入黑名单的命令有：";
+                do
+                {
+                    blacklists += $"/{reader.GetString("command")}、";
+                } while (reader.Read());
 
-            blacklistStat = blacklistStat[..^1];
-        }
-        else
-        {
-            blacklistStat = "您没有被列入黑名单的命令。";
+                blacklists = blacklists[..^1];
+            }
         }
 
         return $"""
                 {userName} 的统计数据
                 平台：{(platform == Platform.Discord ? "Discord" : "QQ")}
                 ID: {userId}
-                {sponsorStat}
-                {driftbottlesStat}
-                {blacklistStat}
+                {sponsorStatus ?? "您不是子悦机器的赞助者。"}
+                {driftbottlesStat ?? "云瓶统计失败，请联系子悦。"}
+                {straitbottlesStat ?? "海峡云瓶统计失败，请联系子悦。"}
+                {blacklists ?? "您没有被列入黑名单的命令。"}
                 """;
     }
 
