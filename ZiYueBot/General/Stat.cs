@@ -46,7 +46,7 @@ public class Stat : IGeneralCommand
         using (MySqlCommand query = new MySqlCommand($"""
                                                       SELECT (SELECT COUNT(*) FROM driftbottles WHERE userid = {userId})                AS bottle_counts,
                                                              (SELECT COALESCE(SUM(views), 0) FROM driftbottles WHERE userid = {userId}) AS total_views,
-                                                             (SELECT id FROM driftbottles ORDER BY id DESC LIMIT 1)                     AS last_bottle_id
+                                                             (SELECT MAX(id) FROM driftbottles)                                         AS last_bottle_id
                                                       """,
                    ZiYueBot.Instance.ConnectDatabase()))
         {
@@ -64,7 +64,7 @@ public class Stat : IGeneralCommand
         using (MySqlCommand query = new MySqlCommand($"""
                                                        SELECT (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId})                    AS bottle_counts,
                                                               (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId} AND picked = false) AS unpicked_bottles,
-                                                              (SELECT id FROM straitbottles ORDER BY id DESC LIMIT 1)                         AS last_bottle_id
+                                                              (SELECT MAX(id) FROM straitbottles)                                             AS last_bottle_id
                                                        """,
                    ZiYueBot.Instance.ConnectDatabase()))
         {
