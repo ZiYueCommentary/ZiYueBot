@@ -128,21 +128,23 @@ public class Ask : IHarmonyCommand
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)
         {
             (string, List<string>) aprilReview = AprilReviews[Random.Shared.Next(0, AprilReviews.Count)];
-            if (args.Length < 2)
+            if (args.Length >= 2)
             {
-                return
-                    $"{aprilReview.Item1}的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
+                string arguments = string.Join(' ', args[1..]);
+                if (arguments != "")
+                    return
+                        $"{aprilReview.Item1}对 {arguments} 的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
             }
 
-            string arguments = string.Join(' ', args[1..]);
             return
-                $"{aprilReview.Item1}对 {arguments} 的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
+                $"{aprilReview.Item1}的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
         }
 
         if (args.Length >= 2)
         {
             string arguments = string.Join(' ', args[1..]);
-            return $"张教授对 {arguments} 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
+            if (arguments != "")
+                return $"张教授对 {arguments} 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
         }
 
         return $"张教授的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
