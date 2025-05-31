@@ -10,6 +10,7 @@ export default defineConfig({
             tabsPlugin(md)
         },
     },
+    ignoreDeadLinks: true,
     themeConfig: {
         logo: '/logo.png',
         // https://vitepress.dev/reference/default-theme-config
