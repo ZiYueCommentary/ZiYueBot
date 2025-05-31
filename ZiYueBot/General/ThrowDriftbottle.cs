@@ -26,7 +26,7 @@ public class ThrowDriftbottle : IGeneralCommand
                /扔云瓶 [content]
                扔一个漂流云瓶。“content”是瓶子的内容，要求不包含表情。
                频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/throw-driftbottle.html
+               在线文档：https://docs.ziyuebot.cn/general/driftbottle/throw
                """;
     }
 

@@ -34,7 +34,7 @@ public class Jrrp : IHarmonyCommand
         return """
                /jrrp
                获取今日人品。人品值范围由 0 到 100。
-               在线文档：https://docs.ziyuebot.cn/jrrp.html
+               在线文档：https://docs.ziyuebot.cn/harmony/jrrp
                """;
     }
 

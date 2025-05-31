@@ -30,7 +30,7 @@ public class BALogo : IHarmonyCommand
                生成《碧蓝档案》风格的标题图片。“left”为光环左侧的文字，“right”为光环右侧的文字。
                如两侧的文本中包含空格，请将文本用英文引号包裹。
                频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/balogo.html
+               在线文档：https://docs.ziyuebot.cn/harmony/balogo
                """;
     }
 

@@ -30,7 +30,7 @@ public class Draw : IGeneralCommand
                提示词的使用技巧另见：https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt
                该命令仅允许子悦机器的赞助者调用。
                频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/draw.html
+               在线文档：https://docs.ziyuebot.cn/general/draw
                """;
     }
 

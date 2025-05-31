@@ -28,7 +28,7 @@ public class Chat : IGeneralCommand
                在 QQ 的回答相比于 Discord 会更短，并且不包括思考过程。
                每次提问都算作一次新对话。不支持联网回答。
                频率限制（暂时）：QQ 每次调用间隔 5 分钟；Discord 每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/chat.html
+               在线文档：https://docs.ziyuebot.cn/general/chat
                """;
     }
 

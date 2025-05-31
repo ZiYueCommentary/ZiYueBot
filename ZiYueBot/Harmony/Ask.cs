@@ -103,7 +103,7 @@ public class Ask : IHarmonyCommand
         return """
                /ask [question]
                随机张维为教授语录。“question”为可选参数，输入后可以让张教授对指定问题做出评价。
-               在线文档：https://docs.ziyuebot.cn/ask.html
+               在线文档：https://docs.ziyuebot.cn/harmony/ask
                """;
     }
 

@@ -20,7 +20,12 @@ public class ListStraitbottle : IGeneralCommand
 
     public string GetCommandDescription()
     {
-        return "海峡云瓶列表";
+        return """
+               /海峡云瓶列表
+               查看当前海峡云瓶生态的数据，包括总瓶子数、可捞起数和扔出数。
+               频率限制：每次调用间隔 10 分钟。
+               在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
+               """;
     }
 
     public string GetCommandShortDescription()

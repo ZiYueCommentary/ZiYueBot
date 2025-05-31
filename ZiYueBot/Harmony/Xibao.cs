@@ -29,7 +29,7 @@ public class Xibao : IHarmonyCommand
                /xibao [content]
                生成一张喜报。“content”是喜报的内容，必须为纯文字。
                频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/xibao.html
+               在线文档：https://docs.ziyuebot.cn/harmony/xibao
                """;
     }
 

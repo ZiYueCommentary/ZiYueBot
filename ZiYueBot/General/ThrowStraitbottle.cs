@@ -28,7 +28,7 @@ public class ThrowStraitbottle : IGeneralCommand
                扔一个海峡云瓶。由 QQ 扔出的瓶子只能被 Discord 捞起，反之亦然。所有瓶子只能被捞起一次。
                “content”是瓶子的内容，要求不包含表情。
                频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/throw-straitbottle.html
+               在线文档：https://docs.ziyuebot.cn/general/straitbottle/throw
                """;
     }
 

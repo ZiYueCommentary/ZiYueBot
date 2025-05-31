@@ -109,7 +109,7 @@ public class Win : IGeneralCommand
                /win
                以张维为教授为主题的“今日人品”命令。
                本命令包括的事件有：精准扶 win、共同富 win、风口飞 win，以及心心相 win。详细信息请查看在线文档。
-               在线文档：https://docs.ziyuebot.cn/win.html
+               在线文档：https://docs.ziyuebot.cn/general/win
                """;
     }
 

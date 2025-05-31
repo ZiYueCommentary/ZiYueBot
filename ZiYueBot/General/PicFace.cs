@@ -18,7 +18,7 @@ public class PicFace : IGeneralCommand
         return """
                /表情转图片
                将 QQ 表情包转换为可保存的图片。该命令仅在 QQ 可用。
-               在线文档：https://docs.ziyuebot.cn/picface.html
+               在线文档：https://docs.ziyuebot.cn/general/picface
                """;
     }
 

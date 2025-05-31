@@ -14,7 +14,7 @@ public class Help : IGeneralCommand
         return """
                /help [command]
                获取命令的帮助信息。其中“command”为命令名，为空时返回可用命令列表。
-               在线文档：https://docs.ziyuebot.cn/help.html
+               在线文档：https://docs.ziyuebot.cn/general/help
                """;
     }
 

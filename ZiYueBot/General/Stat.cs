@@ -25,7 +25,7 @@ public class Stat : IGeneralCommand
                统计你的账号在子悦机器上的数据。
                内容包括：所在平台、账号信息、赞助信息、云瓶统计和黑名单信息。
                频率限制：每次调用间隔 5 分钟。
-               在线文档：https://docs.ziyuebot.cn/stat.html
+               在线文档：https://docs.ziyuebot.cn/general/stat
                """;
     }
 

@@ -12,7 +12,7 @@ public class Hitokoto : IHarmonyCommand
         return """
                /hitokoto
                获得一句话。
-               在线文档：https://docs.ziyuebot.cn/hitokoto.html
+               在线文档：https://docs.ziyuebot.cn/harmony/hitokoto
                """;
     }
 

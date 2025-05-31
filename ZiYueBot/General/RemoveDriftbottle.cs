@@ -24,7 +24,7 @@ public class RemoveDriftbottle : IGeneralCommand
         return """
                /删除云瓶 [id]
                删除一个自己扔出的漂流云瓶。“id”是瓶子的数字编号。
-               在线文档：https://docs.ziyuebot.cn/remove-driftbottle.html
+               在线文档：https://docs.ziyuebot.cn/general/driftbottle/remove
                """;
     }
 

@@ -25,7 +25,7 @@ public class Shooting : IHarmonyCommand
                /开枪 [user]
                俄罗斯轮盘向某人开枪。“user”为开枪目标，为空时默认向自己开枪。该命令只能在群聊中调用。
                在调用此命令前，必须先调用“开始俄罗斯轮盘”命令。俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
-               在线文档：https://docs.ziyuebot.cn/shooting.html
+               在线文档：https://docs.ziyuebot.cn/harmony/revolver/shooting
                """;
     }
 

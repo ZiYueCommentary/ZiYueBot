@@ -61,7 +61,7 @@ public class StartRevolver : IHarmonyCommand
                /开始俄罗斯轮盘
                开始一局俄罗斯轮盘。该命令只能在群聊中调用。
                俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
-               在线文档：https://docs.ziyuebot.cn/start-revolver.html
+               在线文档：https://docs.ziyuebot.cn/harmony/revolver/start
                """;
     }
 

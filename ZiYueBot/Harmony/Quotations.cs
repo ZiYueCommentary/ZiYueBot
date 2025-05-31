@@ -47,7 +47,7 @@ public class Quotations : IHarmonyCommand
         return """
                /quotations
                从《毛主席语录》中随机获取一句毛泽东主席语录。
-               在线文档：https://docs.ziyuebot.cn/quotations.html
+               在线文档：https://docs.ziyuebot.cn/harmony/quotations
                """;
     }
 

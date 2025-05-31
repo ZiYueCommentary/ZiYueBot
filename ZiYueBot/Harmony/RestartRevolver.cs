@@ -25,7 +25,7 @@ public class RestartRevolver : IHarmonyCommand
                /重置俄罗斯轮盘
                重新旋转俄罗斯轮盘的膛室，同时不改变子弹所在膛室位置。该命令只能在群聊中调用。
                在调用此命令前，必须先调用“开始俄罗斯轮盘”命令。俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
-               在线文档：https://docs.ziyuebot.cn/restart-revolver.html
+               在线文档：https://docs.ziyuebot.cn/harmony/revolver/restart
                """;
     }
 

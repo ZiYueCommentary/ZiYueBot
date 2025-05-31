@@ -25,7 +25,7 @@ public class Beibao : IHarmonyCommand
                /beibao [content]
                生成一张悲报。“content”是悲报的内容，必须为纯文字。
                频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/beibao.html
+               在线文档：https://docs.ziyuebot.cn/harmony/beibao
                """;
     }
 
