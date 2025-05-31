@@ -11,6 +11,7 @@ export default defineConfig({
         },
     },
     ignoreDeadLinks: true,
+    cleanUrls: true,
     themeConfig: {
         logo: '/logo.png',
         // https://vitepress.dev/reference/default-theme-config
