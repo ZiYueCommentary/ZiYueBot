@@ -31,7 +31,7 @@
 
 1. 聊天平台的用户 ID 和昵称；
 2. 调用命令的时间及参数列表；
-3. 特定命令相关的持久性数据（[](driftbottle.md)、[](straitbottle.md)）。
+3. 特定命令相关的持久性数据（[漂流云瓶](/general/driftbottle)、[海峡云瓶](/general/straitbottle)）。
 
 请您了解，随着我们业务的发展，可能会对功能和提供的服务有所调整变化。原则上，当新功能或服务与我们当前提供的功能或服务相关时，收集与使用的个人信息将与原处理目的具有直接或合理关联。
 
@@ -46,7 +46,7 @@ _另见：[](blacklists.md)_
 
 ## 第三方服务列表 {#third-parties}
 
-目前包含第三方服务的命令有：[](chat.md)、[](draw.md)。
+目前包含第三方服务的命令有：[对话](/general/chat)、[绘画](/general/draw)。
 
 1. DeepSeek: [用户协议](https://cdn.deepseek.com/policies/zh-CN/deepseek-terms-of-use.html)
 2. 阿里云百炼：[服务协议](https://terms.alicdn.com/legal-agreement/terms/common_platform_service/20230728213935489/20230728213935489.html)
