@@ -1,10 +1,10 @@
 # 捞云瓶 {#pick-driftbottle}
 
-**捞云瓶 (Pick Driftbottle)** 是一个 [一般命令](/general)，可以捞起一支由 [扔云瓶](/general/driftbottle/throw) 命令扔出的 [漂流云瓶](/general/driftbottle)。
+**捞云瓶 (Pick Driftbottle)** 是一个 [一般命令](/general/)，可以捞起一支由 [扔云瓶](/general/driftbottle/throw.md) 命令扔出的 [漂流云瓶](/general/driftbottle/)。
 
 未指定编号的情况下，捞云瓶会从云瓶数据库中随机抽取一支云瓶。被标记为 “不可捞起” 的瓶子将不会被捞到。
 
-**[愚人节](timeline.md#april) 时会有 50% 的概率捞到“愚人云瓶”。详见“[](aprilbottles.md)”。**
+**[愚人节](/timeline/#april) 时会有 50% 的概率捞到“愚人云瓶”。详见“[愚人云瓶](/technical/aprilbottles.md)”。**
 
 ## 用法 {#usage}
 

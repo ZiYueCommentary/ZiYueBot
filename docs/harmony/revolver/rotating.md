@@ -1,6 +1,6 @@
 # 转轮 {#rotating}
 
-**转轮 (Rotating)** 是一个 [鸿蒙命令](/harmony)，可以在 [俄罗斯轮盘](/harmony/revolver) 游戏中，使左轮转到下一个膛室，而不向任何人开枪。在调用该命令之前，必须先调用 [开始俄罗斯轮盘](/harmony/revolver/start) 命令。
+**转轮 (Rotating)** 是一个 [鸿蒙命令](/harmony/)，可以在 [俄罗斯轮盘](/harmony/revolver/) 游戏中，使左轮转到下一个膛室，而不向任何人开枪。在调用该命令之前，必须先调用 [开始俄罗斯轮盘](/harmony/revolver/start) 命令。
 
 当在最后一个膛室转轮时，该局游戏结束。
 

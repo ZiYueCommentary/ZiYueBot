@@ -3,7 +3,7 @@
 > [!INFO] 免责声明
 > 该命令中的内容仅供娱乐，请勿上升价值。
 
-**赢 (Win)** 是一个 [一般命令](/general)，是以 [张维为](https://baike.baidu.com/item/%E5%BC%A0%E7%BB%B4%E4%B8%BA/2650478) 教授为主题的 [今日人品](/harmony/jrrp) 命令。
+**赢 (Win)** 是一个 [一般命令](/general/)，是以 [张维为](https://baike.baidu.com/item/%E5%BC%A0%E7%BB%B4%E4%B8%BA/2650478) 教授为主题的 [今日人品](/harmony/jrrp.md) 命令。
 
 该命令包含“[精准扶 win](#alleviation)”、“[共同富 win](#prosperity)”、“[风口飞 win](#fly)”和“[心心相 win](#couple)”四种事件。对应的事件内容 [详见下文](#events)。
 

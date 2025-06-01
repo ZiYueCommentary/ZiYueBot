@@ -1,6 +1,6 @@
 # 捞海峡云瓶 {#pick-straitbottle}
 
-**捞海峡云瓶 (Pick Straitbottle)** 是一个 [一般命令](/general)，可以捞起一支由 [扔海峡云瓶](/general/straitbottle/throw) 命令扔出的 [海峡云瓶](/general/straitbottle)。
+**捞海峡云瓶 (Pick Straitbottle)** 是一个 [一般命令](/general/)，可以捞起一支由 [扔海峡云瓶](/general/straitbottle/throw.md) 命令扔出的 [海峡云瓶](/general/straitbottle/)。
 
 在 QQ 只能捞起由 Discord 扔出的云瓶，反之亦然。被捞起过的瓶子将不会被捞到。
 

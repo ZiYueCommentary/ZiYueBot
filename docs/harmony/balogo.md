@@ -1,6 +1,6 @@
 # 碧蓝档案标题 {#balogo}
 
-**碧蓝档案标题 (BlueArchive Logo)** 是一个 [鸿蒙命令](/harmony)，可以生成 [《碧蓝档案》](https://baike.baidu.com/item/%E8%94%9A%E8%93%9D%E6%A1%A3%E6%A1%88/60849360) 风格的标题图片。
+**碧蓝档案标题 (BlueArchive Logo)** 是一个 [鸿蒙命令](/harmony/)，可以生成 [《碧蓝档案》](https://baike.baidu.com/item/%E8%94%9A%E8%93%9D%E6%A1%A3%E6%A1%88/60849360) 风格的标题图片。
 
 ## 用法 {#usage}
 

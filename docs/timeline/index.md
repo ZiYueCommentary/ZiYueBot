@@ -10,7 +10,7 @@
 
 ### 今日人品 {#jrrp}
 
-“[今日人品](/harmony/jrrp)”命令在当天固定显示以下内容：
+“[今日人品](/harmony/jrrp.md)”命令在当天固定显示以下内容：
 
 ```
 {用户名} 的人日人品是 100。今天是子悦机器的一岁生日，祝你节日快乐！
@@ -34,7 +34,7 @@
 
 ### 捞云瓶 {#pick-driftbottle}
 
-“[捞云瓶](/general/driftbottle/pick)”命令在当天固定显示以下内容：
+“[捞云瓶](/general/driftbottle/pick.md)”命令在当天固定显示以下内容：
 
 ```
 你捞到了 0 号瓶子！
@@ -52,12 +52,12 @@
 
 目前而言，包含愚人节特殊机制的命令有：
 
-* [](april-jrrp.md)
-* [](pick-driftbottle.md)
-* [](throw-driftbottle.md)
-* [](shooting.md)
-* [](chat.md)
+* [今日人品（愚人节）](/timeline/jrrp.md)
+* [捞云瓶](/general/driftbottle/pick.md)
+* [扔云瓶](/general/driftbottle/throw.md)
+* [开枪](/harmony/revolver/shooting.md)
+* [对话](/general/chat.md)
 
 ## 子悦生日 {#ziyue-birthday}
 
-子悦生日（5 月 3 日）是子悦机器每年的固定活动节日。子悦生日时，赞助者命令 [绘画](/general/draw) 对所有人开放。
+子悦生日（5 月 3 日）是子悦机器每年的固定活动节日。子悦生日时，赞助者命令 [绘画](/general/draw.md) 对所有人开放。

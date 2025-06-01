@@ -1,6 +1,6 @@
 # 扔海峡云瓶 {#throw-straitbottle}
 
-**扔云瓶 (Throw Straitbottle)** 是一个 [一般命令](/general)，可以创建一支 [海峡云瓶](/general/straitbottle) 。每个云瓶都有一个唯一编号。
+**扔云瓶 (Throw Straitbottle)** 是一个 [一般命令](/general/)，可以创建一支 [海峡云瓶](/general/straitbottle/) 。每个云瓶都有一个唯一编号。
 
 使用扔云瓶命令时不可回复消息，也不可包含 QQ 或 Discord 的表情包。扔海峡云瓶命令会将提及消息变成提及对象的昵称，并储存云瓶中包含的图片。
 

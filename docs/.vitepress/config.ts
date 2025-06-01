@@ -11,7 +11,22 @@ export default defineConfig({
             tabsPlugin(md)
         },
     },
-    ignoreDeadLinks: true,
+    head: [
+        [
+            'script', {}, `var _paq = window._paq = window._paq || [];
+                           /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+                           _paq.push(['trackPageView']);
+                           _paq.push(['enableLinkTracking']);
+                           (function() {
+                             var u="https://analytics.ziyuesinicization.site/";
+                             _paq.push(['setTrackerUrl', u+'matomo.php']);
+                             _paq.push(['setSiteId', '9']);
+                             var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                             g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+                           })();`
+        ],
+        ['link', {rel: 'icon', href: '/logo.png'}]
+    ],
     cleanUrls: true,
     themeConfig: {
         search: {
@@ -29,6 +44,15 @@ export default defineConfig({
             {text: '用户协议', link: '/tos'},
             {text: '使用文档', link: '/usage'},
             {text: '技术文档', link: '/technical', activeMatch: '/technical'},
+            {
+                text: 'v1.0.2',
+                items: [
+                    {
+                        text: '更新日志',
+                        link: '/technical/changelogs'
+                    }
+                ]
+            }
         ],
 
         sidebar: {
@@ -117,9 +141,13 @@ export default defineConfig({
                     {
                         text: '大事年表',
                         link: '/timeline/',
-                        collapsed: true,
-
-                    }
+                        collapsed: false,
+                        items: [
+                            {text: '今日人品（愚人节）', link: '/timeline/jrrp'},
+                            {text: '评价（愚人节）', link: '/timeline/ask'}
+                        ]
+                    },
+                    {text: '技术文档', link: '/technical/'}
                 ]
             }
         },
@@ -166,8 +194,7 @@ export default defineConfig({
         lightModeSwitchTitle: '切换到浅色模式',
         darkModeSwitchTitle: '切换到深色模式',
         skipToContentLabel: '跳转到内容'
-    },
-    head: [['link', {rel: 'icon', href: '/logo.png'}]],
+    }
 })
 
 function searchOptions(): Partial<DefaultTheme.AlgoliaSearchOptions> {
@@ -201,7 +228,7 @@ function searchOptions(): Partial<DefaultTheme.AlgoliaSearchOptions> {
                     selectText: '选择',
                     navigateText: '切换',
                     closeText: '关闭',
-                    searchByText: '搜索提供者'
+                    searchByText: '搜索提供商'
                 },
                 noResultsScreen: {
                     noResultsText: '无法找到相关结果',

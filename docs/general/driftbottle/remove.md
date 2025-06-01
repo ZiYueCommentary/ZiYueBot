@@ -1,8 +1,8 @@
 # 删除云瓶 {#remove-driftbottle}
 
-**删除云瓶 (Remove Driftbottle)** 是一个 [一般命令](/general)，可以隐藏一支由你扔出的 [漂流云瓶](/general/driftbottle)。
+**删除云瓶 (Remove Driftbottle)** 是一个 [一般命令](/general/)，可以隐藏一支由你扔出的 [漂流云瓶](/general/driftbottle/)。
 
-被该命令“删除”的云瓶并不会从数据库中清除，而是被标记为“不可捞起”。被标记为不可捞起的瓶子将对所有 [](/general/driftbottle) 命令隐藏。
+被该命令“删除”的云瓶并不会从数据库中清除，而是被标记为“不可捞起”。被标记为不可捞起的瓶子将对所有 [云瓶](/general/driftbottle/) 命令隐藏。
 
 ## 用法 {#usage}
 

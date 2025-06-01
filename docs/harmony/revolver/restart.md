@@ -1,6 +1,6 @@
 # 重置俄罗斯轮盘 {#restart-revolver}
 
-**重置俄罗斯轮盘 (Restart Revolver)** 是一个 [鸿蒙命令](/harmony)，可以随机更改当前 [俄罗斯轮盘](/harmony/revolver) 游戏的所在膛室位置。在调用该命令之前，必须先调用 [开始俄罗斯轮盘](/harmony/revolver/start) 命令。
+**重置俄罗斯轮盘 (Restart Revolver)** 是一个 [鸿蒙命令](/harmony/)，可以随机更改当前 [俄罗斯轮盘](/harmony/revolver/) 游戏的所在膛室位置。在调用该命令之前，必须先调用 [开始俄罗斯轮盘](/harmony/revolver/start) 命令。
 
 调用该命令后，当前群聊中正在进行的赌局将改变其所在膛室位置，位置从 1 到 5 不等。该命令不会更改子弹所在的膛室位置。
 

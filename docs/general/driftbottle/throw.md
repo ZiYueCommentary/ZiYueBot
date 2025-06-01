@@ -1,12 +1,12 @@
 # 扔云瓶 {#throw-driftbottle}
 
-**扔云瓶 (Throw Driftbottle)** 是一个 [一般命令](/general)，可以创建一支 [漂流云瓶](/general/driftbottle) 。每个云瓶都有一个唯一编号，可用于被 [捞云瓶](/general/driftbottle/pick) 命令准确捞起。
+**扔云瓶 (Throw Driftbottle)** 是一个 [一般命令](/general/)，可以创建一支 [漂流云瓶](/general/driftbottle/) 。每个云瓶都有一个唯一编号，可用于被 [捞云瓶](/general/driftbottle/pick.md) 命令准确捞起。
 
 使用扔云瓶命令时不可回复消息，也不可包含 QQ 或 Discord 的表情包。扔云瓶命令会将提及消息变成提及对象的昵称，并储存云瓶中包含的图片。
 
-创建云瓶时，子悦机器将记录创建者的 ID、昵称，以及云瓶的创建时间、内容。子悦机器还将记录云瓶被捞起的次数，可以在 [](list-driftbottle.md) 命令中找到。
+创建云瓶时，子悦机器将记录创建者的 ID、昵称，以及云瓶的创建时间、内容。子悦机器还将记录云瓶被捞起的次数，可以在 [查看我的云瓶](/general/driftbottle/list.md) 命令中找到。
 
-**[](timeline.md#april) 时，扔瓶子有 25% 的概率失败。**
+**[愚人节](/timeline/#april) 时，扔瓶子有 25% 的概率失败。**
 
 ## 用法 {#usage}
 

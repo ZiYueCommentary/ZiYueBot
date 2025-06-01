@@ -3,11 +3,11 @@
 > [!IMPORTANT] 注意
 > 该命令仅允许子悦机器的 [赞助者](../sponsors) 调用。
 
-**绘画 (Draw)** 是一个 [一般命令](/general)，可以使用 [通义万相](https://tongyi.aliyun.com/wanxiang/) 通过文字生成图片。
+**绘画 (Draw)** 是一个 [一般命令](/general/)，可以使用 [通义万相](https://tongyi.aliyun.com/wanxiang/) 通过文字生成图片。
 
 调用此命令后，机器会生成一张1024*1024像素的图片。
 
-**[](timeline.md#ziyue-birthday) 时对所有用户开放。**
+**[子悦生日](/timeline/#ziyue-birthday) 时对所有用户开放。**
 
 ## 用法 {#usage}
 
@@ -17,7 +17,8 @@
 
 ## 参数 {#params}
 
-* `prompt` 是一段描述图片的**正向提示词**，支持中英文。另见：[《文生图Prompt指南》](https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt)
+* `prompt` 是一段描述图片的**正向提示词**
+  ，支持中英文。另见：[《文生图Prompt指南》](https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt)
 
 ## 输出 {#output}
 
@@ -31,6 +32,14 @@
 
     ```
   任务执行失败：{错误}
+  ```
+  
+  ```
+  服务连接超时。
+  ```
+
+  ```
+  第三方拒绝：涉嫌知识产权风险。
   ```
 
 * 未找到调用者赞助信息时：

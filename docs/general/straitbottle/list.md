@@ -1,6 +1,6 @@
 # 海峡云瓶列表 {#list-straitbottle}
 
-**海峡云瓶列表 (List Straitbottle)** 是一个 [一般命令](/general)，可以查看当前 [海峡云瓶](/general/straitbottle) 的数据。
+**海峡云瓶列表 (List Straitbottle)** 是一个 [一般命令](/general/)，可以查看当前 [海峡云瓶](/general/straitbottle/) 的数据。
 
 该命令会列出瓶子的总数量、当前平台可捞起的瓶子数量，以及由调用者扔出的瓶子数量。
 

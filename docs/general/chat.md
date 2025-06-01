@@ -1,6 +1,6 @@
 # 对话 <Badge type="warning" text="测试中命令" /> {#chat}
 
-**对话 (Chat)** 是一个 [一般命令](/general)，可以与 [DeepSeek-R1](https://api-docs.deepseek.com/zh-cn/news/news250120) 对话。
+**对话 (Chat)** 是一个 [一般命令](/general/)，可以与 [DeepSeek-R1](https://api-docs.deepseek.com/zh-cn/news/news250120) 对话。
 
 每次调用此命令时都为一次新对话。对话不支持联网搜索。
 
@@ -8,7 +8,7 @@
 
 由于 Discord 的消息长度限制，超过 1000 字（大约）的内容会被截断。
 
-**[](timeline.md#april) 时，对话被要求用百度贴吧风格，尽量刻薄地回答问题。**
+**[愚人节](/timeline/#april) 时，对话被要求用百度贴吧风格，尽量刻薄地回答问题。**
 
 ## 用法 {#usage}
 

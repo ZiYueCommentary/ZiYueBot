@@ -1,8 +1,8 @@
 # 统计 {#stat}
 
-**统计 (Stat)** 是一个 [一般命令](/general)，可以获取调用者在子悦机器上的数据简报。
+**统计 (Stat)** 是一个 [一般命令](/general/)，可以获取调用者在子悦机器上的数据简报。
 
-数据统计包括当前平台及调用者账号信息、[赞助信息](/sponsors.md)、[漂流云瓶](/general/driftbottle) 扔出数量及占比、[海峡云瓶](/general/straitbottle) 扔出数量及占比、[黑名单信息](/)。
+数据统计包括当前平台及调用者账号信息、[赞助信息](/sponsors.md)、[漂流云瓶](/general/driftbottle/) 扔出数量及占比、[海峡云瓶](/general/straitbottle/) 扔出数量及占比、[黑名单信息](/technical/blacklists.md)。
 
 ## 用法 {#usage}
 

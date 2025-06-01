@@ -1,6 +1,8 @@
 # 评价 {#ask}
 
-**评价 (Ask)** 是一个 [鸿蒙命令](/harmony)，可以从 [语录库](https://raw.githubusercontent.com/ZiYueCommentary/ZiYueBot/refs/heads/main/ZiYueBot/resources/words.txt) 中随机获得一句 [张维为](https://baike.baidu.com/item/%E5%BC%A0%E7%BB%B4%E4%B8%BA/2650478) 教授语录。
+> 关于愚人节的“评价”命令，另见 *[评价（愚人节）](/timeline/ask.md)*。
+
+**评价 (Ask)** 是一个 [鸿蒙命令](/harmony/)，可以从 [语录库](https://raw.githubusercontent.com/ZiYueCommentary/ZiYueBot/refs/heads/main/ZiYueBot/resources/words.txt) 中随机获得一句 [张维为](https://baike.baidu.com/item/%E5%BC%A0%E7%BB%B4%E4%B8%BA/2650478) 教授语录。
 
 ## 用法 {#usage}
 

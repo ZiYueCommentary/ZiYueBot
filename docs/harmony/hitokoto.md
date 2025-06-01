@@ -1,6 +1,6 @@
 # 一言 {#hitokoto}
 
-**一言 (Hitokoto)** 是一个 [鸿蒙命令](/harmony)，可以从 [一言](https://hitokoto.cn/) 随机获取一句话。
+**一言 (Hitokoto)** 是一个 [鸿蒙命令](/harmony/)，可以从 [一言](https://hitokoto.cn/) 随机获取一句话。
 
 ## 用法 {#usage}
 
