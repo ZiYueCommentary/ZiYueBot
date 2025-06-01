@@ -45,7 +45,7 @@ export default defineConfig({
             {text: '使用文档', link: '/usage'},
             {text: '技术文档', link: '/technical', activeMatch: '/technical'},
             {
-                text: 'v1.0.2',
+                text: 'v0.1.2',
                 items: [
                     {
                         text: '更新日志',
