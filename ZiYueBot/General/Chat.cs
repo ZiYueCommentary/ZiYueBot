@@ -15,7 +15,7 @@ public class Chat : IGeneralCommand
     {
         using FileStream stream = new FileStream("resources/system.md", FileMode.OpenOrCreate);
         using StreamReader reader = new StreamReader(stream);
-        SystemPrompt = reader.ReadToEnd().Replace("\\", "\\\\");
+        SystemPrompt = reader.ReadToEnd().Replace("\r", "\\r").Replace("\n", "\\n");
     }
     
     public string GetCommandId()
@@ -78,6 +78,7 @@ public class Chat : IGeneralCommand
             /*.Replace("%token%", (qq ? 1024 : 4096).ToString())*/, Encoding.UTF8, "application/json");
         request.Content = content;
         using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
+        Logger.Warn(response.Content);
         response.EnsureSuccessStatusCode();
         string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         if (res == "") throw new TimeoutException();
