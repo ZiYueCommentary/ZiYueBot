@@ -444,7 +444,7 @@ public static class Handler
                     SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
                     await command.RespondAsync(Commands.GetHarmonyCommand<Ask>("ask")!.Invoke(eventType,
                         userMention, userId,
-                        ["ask", question is null ? "" : (string)question.Value]));
+                        question is null ? ["ask"] : ["", (string)question.Value]));
                     break;
                 }
                 case "help":
