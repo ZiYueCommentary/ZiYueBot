@@ -6,6 +6,8 @@
 
 子悦机器的赞助者可以使用 [绘画](general/draw) 命令。
 
+<iframe id="afdian_leaflet_ziyue" src="https://afdian.com/leaflet?slug=ziyuecommentary2020" width="100%" scrolling="no" height="200" frameborder="0"></iframe>
+
 ## 2025年 {#2025}
 
 * Zxc (爱发电用户_2c3cb)
