@@ -73,7 +73,7 @@ public class Stat : IGeneralCommand
             {
                 int bottleCounts = reader.GetInt32("bottle_counts");
                 double percent = (double)bottleCounts / reader.GetInt32("last_bottle_id") * 100;
-                straitbottlesStat = $"您共扔出了 {bottleCounts} 支海峡云瓶，占全部海峡云瓶的 {percent:F4}%，其中有 {reader.GetInt32("unpicked_bottles")} 支仍在海峡漂流。";
+                straitbottlesStat = $"您共扔出了 {bottleCounts} 支海峡云瓶，占全部海峡云瓶的 {percent:F5}%，其中有 {reader.GetInt32("unpicked_bottles")} 支仍在海峡漂流。";
             }
         }
 
