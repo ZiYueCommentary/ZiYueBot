@@ -63,7 +63,7 @@ public class Jrrp : IHarmonyCommand
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.Append(userId).Append(DateTime.Now.DayOfYear).Append(42);
+        builder.Append(userId).Append(DateTime.Today.ToBinary()).Append(42);
         byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
         int luck = Math.Abs(BitConverter.ToInt32(bytes, 0)) % 101;
         string comment = Jackpots.TryGetValue(luck, out string? value)
