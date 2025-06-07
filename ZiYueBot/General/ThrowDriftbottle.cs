@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using log4net;
 using MySql.Data.MySqlClient;
+using SkiaSharp;
 using ZiYueBot.Core;
 using ZiYueBot.Utils;
 
@@ -100,8 +101,30 @@ public class ThrowDriftbottle : IGeneralCommand
                 {
                     result += arg.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = arg.IndexOf('\u2403', i + 1);
-                    string path = $"data/images/{Guid.NewGuid()}.png";
-                    WebUtils.DownloadFile(arg.Substring(i + 1, end - i - 1), path).GetAwaiter().GetResult();
+                    byte[] fileData = WebUtils.DownloadFile(arg.Substring(i + 1, end - i - 1));
+                    using SKData? data = SKData.CreateCopy(fileData);
+                    using SKCodec? codec = SKCodec.Create(data);
+                    string type = codec.EncodedFormat switch
+                    {
+                        SKEncodedImageFormat.Bmp => "bmp",
+                        SKEncodedImageFormat.Gif => "gif",
+                        SKEncodedImageFormat.Ico => "ico",
+                        SKEncodedImageFormat.Jpeg => "jpg",
+                        SKEncodedImageFormat.Png => "png",
+                        SKEncodedImageFormat.Wbmp => "wbmp",
+                        SKEncodedImageFormat.Webp => "webp",
+                        SKEncodedImageFormat.Pkm => "pkm",
+                        SKEncodedImageFormat.Ktx => "ktx",
+                        SKEncodedImageFormat.Astc => "astc",
+                        SKEncodedImageFormat.Dng => "dng",
+                        SKEncodedImageFormat.Heif => "heif",
+                        SKEncodedImageFormat.Avif => "avif",
+                        SKEncodedImageFormat.Jpegxl => "jpegxl",
+                        _ => "bin"
+                    };
+
+                    string path = $"data/images/{Guid.NewGuid()}.{type}";
+                    File.WriteAllBytesAsync(path, fileData);
                     result += $"\u2408{path}\u2409";
                     i = pos = end;
                     simpleMessage = false;
@@ -126,7 +149,7 @@ public class ThrowDriftbottle : IGeneralCommand
                     }
 
                     int end = arg.IndexOf('>', i + 1);
-                    result += $" {Message.MentionedUinAndName[ulong.Parse(arg.Substring(i + 2, end - i - 2))]} ";
+                    result += $" @{Message.MentionedUinAndName[ulong.Parse(arg.Substring(i + 2, end - i - 2))]} ";
                     if (i == 0) result = result[1..];
                     i = pos = end;
                     simpleMessage = false;
