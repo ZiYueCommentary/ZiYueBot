@@ -55,7 +55,7 @@ public class Stat : IGeneralCommand
             {
                 int bottleCounts = reader.GetInt32("bottle_counts");
                 double percent = (double)bottleCounts / reader.GetInt32("last_bottle_id") * 100;
-                driftbottlesStat = $"您共扔出了 {bottleCounts} 支云瓶，占全部云瓶的 {percent:F4}%，总浏览量 {reader.GetInt32("total_views")} 次。";
+                driftbottlesStat = $"您共扔出了 {bottleCounts} 支云瓶，占全部云瓶的 {percent:F5}%，总浏览量 {reader.GetInt32("total_views")} 次。";
             }
         }
         
