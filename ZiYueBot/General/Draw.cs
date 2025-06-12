@@ -55,7 +55,7 @@ public class Draw : IGeneralCommand
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
         using StringContent content = new StringContent("""
                                                         {
-                                                        "model": "wanx2.1-t2i-turbo",
+                                                        "model": "wanx2.1-t2i-plus",
                                                         "input": {
                                                             "prompt": "%prompt%"
                                                         },
