@@ -148,85 +148,86 @@ public static class Events
                 case "draw":
                 {
                     Draw draw = Commands.GetGeneralCommand<Draw>(Platform.QQ, "draw")!;
-                    string result = draw.QQInvoke(eventType, userName, userId, args);
-                    if (result != "")
+                    Draw.InvokeValidation validation =
+                        draw.TryInvoke(eventType, userName, userId, args, out string output);
+                    if (validation is Draw.InvokeValidation.RateLimited or Draw.InvokeValidation.NotEnoughParameters)
                     {
-                        await Parser.SendMessage(eventType, sourceUin, result);
+                        await Parser.SendMessage(eventType, sourceUin, output);
+                        break;
                     }
-                    else
+
+                    if (validation is Draw.InvokeValidation.SponsorExpired or Draw.InvokeValidation.NotSponsor)
                     {
                         if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
                         {
-                            await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
-                            await using MySqlCommand command =
-                                new MySqlCommand($"SELECT * FROM sponsors WHERE userid = {userId}", connection);
-                            await using MySqlDataReader reader = command.ExecuteReader();
-                            if (!reader.Read())
-                            {
-                                await Parser.SendMessage(eventType, sourceUin, """
-                                                                               今天是子悦的生日，赞助者命令“绘画”对所有人开放。
-                                                                               喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
-                                                                               https://afdian.com/a/ziyuecommentary2020
-                                                                               """);
-                            }
+                            await Parser.SendMessage(eventType, sourceUin, """
+                                                                           今天是子悦的生日，赞助者命令“绘画”对所有人开放。
+                                                                           喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
+                                                                           https://afdian.com/a/ziyuecommentary2020
+                                                                           """);
                         }
-
-                        await Parser.SendMessage(eventType, sourceUin, "机器绘画中...");
-                        try
+                        else
                         {
-                            JsonNode posted = draw.PostRequest(string.Join(' ', args[1..]));
-                            string taskId = posted["task_id"]!.GetValue<string>();
-                            for (;;)
-                            {
-                                Thread.Sleep(5000);
+                            await Parser.SendMessage(eventType, sourceUin, output);
+                            break;
+                        }
+                    }
 
-                                using HttpClient client = new HttpClient();
-                                using HttpRequestMessage request =
-                                    new HttpRequestMessage(HttpMethod.Get,
-                                        $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
-                                request.Headers.Add("Authorization",
-                                    $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
-                                using HttpResponseMessage response =
-                                    client.SendAsync(request).GetAwaiter().GetResult();
-                                response.EnsureSuccessStatusCode();
-                                string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                                if (res == "") throw new TimeoutException();
-                                JsonNode output = JsonNode.Parse(res)!["output"]!;
-                                string taskStatus = output["task_status"]!.GetValue<string>();
-                                switch (taskStatus)
+                    await Parser.SendMessage(eventType, sourceUin, "机器绘画中...");
+                    try
+                    {
+                        JsonNode posted = draw.PostRequest(string.Join(' ', args[1..]));
+                        string taskId = posted["task_id"]!.GetValue<string>();
+                        for (;;)
+                        {
+                            Thread.Sleep(5000);
+
+                            using HttpClient client = new HttpClient();
+                            using HttpRequestMessage request =
+                                new HttpRequestMessage(HttpMethod.Get,
+                                    $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
+                            request.Headers.Add("Authorization",
+                                $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
+                            using HttpResponseMessage response =
+                                client.SendAsync(request).GetAwaiter().GetResult();
+                            response.EnsureSuccessStatusCode();
+                            string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                            if (res == "") throw new TimeoutException();
+                            JsonNode task = JsonNode.Parse(res)!["output"]!;
+                            string taskStatus = task["task_status"]!.GetValue<string>();
+                            switch (taskStatus)
+                            {
+                                case "SUCCEEDED":
                                 {
-                                    case "SUCCEEDED":
-                                    {
-                                        await WebUtils.DownloadFile(
-                                            output["results"]![0]!["url"]!.GetValue<string>(),
-                                            "temp/result.png");
-                                        await Parser.SendMessage(eventType, sourceUin,
-                                            $"\u2402file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}\u2403");
-                                        File.Delete("temp/result.png");
-                                        return;
-                                    }
-                                    case "FAILED":
-                                    {
-                                        await Parser.SendMessage(eventType, sourceUin,
-                                            $"任务执行失败：{output["message"]!.GetValue<string>()}");
-                                        return;
-                                    }
+                                    await WebUtils.DownloadFile(
+                                        task["results"]![0]!["url"]!.GetValue<string>(),
+                                        "temp/result.png");
+                                    await Parser.SendMessage(eventType, sourceUin,
+                                        $"\u2402file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}\u2403");
+                                    File.Delete("temp/result.png");
+                                    return;
+                                }
+                                case "FAILED":
+                                {
+                                    await Parser.SendMessage(eventType, sourceUin,
+                                        $"任务执行失败：{task["message"]!.GetValue<string>()}");
+                                    return;
                                 }
                             }
                         }
-                        catch (TimeoutException)
-                        {
-                            await Parser.SendMessage(eventType, sourceUin, "服务连接超时。");
-                        }
-                        catch (HttpRequestException)
-                        {
-                            await Parser.SendMessage(eventType, sourceUin, "第三方拒绝：涉嫌知识产权风险。");
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Error(e.Message, e);
-                            await Parser.SendMessage(eventType, sourceUin, "命令内部错误。");
-                        }
+                    }
+                    catch (TimeoutException)
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, "服务连接超时。");
+                    }
+                    catch (HttpRequestException)
+                    {
+                        await Parser.SendMessage(eventType, sourceUin, "第三方拒绝：涉嫌知识产权风险。");
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e.Message, e);
+                        await Parser.SendMessage(eventType, sourceUin, "命令内部错误。");
                     }
 
                     break;

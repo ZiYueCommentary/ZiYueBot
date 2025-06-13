@@ -63,7 +63,8 @@ public class Draw : IGeneralCommand
                                                             "size": "1024*1024",
                                                             "n": 1
                                                         }
-                                                        """.Replace("%prompt%", prompt.Replace("\\", "\\\\")), Encoding.UTF8,
+                                                        """.Replace("%prompt%", prompt.Replace("\\", "\\\\")),
+            Encoding.UTF8,
             "application/json");
         request.Content = content;
         using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
@@ -77,70 +78,70 @@ public class Draw : IGeneralCommand
 
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        if (args.Length < 2) return "参数数量不足。使用“/help draw”查看命令用法。";
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
-        {
-            using MySqlCommand command = new MySqlCommand(
-                $"SELECT * FROM sponsors WHERE userid = {userId} OR DATE_FORMAT(current_date(), '%m-%d') = '05-03' LIMIT 1",
-                connection);
-            using MySqlDataReader reader = command.ExecuteReader();
-            if (!reader.Read())
-            {
-                return """
-                       您不是子悦机器的赞助者！
-                       本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                       https://afdian.com/a/ziyuecommentary2020
-                       """;
-            }
-
-            if (DateTime.Today > reader.GetDateTime("date"))
-            {
-                return $"""
-                       您的赞助已过期（{reader.GetDateTime("date"):yyyy年MM月dd日}）
-                       子悦机器每次赞助的有效期为 365 天。
-                       本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                       https://afdian.com/a/ziyuecommentary2020
-                       """;
-            }
-        }
-
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        return "";
+        throw new NotSupportedException();
     }
 
     public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
-        if (args.Length < 1) return "参数数量不足。使用“/help draw”查看命令用法。";
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+        throw new NotSupportedException();
+    }
+
+    // 这可能会是未来子悦机器的命令基本框架
+    public InvokeValidation TryInvoke(EventType eventType, string userName, ulong userId, string[] args,
+        out string output)
+    {
+        if (args.Length < 1)
+        {
+            output = "参数数量不足。使用“/help draw”查看命令用法。";
+            return InvokeValidation.NotEnoughParameters;
+        }
+
+        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId))
+        {
+            output = "频率已达限制（每分钟 1 条）";
+            return InvokeValidation.RateLimited;
+        }
+
         using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
         {
             using MySqlCommand command = new MySqlCommand(
-                $"SELECT * FROM sponsors WHERE userid = {userId} OR DATE_FORMAT(current_date(), '%m-%d') = '05-03' LIMIT 1",
+                $"SELECT * FROM sponsors WHERE userid = {userId} LIMIT 1",
                 connection);
             using MySqlDataReader reader = command.ExecuteReader();
             if (!reader.Read())
             {
-                return """
-                       您不是子悦机器的赞助者！
-                       本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                       https://afdian.com/a/ziyuecommentary2020
-                       """;
+                output = """
+                         您不是子悦机器的赞助者！
+                         本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                         https://afdian.com/a/ziyuecommentary2020
+                         """;
+                return InvokeValidation.NotSponsor;
             }
 
             if (DateTime.Today > reader.GetDateTime("date"))
             {
-                return $"""
-                        您的赞助已过期（{reader.GetDateTime("date"):yyyy年MM月dd日}）
-                        子悦机器每次赞助的有效期为 365 天。
-                        本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                        https://afdian.com/a/ziyuecommentary2020
-                        """;
+                output = $"""
+                          您的赞助已过期（{reader.GetDateTime("date"):yyyy年MM月dd日}）
+                          子悦机器每次赞助的有效期为 365 天。
+                          本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                          https://afdian.com/a/ziyuecommentary2020
+                          """;
+                return InvokeValidation.SponsorExpired;
             }
         }
 
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        return "";
+        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        output = "";
+        return InvokeValidation.Succeed;
+    }
+
+    public enum InvokeValidation
+    {
+        NotEnoughParameters,
+        RateLimited,
+        NotSponsor,
+        SponsorExpired,
+        Succeed
     }
 
     public TimeSpan GetRateLimit(Platform platform, EventType eventType)
