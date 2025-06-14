@@ -311,7 +311,7 @@ public static class Events
                     {
                         List<string> list = args.ToList();
                         list.Add($"\u2404{userId}\u2405");
-                        Message.MentionedUinAndName[userId] = $"@{userName}";
+                        Message.MentionedUinAndName[userId] = userName;
                         args = list.ToArray();
                     }
 
