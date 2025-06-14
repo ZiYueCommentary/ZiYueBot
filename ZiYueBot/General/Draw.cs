@@ -118,10 +118,10 @@ public class Draw : IGeneralCommand
                 return InvokeValidation.NotSponsor;
             }
 
-            if (DateTime.Today > reader.GetDateTime("date"))
+            if (DateTime.Today > reader.GetDateTime("expiry"))
             {
                 output = $"""
-                          您的赞助已过期（{reader.GetDateTime("date"):yyyy年MM月dd日}）
+                          您的赞助已过期（{reader.GetDateTime("expiry"):yyyy年MM月dd日}）
                           子悦机器每次赞助的有效期为 365 天。
                           本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
                           https://afdian.com/a/ziyuecommentary2020

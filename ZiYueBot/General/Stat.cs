@@ -86,15 +86,15 @@ public class Stat : IGeneralCommand
             using MySqlDataReader reader = query.ExecuteReader();
             if (reader.Read())
             {
-                DateTime sponsorDate = reader.GetDateTime("date");
-                sponsorStatus = $"赞助到期时间：{sponsorDate:yyyy年MM月dd日}";
-                if (DateTime.Today > sponsorDate)
+                DateTime sponsorExpiry = reader.GetDateTime("expiry");
+                sponsorStatus = $"赞助到期时间：{sponsorExpiry:yyyy年MM月dd日}";
+                if (DateTime.Today > sponsorExpiry)
                 {
-                    sponsorStatus += $"（已到期 {(int)(DateTime.Today - sponsorDate).TotalDays} 天）";
+                    sponsorStatus += $"（已到期 {(int)(DateTime.Today - sponsorExpiry).TotalDays} 天）";
                 }
                 else
                 {
-                    sponsorStatus += $"（{(int)(sponsorDate - DateTime.Today).TotalDays} 天）";
+                    sponsorStatus += $"（{(int)(sponsorExpiry - DateTime.Today).TotalDays} 天）";
                 }
             }
         }

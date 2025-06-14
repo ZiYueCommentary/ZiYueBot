@@ -158,7 +158,7 @@ public class ZiYueBot
                                                     CREATE TABLE sponsors
                                                     (
                                                         userid  bigint default 0 primary key,
-                                                        date    date                    null
+                                                        expiry  date                    null
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();
