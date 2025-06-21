@@ -76,7 +76,13 @@ export default defineConfig({
                     {
                         items: [
                             {text: '使用', link: '/usage'},
-                            {text: '用户协议', link: '/tos'},
+                            {
+                                text: '用户协议', link: '/tos',
+                                collapsed: true,
+                                items: [
+                                    {text: '云瓶条例', link: '/tos-driftbottle.md'}
+                                ]
+                            },
                             {text: '赞助者', link: '/sponsors'}
                         ]
                     },
