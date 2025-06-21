@@ -63,7 +63,7 @@ public class Draw : IGeneralCommand
                                                             "size": "1024*1024",
                                                             "n": 1
                                                         }
-                                                        """.Replace("%prompt%", prompt.Replace("\\", "\\\\")),
+                                                        """.Replace("%prompt%", prompt.JsonFriendly()),
             Encoding.UTF8,
             "application/json");
         request.Content = content;

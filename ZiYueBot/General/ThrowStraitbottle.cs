@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
-using ZiYueBot.Harmony;
 using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
@@ -54,7 +53,7 @@ public class ThrowStraitbottle : IGeneralCommand
         using MySqlCommand command = new MySqlCommand("INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, false)", database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
-        command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(arguments));
+        command.Parameters.AddWithValue("@content", arguments.DatabaseFriendly());
         command.ExecuteNonQuery();
         return "你的海峡云瓶扔出去了！";
 
@@ -71,7 +70,7 @@ public class ThrowStraitbottle : IGeneralCommand
         using MySqlCommand command = new MySqlCommand("INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, true)", database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", Message.MentionedUinAndName[userId]);
-        command.Parameters.AddWithValue("@content", ThrowDriftbottle.FriendlyMessage(args[1]));
+        command.Parameters.AddWithValue("@content", args[1].DatabaseFriendly());
         command.ExecuteNonQuery();
         return "你的海峡云瓶扔出去了！";
     }

@@ -53,6 +53,7 @@
 目前而言，包含愚人节特殊机制的命令有：
 
 * [今日人品（愚人节）](/timeline/jrrp.md)
+* [评价（愚人节）](/timeline/ask.md)
 * [捞云瓶](/general/driftbottle/pick.md)
 * [扔云瓶](/general/driftbottle/throw.md)
 * [开枪](/harmony/revolver/shooting.md)

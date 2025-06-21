@@ -24,7 +24,7 @@ public class Stat : IGeneralCommand
                /stat
                统计你的账号在子悦机器上的数据。
                内容包括：所在平台、账号信息、赞助信息、云瓶统计和黑名单信息。
-               频率限制：每次调用间隔 5 分钟。
+               频率限制：每次调用间隔 5 分钟；赞助者 1 分钟。
                在线文档：https://docs.ziyuebot.cn/general/stat
                """;
     }
@@ -55,17 +55,38 @@ public class Stat : IGeneralCommand
             {
                 int bottleCounts = reader.GetInt32("bottle_counts");
                 double percent = (double)bottleCounts / reader.GetInt32("last_bottle_id") * 100;
-                driftbottlesStat = $"您共扔出了 {bottleCounts} 支云瓶，占全部云瓶的 {percent:F4}%，总浏览量 {reader.GetInt32("total_views")} 次。";
+                driftbottlesStat =
+                    $"您共扔出了 {bottleCounts} 支云瓶，占全部云瓶的 {percent:F4}%，总浏览量 {reader.GetInt32("total_views")} 次。";
             }
         }
-        
+
+        // 云瓶增长
+        string? driftbottlesIncrementalStat = null;
+        using (MySqlCommand query = new MySqlCommand($"""
+                                                      SELECT 
+                                                          (SELECT COUNT(*) FROM driftbottles WHERE userid = {userId} AND created >= current_date() - INTERVAL 7 DAY) AS your_new_bottles,
+                                                          (SELECT COUNT(*) FROM driftbottles WHERE created >= CURRENT_DATE - INTERVAL 7 DAY) AS new_bottles;
+                                                      """,
+                   ZiYueBot.Instance.ConnectDatabase()))
+        {
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
+            {
+                int userNewBottles = reader.GetInt32("your_new_bottles");
+                int totalNewBottles = reader.GetInt32("new_bottles");
+                double percent = (double)userNewBottles / totalNewBottles * 100;
+                driftbottlesIncrementalStat =
+                    $"最近七天内增加了 {totalNewBottles} 支云瓶，由你扔出的有 {userNewBottles} 支，占总增长的 {percent:F4}%。";
+            }
+        }
+
         // 海峡云瓶
         string? straitbottlesStat = null;
         using (MySqlCommand query = new MySqlCommand($"""
-                                                       SELECT (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId})                    AS bottle_counts,
-                                                              (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId} AND picked = false) AS unpicked_bottles,
-                                                              (SELECT MAX(id) FROM straitbottles)                                             AS last_bottle_id
-                                                       """,
+                                                      SELECT (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId})                    AS bottle_counts,
+                                                             (SELECT COUNT(*) FROM straitbottles WHERE userid = {userId} AND picked = false) AS unpicked_bottles,
+                                                             (SELECT MAX(id) FROM straitbottles)                                             AS last_bottle_id
+                                                      """,
                    ZiYueBot.Instance.ConnectDatabase()))
         {
             using MySqlDataReader reader = query.ExecuteReader();
@@ -73,7 +94,8 @@ public class Stat : IGeneralCommand
             {
                 int bottleCounts = reader.GetInt32("bottle_counts");
                 double percent = (double)bottleCounts / reader.GetInt32("last_bottle_id") * 100;
-                straitbottlesStat = $"您共扔出了 {bottleCounts} 支海峡云瓶，占全部海峡云瓶的 {percent:F4}%，其中有 {reader.GetInt32("unpicked_bottles")} 支仍在海峡漂流。";
+                straitbottlesStat =
+                    $"您共扔出了 {bottleCounts} 支海峡云瓶，占全部海峡云瓶的 {percent:F4}%，其中有 {reader.GetInt32("unpicked_bottles")} 支仍在海峡漂流。";
             }
         }
 
@@ -124,6 +146,7 @@ public class Stat : IGeneralCommand
                 ID: {userId}
                 {sponsorStatus ?? "您不是子悦机器的赞助者。"}
                 {driftbottlesStat ?? "云瓶统计失败，请联系子悦。"}
+                {driftbottlesIncrementalStat ?? "云瓶增长统计失败，请联系子悦。"}
                 {straitbottlesStat ?? "海峡云瓶统计失败，请联系子悦。"}
                 {blacklists ?? "您没有被列入黑名单的命令。"}
                 """;
@@ -131,20 +154,30 @@ public class Stat : IGeneralCommand
 
     public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})");
         return Collect(userName, userId, Platform.QQ);
     }
 
     public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（5 分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
         Logger.Info($"调用者：{userPing} ({userId})");
         return Collect(userPing, userId, Platform.Discord);
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
     {
+        using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
+        using MySqlCommand command = new MySqlCommand(
+            $"SELECT * FROM sponsors WHERE userid = {userId} LIMIT 1",
+            connection);
+        using MySqlDataReader reader = command.ExecuteReader();
+        if (reader.Read() && DateTime.Today <= reader.GetDateTime("expiry"))
+        {
+            return TimeSpan.FromMinutes(1);
+        }
+
         return TimeSpan.FromMinutes(5);
     }
 }

@@ -25,6 +25,7 @@ public class PickDriftbottle : IGeneralCommand
                /捞云瓶 [id]
                捞一个漂流云瓶。“id”是可选参数，为瓶子的数字编号。
                频率限制：QQ 群聊每次调用间隔 1 分钟，私聊不限；Discord 不限。
+               云瓶生态建设条例：https://docs.ziyuebot.cn/tos-driftbottle
                在线文档：https://docs.ziyuebot.cn/general/driftbottle/pick
                """;
     }

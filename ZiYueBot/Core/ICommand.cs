@@ -26,10 +26,18 @@ public interface ICommand
     string GetCommandShortDescription();
 
     /// <summary>
-    /// 获取该命令的调用频率限制。
+    /// 获取该命令的调用频率限制，用户无关型。
     /// </summary>
     TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.Zero;
+    }
+
+    /// <summary>
+    /// 获取该命令的调用频率限制。
+    /// </summary>
+    TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
+    {
+        return GetRateLimit(platform, eventType);
     }
 }

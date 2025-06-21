@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using log4net;
 using MySql.Data.MySqlClient;
-using SkiaSharp;
 using ZiYueBot.Core;
 using ZiYueBot.Utils;
 
@@ -27,6 +26,7 @@ public class ThrowDriftbottle : IGeneralCommand
                /扔云瓶 [content]
                扔一个漂流云瓶。“content”是瓶子的内容，要求不包含表情。
                频率限制：每次调用间隔 1 分钟。
+               云瓶生态建设条例：https://docs.ziyuebot.cn/tos-driftbottle
                在线文档：https://docs.ziyuebot.cn/general/driftbottle/throw
                """;
     }
@@ -63,7 +63,7 @@ public class ThrowDriftbottle : IGeneralCommand
                 database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
-        command.Parameters.AddWithValue("@content", FriendlyMessage(content));
+        command.Parameters.AddWithValue("@content", content.DatabaseFriendly());
         command.ExecuteNonQuery();
         return $"你的 {command.LastInsertedId} 号漂流瓶扔出去了！";
     }
@@ -86,81 +86,5 @@ public class ThrowDriftbottle : IGeneralCommand
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
 
         return Invoke(Message.MentionedUinAndName[userId], userId, args[0]);
-    }
-
-    public static string FriendlyMessage(string arg)
-    {
-        string result = "";
-        bool simpleMessage = true;
-        int pos = 0;
-        for (int i = 0; i < arg.Length; i++)
-        {
-            switch (arg[i])
-            {
-                case '\u2402': // 图片
-                {
-                    result += arg.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
-                    int end = arg.IndexOf('\u2403', i + 1);
-                    byte[] fileData = WebUtils.DownloadFile(arg.Substring(i + 1, end - i - 1));
-                    using SKData? data = SKData.CreateCopy(fileData);
-                    using SKCodec? codec = SKCodec.Create(data);
-                    string type = codec.EncodedFormat switch
-                    {
-                        SKEncodedImageFormat.Bmp => "bmp",
-                        SKEncodedImageFormat.Gif => "gif",
-                        SKEncodedImageFormat.Ico => "ico",
-                        SKEncodedImageFormat.Jpeg => "jpg",
-                        SKEncodedImageFormat.Png => "png",
-                        SKEncodedImageFormat.Wbmp => "wbmp",
-                        SKEncodedImageFormat.Webp => "webp",
-                        SKEncodedImageFormat.Pkm => "pkm",
-                        SKEncodedImageFormat.Ktx => "ktx",
-                        SKEncodedImageFormat.Astc => "astc",
-                        SKEncodedImageFormat.Dng => "dng",
-                        SKEncodedImageFormat.Heif => "heif",
-                        SKEncodedImageFormat.Avif => "avif",
-                        SKEncodedImageFormat.Jpegxl => "jpegxl",
-                        _ => "bin"
-                    };
-
-                    string path = $"data/images/{Guid.NewGuid()}.{type}";
-                    File.WriteAllBytesAsync(path, fileData);
-                    result += $"\u2408{path}\u2409";
-                    i = pos = end;
-                    simpleMessage = false;
-                    continue;
-                }
-                case '\u2404': // 提及
-                {
-                    result += arg.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
-                    int end = arg.IndexOf('\u2405', i + 1);
-                    result += $" {Message.MentionedUinAndName[ulong.Parse(arg.Substring(i + 1, end - i - 1))]} ";
-                    if (i == 0) result = result[1..];
-                    i = pos = end;
-                    simpleMessage = false;
-                    continue;
-                }
-                case '<': // Discord 提及
-                {
-                    result += arg.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
-                    if (arg.IndexOf('@', i + 1) != i + 1)
-                    {
-                        continue;
-                    }
-
-                    int end = arg.IndexOf('>', i + 1);
-                    result += $" @{Message.MentionedUinAndName[ulong.Parse(arg.Substring(i + 2, end - i - 2))]} ";
-                    if (i == 0) result = result[1..];
-                    i = pos = end;
-                    simpleMessage = false;
-                    continue;
-                }
-            }
-        }
-
-        if (simpleMessage) return arg;
-
-        if (pos < arg.Length - 1) result += arg[(pos + (arg[pos + 1] == ' ' ? 2 : 1))..];
-        return result;
     }
 }

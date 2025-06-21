@@ -22,7 +22,7 @@ public static class RateLimit
     {
         DateTime last = LastInvoke.GetValueOrDefault((command, platform, eventType, userId), DateTime.MinValue);
         DateTime now = DateTime.UtcNow;
-        if (now - last < command.GetRateLimit(platform, eventType)) return false;
+        if (now - last < command.GetRateLimit(platform, eventType, userId)) return false;
         LastInvoke[(command, platform, eventType, userId)] = now;
         return true;
     }
