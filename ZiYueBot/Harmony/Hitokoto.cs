@@ -3,35 +3,23 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
-public class Hitokoto : IHarmonyCommand
+public class Hitokoto : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("一言");
 
-    public string GetCommandDescription()
-    {
-        return """
-               /hitokoto
-               获得一句话。
-               在线文档：https://docs.ziyuebot.cn/harmony/hitokoto
-               """;
-    }
+    public override string Id => "hitokoto";
 
-    public string GetCommandId()
-    {
-        return "hitokoto";
-    }
+    public override string Name => "一言";
 
-    public string GetCommandName()
-    {
-        return "一言";
-    }
+    public override string Summary => "随机一句话";
 
-    public string GetCommandShortDescription()
-    {
-        return "随机一句话";
-    }
+    public override string Description => """
+                                          /hitokoto
+                                          获得一句话。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/hitokoto
+                                          """;
 
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
         using HttpClient client = new HttpClient();

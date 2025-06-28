@@ -6,42 +6,27 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class ThrowStraitbottle : IGeneralCommand
+public class ThrowStraitbottle : GeneralCommand
 {
     public static readonly ILog Logger = LogManager.GetLogger("扔海峡云瓶");
+
+    public override string Id => "扔海峡云瓶";
     
-    public string GetCommandId()
-    {
-        return "扔海峡云瓶";
-    }
+    public override string Name => "扔海峡云瓶";
 
-    public string GetCommandName()
-    {
-        return "扔海峡云瓶";
-    }
+    public override string Summary => "扔一个海峡云瓶";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /扔海峡云瓶 [content]
-               扔一个海峡云瓶。由 QQ 扔出的瓶子只能被 Discord 捞起，反之亦然。所有瓶子只能被捞起一次。
-               “content”是瓶子的内容，要求不包含表情。
-               频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/general/straitbottle/throw
-               """;
-    }
+    public override string Description => """
+                                          /扔海峡云瓶 [content]
+                                          扔一个海峡云瓶。由 QQ 扔出的瓶子只能被 Discord 捞起，反之亦然。所有瓶子只能被捞起一次。
+                                          “content”是瓶子的内容，要求不包含表情。
+                                          频率限制：每次调用间隔 1 分钟。
+                                          在线文档：https://docs.ziyuebot.cn/general/straitbottle/throw
+                                          """;
 
-    public string GetCommandShortDescription()
-    {
-        return "扔一个海峡云瓶";
-    }
+    public override Platform SupportedPlatform => Platform.Both;
 
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
-
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
         string arguments = string.Join(' ', args[1..]);
@@ -59,7 +44,7 @@ public class ThrowStraitbottle : IGeneralCommand
 
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         if (args.Length < 1) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
         if (Regex.IsMatch(args[0], "<:.*:\\d+>")) return "云瓶内容禁止包含表情！";
@@ -75,7 +60,7 @@ public class ThrowStraitbottle : IGeneralCommand
         return "你的海峡云瓶扔出去了！";
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

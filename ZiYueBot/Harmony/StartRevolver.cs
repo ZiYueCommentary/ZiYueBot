@@ -40,37 +40,25 @@ public class RevolverRound
     }
 }
 
-public class StartRevolver : IHarmonyCommand
+public class StartRevolver : HarmonyCommand
 {
     internal static readonly ConcurrentDictionary<ulong, RevolverRound> Revolvers = [];
     private static readonly ILog Logger = LogManager.GetLogger("开始俄罗斯轮盘");
 
-    public string GetCommandId()
-    {
-        return "开始俄罗斯轮盘";
-    }
+    public override string Id => "开始俄罗斯轮盘";
+    
+    public override string Name => "开始俄罗斯轮盘";
 
-    public string GetCommandName()
-    {
-        return "开始俄罗斯轮盘";
-    }
+    public override string Summary => "开始一局俄罗斯轮盘";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /开始俄罗斯轮盘
-               开始一局俄罗斯轮盘。该命令只能在群聊中调用。
-               俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
-               在线文档：https://docs.ziyuebot.cn/harmony/revolver/start
-               """;
-    }
+    public override string Description => """
+                                          /开始俄罗斯轮盘
+                                          开始一局俄罗斯轮盘。该命令只能在群聊中调用。
+                                          俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/revolver/start
+                                          """;
 
-    public string GetCommandShortDescription()
-    {
-        return "开始一局俄罗斯轮盘";
-    }
-
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         if (eventType == EventType.DirectMessage) return "俄罗斯轮盘命令只能在群聊中使用！";
 
@@ -87,7 +75,7 @@ public class StartRevolver : IHarmonyCommand
         return Revolvers.TryAdd(group, new RevolverRound()) ? "俄罗斯轮盘开始了，今天轮到谁倒霉呢" : "俄罗斯轮盘已开始";
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromSeconds(30);
     }

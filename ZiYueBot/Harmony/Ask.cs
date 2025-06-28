@@ -5,7 +5,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class Ask : IHarmonyCommand
+public class Ask : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("评价");
     private static readonly List<string> Reviews = [];
@@ -98,31 +98,19 @@ public class Ask : IHarmonyCommand
         }
     }
 
-    public string GetCommandDescription()
-    {
-        return """
-               /ask [question]
-               随机张维为教授语录。“question”为可选参数，输入后可以让张教授对指定问题做出评价。
-               在线文档：https://docs.ziyuebot.cn/harmony/ask
-               """;
-    }
+    public override string Id => "ask";
 
-    public string GetCommandId()
-    {
-        return "ask";
-    }
+    public override string Name => "评价";
 
-    public string GetCommandName()
-    {
-        return "评价";
-    }
+    public override string Summary => "获取张维为教授语录";
 
-    public string GetCommandShortDescription()
-    {
-        return "获取张维为教授语录";
-    }
+    public override string Description => """
+                                          /ask [question]
+                                          随机张维为教授语录。“question”为可选参数，输入后可以让张教授对指定问题做出评价。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/ask
+                                          """;
 
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)

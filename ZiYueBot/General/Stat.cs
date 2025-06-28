@@ -4,40 +4,25 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.General;
 
-public class Stat : IGeneralCommand
+public class Stat : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("统计");
 
-    public string GetCommandId()
-    {
-        return "stat";
-    }
+    public override string Id => "stat";
 
-    public string GetCommandName()
-    {
-        return "统计";
-    }
+    public override string Name => "统计";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /stat
-               统计你的账号在子悦机器上的数据。
-               内容包括：所在平台、账号信息、赞助信息、云瓶统计和黑名单信息。
-               频率限制：每次调用间隔 5 分钟；赞助者 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/general/stat
-               """;
-    }
+    public override string Summary => "统计你的账号数据";
 
-    public string GetCommandShortDescription()
-    {
-        return "统计你的账号数据";
-    }
+    public override string Description => """
+                                          /stat
+                                          统计你的账号在子悦机器上的数据。
+                                          内容包括：所在平台、账号信息、赞助信息、云瓶统计和黑名单信息。
+                                          频率限制：每次调用间隔 5 分钟；赞助者 1 分钟。
+                                          在线文档：https://docs.ziyuebot.cn/general/stat
+                                          """;
 
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
+    public override Platform SupportedPlatform => Platform.Both;
 
     public string Collect(string userName, ulong userId, Platform platform)
     {
@@ -152,21 +137,22 @@ public class Stat : IGeneralCommand
                 """;
     }
 
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})");
         return Collect(userName, userId, Platform.QQ);
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId))
+            return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
         Logger.Info($"调用者：{userPing} ({userId})");
         return Collect(userPing, userId, Platform.Discord);
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
     {
         using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(

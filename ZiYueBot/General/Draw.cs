@@ -7,42 +7,27 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class Draw : IGeneralCommand
+public class Draw : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("绘画");
 
-    public string GetCommandId()
-    {
-        return "draw";
-    }
+    public override string Id => "draw";
 
-    public string GetCommandName()
-    {
-        return "绘画";
-    }
+    public override string Name => "绘画";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /draw [prompt] （赞助者命令）
-               通义万相文生图。“prompt”是文生图的提示词。本命令的处理需要很长时间。
-               调用此命令后，机器会生成一张1024*1024像素的图片。
-               提示词的使用技巧另见：https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt
-               该命令仅允许子悦机器的赞助者调用。
-               频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/general/draw
-               """;
-    }
+    public override string Summary => "通义万相文生图";
 
-    public string GetCommandShortDescription()
-    {
-        return "通义万相文生图";
-    }
-
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
+    public override string Description => """
+                                                 /draw [prompt] （赞助者命令）
+                                                 通义万相文生图。“prompt”是文生图的提示词。本命令的处理需要很长时间。
+                                                 调用此命令后，机器会生成一张1024*1024像素的图片。
+                                                 提示词的使用技巧另见：https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt
+                                                 该命令仅允许子悦机器的赞助者调用。
+                                                 频率限制：每次调用间隔 1 分钟。
+                                                 在线文档：https://docs.ziyuebot.cn/general/draw
+                                                 """;
+    
+    public override Platform SupportedPlatform => Platform.Both;
 
     public JsonNode PostRequest(string prompt)
     {
@@ -76,12 +61,12 @@ public class Draw : IGeneralCommand
         return output;
     }
 
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         throw new NotSupportedException();
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         throw new NotSupportedException();
     }
@@ -144,7 +129,7 @@ public class Draw : IGeneralCommand
         Succeed
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

@@ -3,35 +3,23 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
-public class About : IHarmonyCommand
+public class About : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("关于");
-    
-    public string GetCommandId()
-    {
-        return "about";
-    }
 
-    public string GetCommandName()
-    {
-        return "关于";
-    }
+    public override string Id => "about";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /about
-               获取子悦机器的信息。
-               在线文档：https://docs.ziyuebot.cn/harmony/about
-               """;
-    }
+    public override string Name => "关于";
 
-    public string GetCommandShortDescription()
-    {
-        return "关于子悦机器";
-    }
+    public override string Summary => "关于子悦机器";
 
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Description => """
+                                          /about
+                                          获取子悦机器的信息。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/about
+                                          """;
+
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
         return $"""

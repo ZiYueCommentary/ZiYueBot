@@ -5,36 +5,24 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class Shooting : IHarmonyCommand
+public class Shooting : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("俄罗斯轮盘开枪");
 
-    public string GetCommandId()
-    {
-        return "开枪";
-    }
+    public override string Id => "开枪";
 
-    public string GetCommandName()
-    {
-        return "俄罗斯轮盘开枪";
-    }
+    public override string Name => "俄罗斯轮盘开枪";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /开枪 [user]
-               俄罗斯轮盘向某人开枪。“user”为开枪目标，为空时默认向自己开枪。该命令只能在群聊中调用。
-               在调用此命令前，必须先调用“开始俄罗斯轮盘”命令。俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
-               在线文档：https://docs.ziyuebot.cn/harmony/revolver/shooting
-               """;
-    }
+    public override string Summary => "向自己或别人开枪（俄罗斯轮盘）";
 
-    public string GetCommandShortDescription()
-    {
-        return "向自己或别人开枪（俄罗斯轮盘）";
-    }
+    public override string Description => """
+                                          /开枪 [user]
+                                          俄罗斯轮盘向某人开枪。“user”为开枪目标，为空时默认向自己开枪。该命令只能在群聊中调用。
+                                          在调用此命令前，必须先调用“开始俄罗斯轮盘”命令。俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/revolver/shooting
+                                          """;
 
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         if (eventType == EventType.DirectMessage) return "俄罗斯轮盘命令只能在群聊中使用！";
 
@@ -54,7 +42,7 @@ public class Shooting : IHarmonyCommand
         return $"咔哒，无事发生。轮盘中还剩 {round.RestChambers()} 个膛室未击发。{(round.RestChambers() == 0 ? "本局俄罗斯轮盘结束。" : "")}";
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromSeconds(3);
     }

@@ -5,36 +5,24 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class RestartRevolver : IHarmonyCommand
+public class RestartRevolver : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("重置俄罗斯轮盘");
+
+    public override string Id => "重置俄罗斯轮盘";
     
-    public string GetCommandId()
-    {
-        return "重置俄罗斯轮盘";
-    }
+    public override string Name => "重置俄罗斯轮盘";
 
-    public string GetCommandName()
-    {
-        return "重置俄罗斯轮盘";
-    }
+    public override string Summary => "重置俄罗斯轮盘的膛室位置";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /重置俄罗斯轮盘
-               重新旋转俄罗斯轮盘的膛室，同时不改变子弹所在膛室位置。该命令只能在群聊中调用。
-               在调用此命令前，必须先调用“开始俄罗斯轮盘”命令。俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
-               在线文档：https://docs.ziyuebot.cn/harmony/revolver/restart
-               """;
-    }
+    public override string Description => """
+                                          /重置俄罗斯轮盘
+                                          重新旋转俄罗斯轮盘的膛室，同时不改变子弹所在膛室位置。该命令只能在群聊中调用。
+                                          在调用此命令前，必须先调用“开始俄罗斯轮盘”命令。俄罗斯轮盘是一种赌博游戏，相传源于俄罗斯。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/revolver/restart
+                                          """;
 
-    public string GetCommandShortDescription()
-    {
-        return "重置俄罗斯轮盘的膛室位置";
-    }
-
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         if (eventType == EventType.DirectMessage) return "俄罗斯轮盘命令只能在群聊中使用！";
 
@@ -47,7 +35,7 @@ public class RestartRevolver : IHarmonyCommand
         return "轮盘已重新旋转";
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromSeconds(10);
     }

@@ -4,41 +4,26 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.General;
 
-public class PickStraitbottle : IGeneralCommand
+public class PickStraitbottle : GeneralCommand
 {
     public static readonly ILog Logger = LogManager.GetLogger("捞海峡云瓶");
-    
-    public string GetCommandId()
-    {
-        return "捞海峡云瓶";
-    }
 
-    public string GetCommandName()
-    {
-        return "捞海峡云瓶";
-    }
+    public override string Id => "捞海峡云瓶";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /捞海峡云瓶
-               扔一个海峡云瓶。由 QQ 扔出的瓶子只能被 Discord 捞起，反之亦然。所有瓶子只能被捞起一次。
-               频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/general/straitbottle/pick
-               """;
-    }
+    public override string Name => "捞海峡云瓶";
 
-    public string GetCommandShortDescription()
-    {
-        return "捞一个海峡云瓶";
-    }
+    public override string Summary => "捞一个海峡云瓶";
 
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
+    public override string Description => """
+                                          /捞海峡云瓶
+                                          扔一个海峡云瓶。由 QQ 扔出的瓶子只能被 Discord 捞起，反之亦然。所有瓶子只能被捞起一次。
+                                          频率限制：每次调用间隔 1 分钟。
+                                          在线文档：https://docs.ziyuebot.cn/general/straitbottle/pick
+                                          """;
 
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override Platform SupportedPlatform => Platform.Both;
+
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         
@@ -64,7 +49,7 @@ public class PickStraitbottle : IGeneralCommand
         return result;
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         
@@ -90,7 +75,7 @@ public class PickStraitbottle : IGeneralCommand
         return result;
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

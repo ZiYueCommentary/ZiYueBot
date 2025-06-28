@@ -6,51 +6,25 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class Xibao : IHarmonyCommand
+public class Xibao : HarmonyCommand
 {
     private static readonly SKFont Font = new SKFont(SKTypeface.FromFile("resources/HarmonyOS.ttf"), 100);
     private static readonly SKBitmap ImageXibao = SKBitmap.Decode("resources/xibao.jpg");
     private static readonly SKBitmap ImageBeibao = SKBitmap.Decode("resources/beibao.jpg");
     private static readonly ILog Logger = LogManager.GetLogger("喜报");
 
-    public string GetCommandId()
-    {
-        return "xibao";
-    }
+    public override string Id => "xibao";
 
-    public string GetCommandName()
-    {
-        return "喜报";
-    }
+    public override string Name => "喜报";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /xibao [content]
-               生成一张喜报。“content”是喜报的内容，必须为纯文字。
-               频率限制：每次调用间隔 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/harmony/xibao
-               """;
-    }
+    public override string Summary => "生成一张喜报";
 
-    public string GetCommandShortDescription()
-    {
-        return "生成一张喜报";
-    }
-
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
-    {
-        if (args.Length < 2) return "参数数量不足。使用 “/help xibao” 查看命令用法。";
-        if (!MessageUtils.IsSimpleMessage(string.Join(' ', args))) return "请输入纯文字参数。";
-        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        return "";
-    }
-
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
-    {
-        return TimeSpan.FromMinutes(1);
-    }
+    public override string Description =>  """
+                                           /xibao [content]
+                                           生成一张喜报。“content”是喜报的内容，必须为纯文字。
+                                           频率限制：每次调用间隔 1 分钟。
+                                           在线文档：https://docs.ziyuebot.cn/harmony/xibao
+                                           """;
 
     public static byte[] Render(bool isXibao, string text)
     {
@@ -106,5 +80,19 @@ public class Xibao : IHarmonyCommand
             canvas.DrawText(line, x, baselineY, SKTextAlign.Center, font, paint);
             baselineY += font.Spacing;
         }
+    }
+
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    {
+        if (args.Length < 2) return "参数数量不足。使用 “/help xibao” 查看命令用法。";
+        if (!MessageUtils.IsSimpleMessage(string.Join(' ', args))) return "请输入纯文字参数。";
+        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        return "";
+    }
+
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    {
+        return TimeSpan.FromMinutes(1);
     }
 }

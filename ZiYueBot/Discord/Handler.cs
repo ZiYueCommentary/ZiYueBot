@@ -54,24 +54,24 @@ public static class Handler
 
     private static void AddCommandsAsChoices(SlashCommandOptionBuilder builder)
     {
-        foreach (IHarmonyCommand harmony in Commands.HarmonyCommands.Values.ToHashSet())
+        foreach (HarmonyCommand harmony in Commands.HarmonyCommands.Values.ToHashSet())
         {
-            builder.AddChoice($"{harmony.GetCommandName()} ({harmony.GetCommandId()})", harmony.GetCommandId());
+            builder.AddChoice($"{harmony.Name} ({harmony.Id})", harmony.Id);
         }
 
-        foreach (IGeneralCommand general in Commands.GeneralCommands.Values.ToHashSet().Where(general =>
-                     general.GetSupportedPlatform() == Platform.Both ||
-                     general.GetSupportedPlatform() == Platform.Discord))
+        foreach (GeneralCommand general in Commands.GeneralCommands.Values.ToHashSet().Where(general =>
+                     general.SupportedPlatform == Platform.Both ||
+                     general.SupportedPlatform == Platform.Discord))
         {
-            builder.AddChoice($"{general.GetCommandName()}（{general.GetCommandId()}）", general.GetCommandId());
+            builder.AddChoice($"{general.Name}（{general.Id}）", general.Id);
         }
     }
 
-    private static SlashCommandBuilder EasyCommandBuilder(ICommand command)
+    private static SlashCommandBuilder EasyCommandBuilder(Command command)
     {
         SlashCommandBuilder builder = new SlashCommandBuilder();
-        builder.WithName(command.GetCommandId());
-        builder.WithDescription(command.GetCommandShortDescription());
+        builder.WithName(command.Id);
+        builder.WithDescription(command.Summary);
         return builder;
     }
 
@@ -236,7 +236,7 @@ public static class Handler
 
             if (!Commands.HarmonyCommands.ContainsKey(command.CommandName))
             {
-                if (Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName) is null)
+                if (Commands.GetGeneralCommand<GeneralCommand>(Platform.Discord, command.CommandName) is null)
                 {
                     await command.RespondAsync("未知命令。请使用 /help 查看命令列表。");
                     return;
@@ -608,15 +608,15 @@ public static class Handler
                 }
                 default:
                 {
-                    IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(command.CommandName);
+                    HarmonyCommand? harmony = Commands.GetHarmonyCommand<HarmonyCommand>(command.CommandName);
                     if (harmony is not null)
                     {
                         await command.RespondAsync(harmony.Invoke(eventType, userMention, userId, []));
                     }
                     else
                     {
-                        IGeneralCommand? general =
-                            Commands.GetGeneralCommand<IGeneralCommand>(Platform.Discord, command.CommandName);
+                        GeneralCommand? general =
+                            Commands.GetGeneralCommand<GeneralCommand>(Platform.Discord, command.CommandName);
                         if (general is not null)
                         {
                             await command.RespondAsync(general.DiscordInvoke(eventType, userMention,

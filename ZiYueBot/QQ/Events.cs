@@ -94,7 +94,7 @@ public static class Events
 
             if (!Commands.HarmonyCommands.ContainsKey(args[0]))
             {
-                if (Commands.GetGeneralCommand<IGeneralCommand>(Platform.QQ, args[0]) is null)
+                if (Commands.GetGeneralCommand<GeneralCommand>(Platform.QQ, args[0]) is null)
                 {
                     if (flatten.Text.StartsWith('/'))
                     {
@@ -385,7 +385,7 @@ public static class Events
                         break;
                     }
 
-                    IHarmonyCommand? harmony = Commands.GetHarmonyCommand<IHarmonyCommand>(args[0]);
+                    HarmonyCommand? harmony = Commands.GetHarmonyCommand<HarmonyCommand>(args[0]);
                     if (harmony is not null)
                     {
                         await Parser.SendMessage(eventType, sourceUin,
@@ -393,8 +393,8 @@ public static class Events
                     }
                     else
                     {
-                        IGeneralCommand? general =
-                            Commands.GetGeneralCommand<IGeneralCommand>(Platform.QQ, args[0]);
+                        GeneralCommand? general =
+                            Commands.GetGeneralCommand<GeneralCommand>(Platform.QQ, args[0]);
                         if (general is not null)
                         {
                             await Parser.SendMessage(eventType, sourceUin,

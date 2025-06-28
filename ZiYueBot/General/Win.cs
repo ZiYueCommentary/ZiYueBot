@@ -5,9 +5,24 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class Win : IGeneralCommand
+public class Win : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("赢");
+
+    public override string Id => "win";
+    
+    public override string Name => "赢";
+    
+    public override string Summary => "我们又赢了！";
+
+    public override string Description => """
+                                          /win
+                                          以张维为教授为主题的“今日人品”命令。
+                                          本命令包括的事件有：精准扶 win、共同富 win、风口飞 win，以及心心相 win。详细信息请查看在线文档。
+                                          在线文档：https://docs.ziyuebot.cn/general/win
+                                          """;
+
+    public override Platform SupportedPlatform => Platform.Both;
 
     private struct WindWindow
     {
@@ -93,36 +108,6 @@ public class Win : IGeneralCommand
             : (_windWindow = new WindWindow()).WindHour;
     }
 
-    public string GetCommandId()
-    {
-        return "win";
-    }
-
-    public string GetCommandName()
-    {
-        return "赢";
-    }
-
-    public string GetCommandDescription()
-    {
-        return """
-               /win
-               以张维为教授为主题的“今日人品”命令。
-               本命令包括的事件有：精准扶 win、共同富 win、风口飞 win，以及心心相 win。详细信息请查看在线文档。
-               在线文档：https://docs.ziyuebot.cn/general/win
-               """;
-    }
-
-    public string GetCommandShortDescription()
-    {
-        return "我们又赢了！";
-    }
-
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
-
     private string Invoke(string userName, ulong userId, string channel) // 这里 channel 不再转换成 ulong，因为跟数据库交互不需要转换
     {
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
@@ -154,6 +139,7 @@ public class Win : IGeneralCommand
             rate = (int)Math.Ceiling(rate * 1.4);
             _windWindow.Blowed = true;
         }
+
         if (targetedPovertyAlleviation) rate = (int)Math.Ceiling(rate * 1.5);
 
         using MySqlCommand insert = new MySqlCommand(
@@ -273,7 +259,7 @@ public class Win : IGeneralCommand
         return false;
     }
 
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (eventType == EventType.DirectMessage) return "独赢赢不如众赢赢，请在群组内使用该指令。";
 
@@ -282,7 +268,7 @@ public class Win : IGeneralCommand
         return Invoke(userName, userId, args[0]);
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         if (eventType == EventType.DirectMessage) return "独赢赢不如众赢赢，请在群组内使用该指令。";
 

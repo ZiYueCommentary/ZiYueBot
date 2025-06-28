@@ -5,40 +5,25 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class PickDriftbottle : IGeneralCommand
+public class PickDriftbottle : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("捞云瓶");
 
-    public string GetCommandId()
-    {
-        return "捞云瓶";
-    }
+    public override string Id => "捞云瓶";
+    
+    public override string Name => "捞云瓶";
 
-    public string GetCommandName()
-    {
-        return "捞云瓶";
-    }
+    public override string Summary => "捞一个漂流云瓶";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /捞云瓶 [id]
-               捞一个漂流云瓶。“id”是可选参数，为瓶子的数字编号。
-               频率限制：QQ 群聊每次调用间隔 1 分钟，私聊不限；Discord 不限。
-               云瓶生态建设条例：https://docs.ziyuebot.cn/tos-driftbottle
-               在线文档：https://docs.ziyuebot.cn/general/driftbottle/pick
-               """;
-    }
+    public override string Description => """
+                                          /捞云瓶 [id]
+                                          捞一个漂流云瓶。“id”是可选参数，为瓶子的数字编号。
+                                          频率限制：QQ 群聊每次调用间隔 1 分钟，私聊不限；Discord 不限。
+                                          云瓶生态建设条例：https://docs.ziyuebot.cn/tos-driftbottle
+                                          在线文档：https://docs.ziyuebot.cn/general/driftbottle/pick
+                                          """;
 
-    public string GetCommandShortDescription()
-    {
-        return "捞一个漂流云瓶";
-    }
-
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
+    public override Platform SupportedPlatform => Platform.Both;
 
     private string Invoke(int id)
     {
@@ -88,7 +73,7 @@ public class PickDriftbottle : IGeneralCommand
         return result;
     }
 
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         int id = int.MinValue;
         if (args.Length > 1)
@@ -112,7 +97,7 @@ public class PickDriftbottle : IGeneralCommand
         return Invoke(id);
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         int id = int.MinValue;
         try
@@ -133,7 +118,7 @@ public class PickDriftbottle : IGeneralCommand
         return Invoke(id);
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         if (platform == Platform.Discord || eventType == EventType.DirectMessage) return TimeSpan.Zero;
         return TimeSpan.FromMinutes(1);

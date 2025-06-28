@@ -8,9 +8,21 @@ namespace ZiYueBot.Harmony;
 /// <summary>
 /// 今日人品
 /// </summary>
-public class Jrrp : IHarmonyCommand
+public class Jrrp : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("今日人品");
+
+    public override string Id => "jrrp";
+
+    public override string Name => "今日人品";
+
+    public override string Summary => "获取今日人品";
+
+    public override string Description => """
+                                          /jrrp
+                                          获取今日人品。人品值范围由 0 到 100。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/jrrp
+                                          """;
 
     private static readonly Dictionary<int, string> Levels = new()
     {
@@ -29,31 +41,7 @@ public class Jrrp : IHarmonyCommand
         [100] = "买彩票可能会中大奖哦！"
     };
 
-    public string GetCommandDescription()
-    {
-        return """
-               /jrrp
-               获取今日人品。人品值范围由 0 到 100。
-               在线文档：https://docs.ziyuebot.cn/harmony/jrrp
-               """;
-    }
-
-    public string GetCommandId()
-    {
-        return "jrrp";
-    }
-
-    public string GetCommandName()
-    {
-        return "今日人品";
-    }
-
-    public string GetCommandShortDescription()
-    {
-        return "获取今日人品";
-    }
-
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
 

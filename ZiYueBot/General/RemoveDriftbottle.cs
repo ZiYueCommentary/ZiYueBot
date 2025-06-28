@@ -5,33 +5,23 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class RemoveDriftbottle : IGeneralCommand
+public class RemoveDriftbottle : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("删除云瓶");
 
-    public string GetCommandId()
-    {
-        return "删除云瓶";
-    }
+    public override string Id => "删除云瓶";
+    
+    public override string Name => "删除云瓶";
 
-    public string GetCommandName()
-    {
-        return "删除云瓶";
-    }
+    public override string Summary => "删除一个漂流云瓶";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /删除云瓶 [id]
-               删除一个自己扔出的漂流云瓶。“id”是瓶子的数字编号。
-               在线文档：https://docs.ziyuebot.cn/general/driftbottle/remove
-               """;
-    }
-
-    public string GetCommandShortDescription()
-    {
-        return "删除一个漂流云瓶";
-    }
+    public override string Description => """
+                                          /删除云瓶 [id]
+                                          删除一个自己扔出的漂流云瓶。“id”是瓶子的数字编号。
+                                          在线文档：https://docs.ziyuebot.cn/general/driftbottle/remove
+                                          """;
+    
+    public override Platform SupportedPlatform => Platform.Both;
 
     private string Invoke(ulong userId, int id)
     {
@@ -49,13 +39,8 @@ public class RemoveDriftbottle : IGeneralCommand
         command.ExecuteNonQuery();
         return $"{id} 号瓶子已删除！";
     }
-
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
-
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用“/help 删除云瓶”查看命令用法。";
         int id = int.MinValue;
@@ -76,7 +61,7 @@ public class RemoveDriftbottle : IGeneralCommand
         return Invoke(userId, id);
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         int id = int.MinValue;
         try

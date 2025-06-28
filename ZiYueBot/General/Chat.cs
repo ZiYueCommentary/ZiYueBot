@@ -7,7 +7,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class Chat : IGeneralCommand
+public class Chat : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("对话");
     private static readonly string SystemPrompt;
@@ -19,37 +19,22 @@ public class Chat : IGeneralCommand
         SystemPrompt = reader.ReadToEnd().Replace("\r", "\\r").Replace("\n", "\\n");
     }
 
-    public string GetCommandId()
-    {
-        return "chat";
-    }
+    public override string Id => "chat";
 
-    public string GetCommandName()
-    {
-        return "对话";
-    }
+    public override string Name => "对话";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /chat [question] （测试中命令）
-               与 DeepSeek R1 对话。“question”是询问的问题。本命令的回复需要很长时间。
-               在 QQ 的回答相比于 Discord 会更短，并且不包括思考过程。
-               每次提问都算作一次新对话。不支持联网回答。
-               频率限制（暂时）：QQ 每次调用间隔 5 分钟；Discord 每次调用间隔 1 分钟；赞助者均为 1 分钟。
-               在线文档：https://docs.ziyuebot.cn/general/chat
-               """;
-    }
+    public override string Summary => "与 DeepSeek R1 对话";
 
-    public string GetCommandShortDescription()
-    {
-        return "与 DeepSeek R1 对话";
-    }
+    public override string Description => """
+                                                 /chat [question] （测试中命令）
+                                                 与 DeepSeek R1 对话。“question”是询问的问题。本命令的回复需要很长时间。
+                                                 在 QQ 的回答相比于 Discord 会更短，并且不包括思考过程。
+                                                 每次提问都算作一次新对话。不支持联网回答。
+                                                 频率限制（暂时）：QQ 每次调用间隔 5 分钟；Discord 每次调用间隔 1 分钟；赞助者均为 1 分钟。
+                                                 在线文档：https://docs.ziyuebot.cn/general/chat
+                                                 """;
 
-    public Platform GetSupportedPlatform()
-    {
-        return Platform.Both;
-    }
+    public override Platform SupportedPlatform => Platform.Both;
 
     public JsonNode PostQuestion(bool qq, string question)
     {
@@ -86,15 +71,16 @@ public class Chat : IGeneralCommand
         return JsonNode.Parse(res)!;
     }
 
-    public string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用“/help chat”查看命令用法。";
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
         return "";
     }
 
-    public string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
+    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         if (args.Length < 1) return "参数数量不足。使用“/help chat”查看命令用法。";
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（1 分钟 1 条）";
@@ -102,7 +88,7 @@ public class Chat : IGeneralCommand
         return "";
     }
 
-    public TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
+    public override TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
     {
         using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(

@@ -3,7 +3,7 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
-public class Quotations : IHarmonyCommand
+public class Quotations : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("毛主席语录");
     private static readonly List<string> Quotes = [];
@@ -31,32 +31,20 @@ public class Quotations : IHarmonyCommand
             Logger.Error("毛主席语录加载失败！", ex);
         }
     }
-    
-    public string GetCommandId()
-    {
-        return "quotations";
-    }
 
-    public string GetCommandName()
-    {
-        return "毛主席语录";
-    }
+    public override string Id => "quotations";
 
-    public string GetCommandDescription()
-    {
-        return """
-               /quotations
-               从《毛主席语录》中随机获取一句毛泽东主席语录。
-               在线文档：https://docs.ziyuebot.cn/harmony/quotations
-               """;
-    }
+    public override string Name => "毛主席语录";
 
-    public string GetCommandShortDescription()
-    {
-        return "随机一句毛泽东主席语录";
-    }
+    public override string Summary => "随机一句毛泽东主席语录";
 
-    public string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override string Description => """
+                                          /quotations
+                                          从《毛主席语录》中随机获取一句毛泽东主席语录。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/quotations
+                                          """;
+
+    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
         return Quotes[Random.Shared.Next(0, Quotes.Count - 1)];
