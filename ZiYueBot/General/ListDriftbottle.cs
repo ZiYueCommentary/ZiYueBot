@@ -15,11 +15,11 @@ public class ListDriftbottle : GeneralCommand
     public override string Summary => "查看你所扔出的所有云瓶";
 
     public override string Description => """
-                                                 /查看我的云瓶
-                                                 查看你扔出的所有漂流云瓶的相关信息。不包括已删除的云瓶。
-                                                 频率限制：QQ 群聊每次调用间隔 30 分钟，私聊间隔 10 分钟；Discord 每次调用间隔 10 分钟。
-                                                 在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
-                                                 """;
+                                          /查看我的云瓶
+                                          查看你扔出的所有漂流云瓶的相关信息。不包括已删除的云瓶。
+                                          频率限制：QQ 群聊每次调用间隔 30 分钟，私聊间隔 10 分钟；Discord 每次调用间隔 10 分钟。
+                                          在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
+                                          """;
 
     public override Platform SupportedPlatform => Platform.Both;
 

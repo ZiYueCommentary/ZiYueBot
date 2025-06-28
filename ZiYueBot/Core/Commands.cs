@@ -6,7 +6,6 @@ namespace ZiYueBot.Core;
 /// <summary>
 /// 命令管理相关。
 /// </summary>
-
 public static class Commands
 {
     public static readonly Dictionary<string, HarmonyCommand> HarmonyCommands = [];
@@ -44,6 +43,7 @@ public static class Commands
                 return t;
             }
         }
+
         throw new KeyNotFoundException("鸿蒙命令未找到！");
     }
 
@@ -56,6 +56,7 @@ public static class Commands
         {
             return t;
         }
+
         return null;
     }
 
@@ -92,6 +93,7 @@ public static class Commands
                 return t;
             }
         }
+
         return null;
     }
 
@@ -105,6 +107,7 @@ public static class Commands
         {
             return t;
         }
+
         return null;
     }
 

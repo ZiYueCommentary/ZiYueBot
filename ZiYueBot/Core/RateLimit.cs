@@ -17,7 +17,7 @@ public static class RateLimit
     {
         return TryPassRateLimit(command, Platform.Both, eventType, userId);
     }
-    
+
     public static bool TryPassRateLimit(Command command, Platform platform, EventType eventType, ulong userId)
     {
         DateTime last = LastInvoke.GetValueOrDefault((command, platform, eventType, userId), DateTime.MinValue);

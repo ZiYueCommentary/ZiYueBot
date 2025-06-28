@@ -12,7 +12,7 @@ public class Rotating : HarmonyCommand
     public override string Id => "转轮";
 
     public override string Name => "俄罗斯轮盘转轮";
-    
+
     public override string Summary => "俄罗斯轮盘转轮";
 
     public override string Description => """

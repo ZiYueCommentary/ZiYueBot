@@ -26,7 +26,7 @@ public class PickStraitbottle : GeneralCommand
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
+
         Logger.Info($"调用者：{userName} ({userId})");
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
@@ -34,15 +34,16 @@ public class PickStraitbottle : GeneralCommand
             database);
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
-            
+
         string result = $"""
                          你捞到了 {reader.GetString("username")} 的瓶子！
                          日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
 
                          {reader.GetString("content")}
                          """;
-            
-        using MySqlCommand addViews = new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
+
+        using MySqlCommand addViews =
+            new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
         reader.Close();
         addViews.ExecuteNonQuery();
 
@@ -52,7 +53,7 @@ public class PickStraitbottle : GeneralCommand
     public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
+
         Logger.Info($"调用者：{userPing} ({userId})");
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
@@ -60,15 +61,16 @@ public class PickStraitbottle : GeneralCommand
             database);
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
-        
+
         string result = $"""
                          你捞到了 {reader.GetString("username")} 的瓶子！
                          日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
 
                          {reader.GetString("content")}
                          """;
-            
-        using MySqlCommand addViews = new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
+
+        using MySqlCommand addViews =
+            new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
         reader.Close();
         addViews.ExecuteNonQuery();
 

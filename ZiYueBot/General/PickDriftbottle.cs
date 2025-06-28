@@ -10,7 +10,7 @@ public class PickDriftbottle : GeneralCommand
     private static readonly ILog Logger = LogManager.GetLogger("捞云瓶");
 
     public override string Id => "捞云瓶";
-    
+
     public override string Name => "捞云瓶";
 
     public override string Summary => "捞一个漂流云瓶";

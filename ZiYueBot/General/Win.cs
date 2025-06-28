@@ -10,9 +10,9 @@ public class Win : GeneralCommand
     private static readonly ILog Logger = LogManager.GetLogger("赢");
 
     public override string Id => "win";
-    
+
     public override string Name => "赢";
-    
+
     public override string Summary => "我们又赢了！";
 
     public override string Description => """

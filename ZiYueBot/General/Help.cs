@@ -16,10 +16,10 @@ public class Help : GeneralCommand
     public override string Summary => "获取帮助";
 
     public override string Description => """
-                                                 /help [command]
-                                                 获取命令的帮助信息。其中“command”为命令名，为空时返回可用命令列表。
-                                                 在线文档：https://docs.ziyuebot.cn/general/help
-                                                 """;
+                                          /help [command]
+                                          获取命令的帮助信息。其中“command”为命令名，为空时返回可用命令列表。
+                                          在线文档：https://docs.ziyuebot.cn/general/help
+                                          """;
 
     public override Platform SupportedPlatform => Platform.Both;
 

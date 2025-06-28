@@ -46,7 +46,7 @@ public class StartRevolver : HarmonyCommand
     private static readonly ILog Logger = LogManager.GetLogger("开始俄罗斯轮盘");
 
     public override string Id => "开始俄罗斯轮盘";
-    
+
     public override string Name => "开始俄罗斯轮盘";
 
     public override string Summary => "开始一局俄罗斯轮盘";

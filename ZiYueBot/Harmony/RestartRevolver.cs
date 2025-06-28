@@ -10,7 +10,7 @@ public class RestartRevolver : HarmonyCommand
     private static readonly ILog Logger = LogManager.GetLogger("重置俄罗斯轮盘");
 
     public override string Id => "重置俄罗斯轮盘";
-    
+
     public override string Name => "重置俄罗斯轮盘";
 
     public override string Summary => "重置俄罗斯轮盘的膛室位置";

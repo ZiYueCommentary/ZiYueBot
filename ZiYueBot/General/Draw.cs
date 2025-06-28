@@ -18,15 +18,15 @@ public class Draw : GeneralCommand
     public override string Summary => "通义万相文生图";
 
     public override string Description => """
-                                                 /draw [prompt] （赞助者命令）
-                                                 通义万相文生图。“prompt”是文生图的提示词。本命令的处理需要很长时间。
-                                                 调用此命令后，机器会生成一张1024*1024像素的图片。
-                                                 提示词的使用技巧另见：https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt
-                                                 该命令仅允许子悦机器的赞助者调用。
-                                                 频率限制：每次调用间隔 1 分钟。
-                                                 在线文档：https://docs.ziyuebot.cn/general/draw
-                                                 """;
-    
+                                          /draw [prompt] （赞助者命令）
+                                          通义万相文生图。“prompt”是文生图的提示词。本命令的处理需要很长时间。
+                                          调用此命令后，机器会生成一张1024*1024像素的图片。
+                                          提示词的使用技巧另见：https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt
+                                          该命令仅允许子悦机器的赞助者调用。
+                                          频率限制：每次调用间隔 1 分钟。
+                                          在线文档：https://docs.ziyuebot.cn/general/draw
+                                          """;
+
     public override Platform SupportedPlatform => Platform.Both;
 
     public JsonNode PostRequest(string prompt)

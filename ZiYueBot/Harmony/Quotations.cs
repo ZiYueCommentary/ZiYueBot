@@ -7,7 +7,7 @@ public class Quotations : HarmonyCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("毛主席语录");
     private static readonly List<string> Quotes = [];
-    
+
     static Quotations()
     {
         try
@@ -22,6 +22,7 @@ public class Quotations : HarmonyCommand
                 Quotes.Add(full[pos..(i - 2)]);
                 pos = i + 3;
             }
+
             Quotes.Add(full[pos..]);
 
             Logger.Info("毛主席语录加载完毕");

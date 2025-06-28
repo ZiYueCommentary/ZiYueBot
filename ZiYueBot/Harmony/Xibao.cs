@@ -19,12 +19,12 @@ public class Xibao : HarmonyCommand
 
     public override string Summary => "生成一张喜报";
 
-    public override string Description =>  """
-                                           /xibao [content]
-                                           生成一张喜报。“content”是喜报的内容，必须为纯文字。
-                                           频率限制：每次调用间隔 1 分钟。
-                                           在线文档：https://docs.ziyuebot.cn/harmony/xibao
-                                           """;
+    public override string Description => """
+                                          /xibao [content]
+                                          生成一张喜报。“content”是喜报的内容，必须为纯文字。
+                                          频率限制：每次调用间隔 1 分钟。
+                                          在线文档：https://docs.ziyuebot.cn/harmony/xibao
+                                          """;
 
     public static byte[] Render(bool isXibao, string text)
     {

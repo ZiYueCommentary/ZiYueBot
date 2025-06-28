@@ -3,7 +3,6 @@
 /// <summary>
 /// 网络相关。
 /// </summary>
-
 public static class WebUtils
 {
     /// <summary>
@@ -17,7 +16,7 @@ public static class WebUtils
         await using Stream streamToWriteTo = File.Open(destinationPath, FileMode.Create);
         await streamToReadFrom.CopyToAsync(streamToWriteTo);
     }
-    
+
     /// <summary>
     /// 下载指定文件并直接返回。
     /// </summary>
