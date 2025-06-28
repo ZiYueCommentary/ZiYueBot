@@ -113,6 +113,8 @@ public class Ask : HarmonyCommand
     public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+        
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)
         {
             (string, List<string>) aprilReview = AprilReviews[Random.Shared.Next(0, AprilReviews.Count)];

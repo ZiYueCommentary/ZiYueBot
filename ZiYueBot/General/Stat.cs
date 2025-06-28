@@ -61,7 +61,7 @@ public class Stat : GeneralCommand
                 int totalNewBottles = reader.GetInt32("new_bottles");
                 double percent = (double)userNewBottles / totalNewBottles * 100;
                 driftbottlesIncrementalStat =
-                    $"最近七天内增加了 {totalNewBottles} 支云瓶，由你扔出的有 {userNewBottles} 支，占总增长的 {percent:F4}%。";
+                    $"最近七天内增加了 {totalNewBottles} 支云瓶，由您扔出的有 {userNewBottles} 支，占总增长的 {percent:F4}%。";
             }
         }
 
@@ -106,6 +106,38 @@ public class Stat : GeneralCommand
             }
         }
 
+        // 调用次数
+        string? invokeRecords = null;
+        using (MySqlCommand query = new MySqlCommand($"SELECT * FROM invoke_records_general WHERE userid = {userId}",
+                   ZiYueBot.Instance.ConnectDatabase()))
+        {
+            Dictionary<string, int> commandsInvokeRecords = new Dictionary<string, int>();
+            using MySqlDataReader reader = query.ExecuteReader();
+            while (reader.Read())
+            {
+                commandsInvokeRecords[reader.GetString("command")] = reader.GetInt32("invoke_count");
+            }
+
+            invokeRecords =
+                $"您捞过 {commandsInvokeRecords.GetValueOrDefault("捞云瓶", 0)} 次云瓶和 {commandsInvokeRecords.GetValueOrDefault("捞海峡云瓶", 0)} 次海峡云瓶，{commandsInvokeRecords.GetValueOrDefault("ask", 0)} 次寻求过张教授的智慧（/ask），与子悦机器对话过 {commandsInvokeRecords.GetValueOrDefault("chat", 0)} 次（/chat），让子悦机器画过 {commandsInvokeRecords.GetValueOrDefault("draw", 0)} 幅画（/draw）";
+        }
+        
+        // 使用时间
+        string? useTime = null;
+        using (MySqlCommand query =
+               new MySqlCommand(
+                   $"SELECT * FROM invoke_records_general WHERE userid = {userId} ORDER BY first_invoke LIMIT 1",
+                   ZiYueBot.Instance.ConnectDatabase()))
+        {
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
+            {
+                DateTime firstInvoke = reader.GetDateTime("first_invoke");
+                useTime =
+                    $"从“子悦机器”开源项目立项算起，您在 {firstInvoke:yyyy年MM月dd日} 第一次调用子悦机器，距今 {(DateTime.Today - firstInvoke.Date).Days} 天。";
+            }
+        }
+
         // 黑名单
         string? blacklists = null;
         using (MySqlCommand query = new MySqlCommand(
@@ -133,6 +165,8 @@ public class Stat : GeneralCommand
                 {driftbottlesStat ?? "云瓶统计失败，请联系子悦。"}
                 {driftbottlesIncrementalStat ?? "云瓶增长统计失败，请联系子悦。"}
                 {straitbottlesStat ?? "海峡云瓶统计失败，请联系子悦。"}
+                {invokeRecords ?? "这怎么可能？命令调用统计失败。"}
+                {useTime ?? "找不到调用记录"}
                 {blacklists ?? "您没有被列入黑名单的命令。"}
                 """;
     }
@@ -140,7 +174,9 @@ public class Stat : GeneralCommand
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+
         Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
         return Collect(userName, userId, Platform.QQ);
     }
 
@@ -148,7 +184,9 @@ public class Stat : GeneralCommand
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId))
             return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+
         Logger.Info($"调用者：{userPing} ({userId})");
+        UpdateInvokeRecords(userId);
         return Collect(userPing, userId, Platform.Discord);
     }
 

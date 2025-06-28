@@ -87,7 +87,10 @@ public class Xibao : HarmonyCommand
         if (args.Length < 2) return "参数数量不足。使用 “/help xibao” 查看命令用法。";
         if (!MessageUtils.IsSimpleMessage(string.Join(' ', args))) return "请输入纯文字参数。";
         if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+        
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+        
         return "";
     }
 

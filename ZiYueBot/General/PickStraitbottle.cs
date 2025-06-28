@@ -28,6 +28,8 @@ public class PickStraitbottle : GeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
+        
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             "SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = true ORDER BY RAND() LIMIT 1",
@@ -55,6 +57,8 @@ public class PickStraitbottle : GeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
 
         Logger.Info($"调用者：{userPing} ({userId})");
+        UpdateInvokeRecords(userId);
+        
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             "SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = false ORDER BY RAND() LIMIT 1",

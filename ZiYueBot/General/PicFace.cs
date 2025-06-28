@@ -25,6 +25,8 @@ public class PicFace : GeneralCommand
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
+        
         Users.Add(userId);
         return "正在等待发送表情包...";
     }

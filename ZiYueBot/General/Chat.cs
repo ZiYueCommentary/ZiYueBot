@@ -75,7 +75,9 @@ public class Chat : GeneralCommand
     {
         if (args.Length < 2) return "参数数量不足。使用“/help chat”查看命令用法。";
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+        
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
         return "";
     }
 
@@ -83,7 +85,9 @@ public class Chat : GeneralCommand
     {
         if (args.Length < 1) return "参数数量不足。使用“/help chat”查看命令用法。";
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（1 分钟 1 条）";
+        
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
         return "";
     }
 

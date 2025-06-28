@@ -41,4 +41,17 @@ public abstract class Command
     {
         return GetRateLimit(platform, eventType);
     }
+
+    /// <summary>
+    /// 更新数据库里的命令调用记录。这一函数只适用于仅记录调用次数的命令，复杂统计数据要单开数据库表。
+    /// </summary>
+    protected async Task UpdateInvokeRecords(ulong userid)
+    {
+        await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
+        await using MySqlCommand command = new MySqlCommand($"""
+                                                            INSERT INTO invoke_records_general VALUE ({userid}, '{Id}', now(), now(), 1)
+                                                            ON DUPLICATE KEY UPDATE last_invoke = now(), invoke_count = invoke_count + 1
+                                                            """, connection);
+        command.ExecuteNonQuery();
+    }
 }

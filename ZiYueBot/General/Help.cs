@@ -26,6 +26,8 @@ public class Help : GeneralCommand
     private string Invoke(Platform platform, string userName, ulong userId, string[] args)
     {
         Logger.Info($"平台：${platform}，调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+        
         if (args.Length >= 2 && args[1] != "")
         {
             HarmonyCommand? harmony = Commands.GetHarmonyCommand<HarmonyCommand>(args[1]);

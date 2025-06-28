@@ -48,7 +48,9 @@ public class ListDriftbottle : GeneralCommand
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId))
             return $"频率已达限制（{(eventType == EventType.DirectMessage ? 10 : 30)} 分钟 1 条）";
+        
         Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
 
         return Invoke(userName, userId);
     }
@@ -56,7 +58,9 @@ public class ListDriftbottle : GeneralCommand
     public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
+        
         Logger.Info($"调用者：{userPing} ({userId})");
+        UpdateInvokeRecords(userId);
 
         return Invoke(userPing, userId);
     }

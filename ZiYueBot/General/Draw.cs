@@ -116,6 +116,7 @@ public class Draw : GeneralCommand
         }
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
         output = "";
         return InvokeValidation.Succeed;
     }

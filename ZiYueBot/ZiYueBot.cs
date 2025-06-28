@@ -166,6 +166,28 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
+        
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE invoke_records_general
+                                                    (
+                                                        userid       bigint      not null,
+                                                        command      varchar(50) not null,
+                                                        first_invoke datetime    null,
+                                                        last_invoke  datetime    null,
+                                                        invoke_count int         null,
+                                                        PRIMARY KEY (userid, command)
+                                                    ) CHARSET = utf8mb4;
+
+                                                    CREATE INDEX invoke_records_general_index_userid
+                                                    ON invoke_records_general (userid);
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
     }
 
     public MySqlConnection ConnectDatabase()

@@ -44,6 +44,7 @@ public class Jrrp : HarmonyCommand
     public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
 
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {

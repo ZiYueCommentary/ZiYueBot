@@ -48,6 +48,8 @@ public class Quotations : HarmonyCommand
     public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
+        
         return Quotes[Random.Shared.Next(0, Quotes.Count - 1)];
     }
 }

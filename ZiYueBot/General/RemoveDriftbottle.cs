@@ -58,6 +58,7 @@ public class RemoveDriftbottle : GeneralCommand
         }
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
         return Invoke(userId, id);
     }
 
@@ -78,6 +79,7 @@ public class RemoveDriftbottle : GeneralCommand
         }
 
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
         return Invoke(userId, id);
     }
 }

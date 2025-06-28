@@ -264,6 +264,7 @@ public class Win : GeneralCommand
         if (eventType == EventType.DirectMessage) return "独赢赢不如众赢赢，请在群组内使用该指令。";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
 
         return Invoke(userName, userId, args[0]);
     }
@@ -273,6 +274,7 @@ public class Win : GeneralCommand
         if (eventType == EventType.DirectMessage) return "独赢赢不如众赢赢，请在群组内使用该指令。";
 
         Logger.Info($"调用者：{Message.MentionedUinAndName[userId]} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
 
         return Invoke(userPing, userId, args[0]);
     }

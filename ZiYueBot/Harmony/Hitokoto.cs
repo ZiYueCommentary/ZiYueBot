@@ -22,6 +22,8 @@ public class Hitokoto : HarmonyCommand
     public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
+        
         using HttpClient client = new HttpClient();
         try
         {

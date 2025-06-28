@@ -93,7 +93,10 @@ public class PickDriftbottle : GeneralCommand
         }
 
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+        
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+        
         return Invoke(id);
     }
 
@@ -114,7 +117,10 @@ public class PickDriftbottle : GeneralCommand
         }
 
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 0 条）";
+        
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+        
         return Invoke(id);
     }
 
