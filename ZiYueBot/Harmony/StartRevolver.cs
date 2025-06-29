@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using log4net;
+using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 using ZiYueBot.General;
 using ZiYueBot.Utils;
@@ -66,17 +67,47 @@ public class StartRevolver : HarmonyCommand
         if (!RateLimit.TryPassRateLimit(this, eventType, group)) return "频率已达限制（整个群聊内 30 秒 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+
         if (Revolvers.TryGetValue(group, out RevolverRound? round) &&
             DateTime.Now - round.StartTime > TimeSpan.FromDays(1))
         {
             Revolvers.Remove(group, out _);
         }
 
-        return Revolvers.TryAdd(group, new RevolverRound()) ? "俄罗斯轮盘开始了，今天轮到谁倒霉呢" : "俄罗斯轮盘已开始";
+        if (Revolvers.TryAdd(group, new RevolverRound()))
+        {
+            UpdateRevolverRecords(userId, "start_count");
+            return "俄罗斯轮盘开始了，今天轮到谁倒霉呢";
+        }
+
+        return "俄罗斯轮盘已开始";
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromSeconds(30);
+    }
+
+    public static async Task UpdateRevolverRecords(ulong userId, string column)
+    {
+        await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
+        try
+        {
+            await using MySqlCommand insert =
+                new MySqlCommand(
+                    $"INSERT INTO invoke_records_revolver (userid, first_invoke, last_invoke) VALUE ({userId}, now(), now())",
+                    connection);
+            insert.ExecuteNonQuery();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        await using MySqlCommand update =
+            new MySqlCommand(
+                $"UPDATE invoke_records_revolver SET last_invoke = now(), {column} = {column} + 1 WHERE userid = {userId}",
+                connection);
+        update.ExecuteNonQuery();
     }
 }

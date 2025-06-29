@@ -188,6 +188,29 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
+        
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE invoke_records_revolver
+                                                    (
+                                                        userid               bigint   not null primary key,
+                                                        first_invoke         datetime null,
+                                                        last_invoke          datetime null,
+                                                        start_count          int      default 0,
+                                                        shooting_self_count  int      default 0,
+                                                        shooting_other_count int      default 0,
+                                                        shooting_self_death  int      default 0,
+                                                        shooting_other_death int      default 0,
+                                                        rotating_count       int      default 0,
+                                                        restart_count        int      default 0
+                                                    ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
     }
 
     public MySqlConnection ConnectDatabase()

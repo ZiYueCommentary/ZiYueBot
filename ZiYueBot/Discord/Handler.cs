@@ -422,7 +422,7 @@ public static class Handler
                     SocketSlashCommandDataOption? user = command.Data.Options.FirstOrDefault();
                     if (user is not null && user.Value is not SocketGuildUser) user = null;
                     ulong target = ((SocketGuildUser)user!.Value)?.Id ?? command.User.Id;
-                    Message.MentionedUinAndName[target] = $" <@{target}>";
+                    Message.MentionedUinAndName[target] = $"<@{target}>";
                     await command.RespondAsync(Commands.GetHarmonyCommand<Shooting>("开枪")!.Invoke(
                         eventType,
                         userMention, userId,

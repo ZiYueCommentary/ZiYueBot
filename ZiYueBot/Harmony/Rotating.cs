@@ -31,6 +31,8 @@ public class Rotating : HarmonyCommand
         if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每 3 秒 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        
+        StartRevolver.UpdateRevolverRecords(userId, "rotating_count");
         Interlocked.Increment(ref round.ChamberIndex);
         if (round.ChamberIndex > RevolverRound.Chambers) StartRevolver.Revolvers.Remove(group, out _);
         return $"已转轮，轮盘中还剩 {round.RestChambers()} 个膛室未击发。{(round.RestChambers() == 0 ? "本局俄罗斯轮盘结束。" : "")}";

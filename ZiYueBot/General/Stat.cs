@@ -108,7 +108,8 @@ public class Stat : GeneralCommand
 
         // 调用次数
         string? invokeRecords = null;
-        using (MySqlCommand query = new MySqlCommand($"SELECT * FROM invoke_records_general WHERE userid = {userId}",
+        using (MySqlCommand query = new MySqlCommand(
+                   $"SELECT command, invoke_count FROM invoke_records_general WHERE userid = {userId} AND command IN ('捞云瓶', '捞海峡云瓶', 'ask', 'chat', 'draw')",
                    ZiYueBot.Instance.ConnectDatabase()))
         {
             Dictionary<string, int> commandsInvokeRecords = new Dictionary<string, int>();
@@ -121,7 +122,7 @@ public class Stat : GeneralCommand
             invokeRecords =
                 $"您捞过 {commandsInvokeRecords.GetValueOrDefault("捞云瓶", 0)} 次云瓶和 {commandsInvokeRecords.GetValueOrDefault("捞海峡云瓶", 0)} 次海峡云瓶，{commandsInvokeRecords.GetValueOrDefault("ask", 0)} 次寻求过张教授的智慧（/ask），与子悦机器对话过 {commandsInvokeRecords.GetValueOrDefault("chat", 0)} 次（/chat），让子悦机器画过 {commandsInvokeRecords.GetValueOrDefault("draw", 0)} 幅画（/draw）";
         }
-        
+
         // 使用时间
         string? useTime = null;
         using (MySqlCommand query =
@@ -135,6 +136,19 @@ public class Stat : GeneralCommand
                 DateTime firstInvoke = reader.GetDateTime("first_invoke");
                 useTime =
                     $"从“子悦机器”开源项目立项算起，您在 {firstInvoke:yyyy年MM月dd日} 第一次调用子悦机器，距今 {(DateTime.Today - firstInvoke.Date).Days} 天。";
+            }
+        }
+
+        // 俄罗斯轮盘
+        string? revolverStat = null;
+        using (MySqlCommand query = new MySqlCommand($"SELECT * FROM invoke_records_revolver WHERE userid = {userId}",
+                   ZiYueBot.Instance.ConnectDatabase()))
+        {
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
+            {
+                revolverStat =
+                    $"您在 {reader.GetDateTime("first_invoke"):yyyy年MM月dd日} 第一次调用俄罗斯轮盘命令，开始过 {reader.GetInt32("start_count")} 局轮盘，转轮 {reader.GetInt32("rotating_count")} 次，重置 {reader.GetInt32("restart_count")} 次。您向别人开过 {reader.GetInt32("shooting_other_count")} 枪，其中打死过 {reader.GetInt32("shooting_other_death")} 次。您向自己开过 {reader.GetInt32("shooting_self_count")} 次枪，其中打死过 {reader.GetInt32("shooting_self_death")} 次。";
             }
         }
 
@@ -167,6 +181,7 @@ public class Stat : GeneralCommand
                 {straitbottlesStat ?? "海峡云瓶统计失败，请联系子悦。"}
                 {invokeRecords ?? "这怎么可能？命令调用统计失败。"}
                 {useTime ?? "找不到调用记录"}
+                {revolverStat ?? "您没有调用过俄罗斯轮盘命令。"}
                 {blacklists ?? "您没有被列入黑名单的命令。"}
                 """;
     }

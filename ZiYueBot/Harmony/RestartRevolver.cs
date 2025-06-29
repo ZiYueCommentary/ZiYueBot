@@ -31,6 +31,8 @@ public class RestartRevolver : HarmonyCommand
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         if (!StartRevolver.Revolvers.TryGetValue(group, out RevolverRound? value)) return "游戏未开始，发送“开始俄罗斯轮盘”来开始";
+
+        StartRevolver.UpdateRevolverRecords(userId, "restart_count");
         Interlocked.Exchange(ref value.ChamberIndex, Random.Shared.Next(1, RevolverRound.Chambers - 1));
         return "轮盘已重新旋转";
     }

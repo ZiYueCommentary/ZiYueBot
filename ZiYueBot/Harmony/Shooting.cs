@@ -31,10 +31,17 @@ public class Shooting : HarmonyCommand
         if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每 3 秒 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+
+        ulong target = ulong.Parse(args[1]);
+        StartRevolver.UpdateRevolverRecords(userId, target == userId ? "shooting_self_count" : "shooting_other_count");
+
         if ((round.ChamberIndex == round.BulletPos) || (DateTime.Today.Month == 4 && DateTime.Today.Day == 1))
         {
             StartRevolver.Revolvers.Remove(group, out _);
-            return $"砰！枪声响起，{Message.MentionedUinAndName[ulong.Parse(args[1])]} 倒下了";
+
+            StartRevolver.UpdateRevolverRecords(userId,
+                target == userId ? "shooting_self_death" : "shooting_other_death");
+            return $"砰！枪声响起，{Message.MentionedUinAndName[target]} 倒下了";
         }
 
         Interlocked.Increment(ref round.ChamberIndex);
