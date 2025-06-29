@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text;
 using System.Text.Json.Nodes;
 using log4net;
@@ -28,6 +29,11 @@ public class Draw : GeneralCommand
                                           """;
 
     public override Platform SupportedPlatform => Platform.Both;
+
+    public override IEnumerable<string> Invoke(Platform platform, EventType eventType, string userName, ulong userId, string[] args)
+    {
+        throw new NotImplementedException();
+    }
 
     public JsonNode PostRequest(string prompt)
     {
@@ -61,17 +67,6 @@ public class Draw : GeneralCommand
         return output;
     }
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        throw new NotSupportedException();
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        throw new NotSupportedException();
-    }
-
-    // 这可能会是未来子悦机器的命令基本框架
     public InvokeValidation TryInvoke(EventType eventType, string userName, ulong userId, string[] args,
         out string output)
     {

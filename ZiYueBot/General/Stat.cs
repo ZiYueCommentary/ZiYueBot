@@ -1,3 +1,4 @@
+using System.Collections;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -24,8 +25,13 @@ public class Stat : GeneralCommand
 
     public override Platform SupportedPlatform => Platform.Both;
 
-    public string Collect(string userName, ulong userId, Platform platform)
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId, string[] args)
     {
+        if (!RateLimit.TryPassRateLimit(this, platform, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+
+        Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
+
         // 云瓶
         string? driftbottlesStat = null;
         using (MySqlCommand query = new MySqlCommand($"""
@@ -121,7 +127,7 @@ public class Stat : GeneralCommand
             invokeRecords =
                 $"您捞过 {commandsInvokeRecords.GetValueOrDefault("捞云瓶", 0)} 次云瓶和 {commandsInvokeRecords.GetValueOrDefault("捞海峡云瓶", 0)} 次海峡云瓶，{commandsInvokeRecords.GetValueOrDefault("ask", 0)} 次寻求过张教授的智慧（/ask），与子悦机器对话过 {commandsInvokeRecords.GetValueOrDefault("chat", 0)} 次（/chat），让子悦机器画过 {commandsInvokeRecords.GetValueOrDefault("draw", 0)} 幅画（/draw）";
         }
-        
+
         // 使用时间
         string? useTime = null;
         using (MySqlCommand query =
@@ -169,25 +175,6 @@ public class Stat : GeneralCommand
                 {useTime ?? "找不到调用记录"}
                 {blacklists ?? "您没有被列入黑名单的命令。"}
                 """;
-    }
-
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
-
-        Logger.Info($"调用者：{userName} ({userId})");
-        UpdateInvokeRecords(userId);
-        return Collect(userName, userId, Platform.QQ);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId))
-            return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
-
-        Logger.Info($"调用者：{userPing} ({userId})");
-        UpdateInvokeRecords(userId);
-        return Collect(userPing, userId, Platform.Discord);
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)

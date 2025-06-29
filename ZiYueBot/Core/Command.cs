@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using System.Dynamic;
+using MySql.Data.MySqlClient;
 using ZiYueBot.General;
 
 namespace ZiYueBot.Core;
@@ -25,7 +26,7 @@ public abstract class Command
     /// 帮助命令内显示的信息。
     /// </summary>
     public abstract string Description { get; }
-
+    
     /// <summary>
     /// 获取该命令的调用频率限制，用户无关型。
     /// </summary>

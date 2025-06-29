@@ -1,3 +1,4 @@
+using System.Collections;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -23,13 +24,13 @@ public class ListStraitbottle : GeneralCommand
 
     public override Platform SupportedPlatform => Platform.Both;
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId, string[] args)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, platform, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})");
         UpdateInvokeRecords(userId);
-        
+
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             "SELECT * FROM straitbottles WHERE picked = false",
@@ -41,36 +42,11 @@ public class ListStraitbottle : GeneralCommand
         while (reader.Read())
         {
             if (reader.GetUInt64("userid") == userId) self++;
-            if (reader.GetBoolean("fromDiscord")) pickable++;
+            if (platform == Platform.Discord ^ reader.GetBoolean("fromDiscord")) pickable++;
             i++;
         }
 
-        return $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 QQ 捞起，{self} 支由你扔出";
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
-
-        Logger.Info($"调用者：{userPing} ({userId})");
-        UpdateInvokeRecords(userId);
-        
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command = new MySqlCommand(
-            "SELECT * FROM straitbottles WHERE picked = false",
-            database);
-        using MySqlDataReader reader = command.ExecuteReader();
-        int i = 0;
-        int pickable = 0;
-        int self = 0;
-        while (reader.Read())
-        {
-            if (reader.GetUInt64("userid") == userId) self++;
-            if (!reader.GetBoolean("fromDiscord")) pickable++;
-            i++;
-        }
-
-        return $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 Discord 捞起，{self} 支由你扔出";
+        return $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 {(platform == Platform.QQ ? "QQ" : "Discord")} 捞起，{self} 支由你扔出";
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType)

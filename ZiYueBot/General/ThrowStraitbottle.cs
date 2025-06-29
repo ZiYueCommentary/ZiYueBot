@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text.RegularExpressions;
 using log4net;
 using MySql.Data.MySqlClient;
@@ -6,7 +7,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class ThrowStraitbottle : GeneralCommand
+public partial class ThrowStraitbottle : GeneralCommand
 {
     public static readonly ILog Logger = LogManager.GetLogger("扔海峡云瓶");
 
@@ -26,12 +27,12 @@ public class ThrowStraitbottle : GeneralCommand
 
     public override Platform SupportedPlatform => Platform.Both;
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
         string arguments = string.Join(' ', args[1..]);
-        if (arguments.Contains('\u2406')) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+        if (arguments.Contains('\u2406') || ThrowDriftbottle.PlatformEmojiRegex().IsMatch(arguments)) return "云瓶内容禁止包含表情！";
+        if (!RateLimit.TryPassRateLimit(this, platform, eventType, userId)) return "频率已达限制（每分钟 1 条）";
         
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
@@ -44,27 +45,6 @@ public class ThrowStraitbottle : GeneralCommand
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
         command.Parameters.AddWithValue("@content", arguments.DatabaseFriendly());
-        command.ExecuteNonQuery();
-        return "你的海峡云瓶扔出去了！";
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (args.Length < 1) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
-        if (Regex.IsMatch(args[0], "<:.*:\\d+>")) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command =
-            new MySqlCommand(
-                "INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, true)",
-                database);
-        command.Parameters.AddWithValue("@userid", userId);
-        command.Parameters.AddWithValue("@username", Message.MentionedUinAndName[userId]);
-        command.Parameters.AddWithValue("@content", args[1].DatabaseFriendly());
         command.ExecuteNonQuery();
         return "你的海峡云瓶扔出去了！";
     }

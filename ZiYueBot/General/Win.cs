@@ -1,3 +1,4 @@
+using System.Collections;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -95,7 +96,7 @@ public class Win : GeneralCommand
 
     private string GetReview(int level)
     {
-        return Reviews[level][Random.Shared.Next(0, Reviews[level].Count - 1)] + (level == 0 ? "\n（提示：试试再win一次）" : "");
+        return Reviews[level][Random.Shared.Next(0, Reviews[level].Count - 1)];
     }
 
     /// <summary>
@@ -108,8 +109,86 @@ public class Win : GeneralCommand
             : (_windWindow = new WindWindow()).WindHour;
     }
 
-    private string Invoke(string userName, ulong userId, string channel) // 这里 channel 不再转换成 ulong，因为跟数据库交互不需要转换
+    public bool TryCommonProsperity(ulong userId, string userName, string channel, out string message)
     {
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        using MySqlCommand score = new MySqlCommand(
+            $"SELECT * FROM win WHERE userid = {userId} AND channel = {channel} LIMIT 1",
+            database
+        );
+        using MySqlDataReader scoreReader = score.ExecuteReader();
+        if (scoreReader.Read() && !scoreReader.GetBoolean("prospered"))
+        {
+            int oldRate = scoreReader.GetInt16("score");
+            if (GetWinLevel(oldRate) <= 2)
+            {
+                scoreReader.Close();
+                using MySqlCommand query = new MySqlCommand(
+                    $"SELECT * FROM win WHERE userid != {userId} AND channel = {channel} AND date = current_date() ORDER BY score DESC LIMIT 1",
+                    database
+                );
+                using MySqlDataReader queryReader = query.ExecuteReader();
+                if (queryReader.Read())
+                {
+                    if (GetWinLevel(queryReader.GetInt16("score")) >= 3)
+                    {
+                        int rate = (int)Math.Ceiling((double)(oldRate + queryReader.GetInt16("score")) / 2);
+                        string user = queryReader.GetString("username");
+                        queryReader.Close();
+                        using MySqlCommand update = new MySqlCommand(
+                            $"UPDATE win SET score = {rate}, miniWinDays = 0, prospered = true WHERE userid = {userId} AND channel = {channel}",
+                            database
+                        );
+                        update.ExecuteNonQuery();
+                        message = $"""
+                                   恭喜 {userName} 在 {user} 的帮扶下实现共同富 win，使赢级达到了 {rate}%！
+                                   维为寄语：{GetReview(8)}
+                                   """;
+                        return true;
+                    }
+
+                    message = "最赢者不够努力，赢级尚未达到大赢，无力帮扶。";
+                    return true;
+                }
+            }
+        }
+
+        message = "";
+        return false;
+    }
+
+    public bool SeekWinningCouple(ulong userId, string userName, string channel, out string message)
+    {
+        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        using MySqlCommand query = new MySqlCommand(
+            $"""
+             SELECT score INTO @rate FROM win WHERE userid = {userId} AND channel = {channel} LIMIT 1; # 断言查询到的一定是今天的
+             SELECT * FROM win WHERE userid != {userId} AND channel = {channel} AND score + @rate = 99 AND date = current_date() LIMIT 1;
+             """, database
+        );
+        using MySqlDataReader reader = query.ExecuteReader();
+        if (reader.Read())
+        {
+            message = $"""
+                       恭喜 {userName} 与 {reader.GetString("username")} 的赢级之和达到 99，实现心心相 win！
+                       愿你们永结同心，在未来的日子里风雨同舟、携手共赢！
+                       """;
+            return true;
+        }
+
+        message = "";
+        return false;
+    }
+
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId,
+        string[] args)
+    {
+        if (eventType == EventType.DirectMessage) return "独赢赢不如众赢赢，请在群组内使用该指令。";
+
+        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+
+        string channel = args[0];
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand query = new MySqlCommand(
             $"SELECT * FROM win WHERE userid = {userId} AND channel = {channel} LIMIT 1",
@@ -186,96 +265,5 @@ public class Win : GeneralCommand
                 {userName} 的赢级是：{rate}%，属于{Levels[level]}
                 维为寄语：{GetReview(level)}
                 """;
-    }
-
-    public bool TryCommonProsperity(ulong userId, string userName, string channel, out string message)
-    {
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand score = new MySqlCommand(
-            $"SELECT * FROM win WHERE userid = {userId} AND channel = {channel} LIMIT 1",
-            database
-        );
-        using MySqlDataReader scoreReader = score.ExecuteReader();
-        if (scoreReader.Read() && !scoreReader.GetBoolean("prospered"))
-        {
-            int oldRate = scoreReader.GetInt16("score");
-            if (GetWinLevel(oldRate) <= 2)
-            {
-                scoreReader.Close();
-                using MySqlCommand query = new MySqlCommand(
-                    $"SELECT * FROM win WHERE userid != {userId} AND channel = {channel} AND date = current_date() ORDER BY score DESC LIMIT 1",
-                    database
-                );
-                using MySqlDataReader queryReader = query.ExecuteReader();
-                if (queryReader.Read())
-                {
-                    if (GetWinLevel(queryReader.GetInt16("score")) >= 3)
-                    {
-                        int rate = (int)Math.Ceiling((double)(oldRate + queryReader.GetInt16("score")) / 2);
-                        string user = queryReader.GetString("username");
-                        queryReader.Close();
-                        using MySqlCommand update = new MySqlCommand(
-                            $"UPDATE win SET score = {rate}, miniWinDays = 0, prospered = true WHERE userid = {userId} AND channel = {channel}",
-                            database
-                        );
-                        update.ExecuteNonQuery();
-                        message = $"""
-                                   恭喜 {userName} 在 {user} 的帮扶下实现共同富 win，使赢级达到了 {rate}%！
-                                   维为寄语：{GetReview(8)}
-                                   """;
-                        return true;
-                    }
-
-                    message = "最赢者不够努力，赢级尚未达到大赢，无力帮扶。";
-                    return true;
-                }
-            }
-        }
-
-        message = "";
-        return false;
-    }
-
-    public bool SeekWinningCouple(ulong userId, string userName, string channel, out string message)
-    {
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand query = new MySqlCommand(
-            $"""
-             SELECT score INTO @rate FROM win WHERE userid = {userId} AND channel = {channel} LIMIT 1; # 断言查询到的一定是今天的
-             SELECT * FROM win WHERE userid != {userId} AND channel = {channel} AND score + @rate = 99 AND date = current_date() LIMIT 1;
-             """, database
-        );
-        using MySqlDataReader reader = query.ExecuteReader();
-        if (reader.Read())
-        {
-            message = $"""
-                       恭喜 {userName} 与 {reader.GetString("username")} 的赢级之和达到 99，实现心心相 win！
-                       愿你们永结同心，在未来的日子里风雨同舟、携手共赢！
-                       """;
-            return true;
-        }
-
-        message = "";
-        return false;
-    }
-
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        if (eventType == EventType.DirectMessage) return "独赢赢不如众赢赢，请在群组内使用该指令。";
-
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(userName, userId, args[0]);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (eventType == EventType.DirectMessage) return "独赢赢不如众赢赢，请在群组内使用该指令。";
-
-        Logger.Info($"调用者：{Message.MentionedUinAndName[userId]} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(userPing, userId, args[0]);
     }
 }

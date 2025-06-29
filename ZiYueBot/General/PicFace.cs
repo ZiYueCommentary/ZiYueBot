@@ -6,7 +6,7 @@ namespace ZiYueBot.General;
 public class PicFace : GeneralCommand
 {
     public static readonly ILog Logger = LogManager.GetLogger("表情转图片");
-    public static readonly ISet<uint> Users = new HashSet<uint>();
+    public static readonly ISet<ulong> Users = new HashSet<ulong>();
 
     public override string Id => "表情转图片";
 
@@ -22,17 +22,12 @@ public class PicFace : GeneralCommand
 
     public override Platform SupportedPlatform => Platform.QQ;
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId, string[] args)
     {
         Logger.Info($"调用者：{userName} ({userId})");
         UpdateInvokeRecords(userId);
         
         Users.Add(userId);
         return "正在等待发送表情包...";
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        throw new NotSupportedException();
     }
 }

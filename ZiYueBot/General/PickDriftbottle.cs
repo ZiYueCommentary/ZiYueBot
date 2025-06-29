@@ -1,3 +1,4 @@
+using System.Collections;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -25,8 +26,31 @@ public class PickDriftbottle : GeneralCommand
 
     public override Platform SupportedPlatform => Platform.Both;
 
-    private string Invoke(int id)
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId,
+        string[] args)
     {
+        int id = int.MinValue;
+        if (args.Length >= 2)
+        {
+            try
+            {
+                id = int.Parse(args[1]);
+            }
+            catch (FormatException)
+            {
+                return "请输入数字编号！";
+            }
+            catch (OverflowException)
+            {
+                return "编号过大！";
+            }
+        }
+
+        if (!RateLimit.TryPassRateLimit(this, platform, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+
+        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
@@ -71,57 +95,6 @@ public class PickDriftbottle : GeneralCommand
         addViews.ExecuteNonQuery();
 
         return result;
-    }
-
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        int id = int.MinValue;
-        if (args.Length > 1)
-        {
-            try
-            {
-                id = int.Parse(args[1]);
-            }
-            catch (FormatException)
-            {
-                return "请输入数字编号！";
-            }
-            catch (OverflowException)
-            {
-                return "编号过大！";
-            }
-        }
-
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        
-        return Invoke(id);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        int id = int.MinValue;
-        try
-        {
-            id = int.Parse(args[0]);
-        }
-        catch (FormatException)
-        {
-            return "请输入数字编号！";
-        }
-        catch (OverflowException)
-        {
-            return "编号过大！";
-        }
-
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 0 条）";
-        
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        
-        return Invoke(id);
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType)

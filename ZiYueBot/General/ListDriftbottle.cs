@@ -1,3 +1,4 @@
+using System.Collections;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -23,8 +24,14 @@ public class ListDriftbottle : GeneralCommand
 
     public override Platform SupportedPlatform => Platform.Both;
 
-    private string Invoke(string userName, ulong userId)
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId, string[] args)
     {
+        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId))
+            return $"频率已达限制（{(eventType == EventType.DirectMessage || platform == Platform.Discord ? 10 : 30)} 分钟 1 条）";
+
+        Logger.Info($"调用者：{userName} ({userId})");
+        UpdateInvokeRecords(userId);
+
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
             $"SELECT * FROM driftbottles WHERE userid = {userId} AND pickable = true",
@@ -42,27 +49,6 @@ public class ListDriftbottle : GeneralCommand
 
         result += $"共计：{i - 1} 支瓶子";
         return result;
-    }
-
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId))
-            return $"频率已达限制（{(eventType == EventType.DirectMessage ? 10 : 30)} 分钟 1 条）";
-        
-        Logger.Info($"调用者：{userName} ({userId})");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(userName, userId);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
-        
-        Logger.Info($"调用者：{userPing} ({userId})");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(userPing, userId);
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType)

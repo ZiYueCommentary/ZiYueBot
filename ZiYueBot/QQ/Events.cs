@@ -1,4 +1,5 @@
-﻿using System.Net.WebSockets;
+﻿using System.Collections;
+using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -86,23 +87,20 @@ public static class Events
             if (message.AsArray()[0]!["type"]!.GetValue<string>() == "image" && PicFace.Users.Contains(userId))
             {
                 string url = message.AsArray()[0]!["data"]!["url"]!.GetValue<string>();
-                await Parser.SendMessage(eventType, sourceUin, $"\u2402{url}\u2403\\r{url}");
+                await Parser.SendMessage(eventType, sourceUin, $"\u2402{url}\u2403\r{url}");
                 PicFace.Users.Remove(userId);
                 PicFace.Logger.Info($"{userName} 的表情转图片已完成：{url}");
                 return;
             }
 
-            if (!Commands.HarmonyCommands.ContainsKey(args[0]))
+            if (Commands.GetCommand(Platform.QQ, args[0]) is null)
             {
-                if (Commands.GetGeneralCommand<GeneralCommand>(Platform.QQ, args[0]) is null)
+                if (flatten.Text.StartsWith('/'))
                 {
-                    if (flatten.Text.StartsWith('/'))
-                    {
-                        await Parser.SendMessage(eventType, sourceUin, "未知命令。请使用 /help 查看命令列表。");
-                    }
-
-                    return;
+                    await Parser.SendMessage(eventType, sourceUin, "未知命令。请使用 /help 查看命令列表。");
                 }
+
+                return;
             }
 
             await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
@@ -147,9 +145,9 @@ public static class Events
             {
                 case "draw":
                 {
-                    Draw draw = Commands.GetGeneralCommand<Draw>(Platform.QQ, "draw")!;
+                    Draw draw = Commands.GetCommand(Platform.QQ, "draw")! as Draw;
                     Draw.InvokeValidation validation =
-                        draw.TryInvoke(eventType, userName, userId, args, out string output);
+                        draw!.TryInvoke(eventType, userName, userId, args, out string output);
                     if (validation is Draw.InvokeValidation.RateLimited or Draw.InvokeValidation.NotEnoughParameters)
                     {
                         await Parser.SendMessage(eventType, sourceUin, output);
@@ -232,48 +230,13 @@ public static class Events
 
                     break;
                 }
-
-                case "chat":
-                {
-                    Chat chat = Commands.GetGeneralCommand<Chat>(Platform.QQ, "chat")!;
-                    string result = chat.QQInvoke(eventType, userName, userId, args);
-                    if (result != "")
-                    {
-                        await Parser.SendMessage(eventType, sourceUin, result);
-                    }
-                    else
-                    {
-                        await Parser.SendMessage(eventType, sourceUin, "深度思考中...");
-                        try
-                        {
-                            DateTime prev = DateTime.Now;
-                            string answer =
-                                chat.PostQuestion(true, string.Join(' ', args[1..]))["choices"]![0]!["message"]![
-                                        "content"]!
-                                    .GetValue<string>();
-                            DateTime last = DateTime.Now;
-                            await Parser.SendMessage(eventType, sourceUin,
-                                $"已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒\n\n{answer}");
-                        }
-                        catch (TimeoutException)
-                        {
-                            await Parser.SendMessage(eventType, sourceUin, "DeepSeek 服务连接超时。");
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            await Parser.SendMessage(eventType, sourceUin, "DeepSeek 回答超时。");
-                        }
-                    }
-
-                    break;
-                }
                 case "win":
                 {
-                    Win win = Commands.GetGeneralCommand<Win>(Platform.QQ, "win")!;
+                    Win win = Commands.GetCommand(Platform.QQ, "win")! as Win;
                     args[0] = sourceUin.ToString(); // 群聊 ID
 
-                    await Parser.SendMessage(eventType, sourceUin, win.QQInvoke(eventType, userName, userId, args));
-                    if (win.SeekWinningCouple(userId, userName, args[0], out string coupleText))
+                    await Parser.SendMessage(eventType, sourceUin, win!.Invoke(Platform.QQ, eventType, userName, userId, args));
+                    if (win!.SeekWinningCouple(userId, userName, args[0], out string coupleText))
                     {
                         await Parser.SendMessage(eventType, sourceUin, coupleText);
                         await Parser.SendMessage(eventType, sourceUin,
@@ -289,23 +252,23 @@ public static class Events
                 }
                 case "开始俄罗斯轮盘":
                 {
-                    StartRevolver startRevolver = Commands.GetHarmonyCommand<StartRevolver>("开始俄罗斯轮盘")!;
+                    StartRevolver startRevolver = Commands.GetCommand(Platform.QQ, "开始俄罗斯轮盘")! as StartRevolver;
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     await Parser.SendMessage(eventType, sourceUin,
-                        startRevolver.Invoke(eventType, userName, userId, args));
+                        startRevolver!.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "重置俄罗斯轮盘":
                 {
-                    RestartRevolver startRevolver = Commands.GetHarmonyCommand<RestartRevolver>("重置俄罗斯轮盘")!;
+                    RestartRevolver startRevolver = Commands.GetCommand(Platform.Discord, "重置俄罗斯轮盘")! as RestartRevolver;
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     await Parser.SendMessage(eventType, sourceUin,
-                        startRevolver.Invoke(eventType, userName, userId, args));
+                        startRevolver!.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "开枪":
                 {
-                    Shooting shooting = Commands.GetHarmonyCommand<Shooting>("开枪");
+                    Shooting shooting = Commands.GetCommand(Platform.QQ, "开枪")! as Shooting;
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     if (args.Length < 2)
                     {
@@ -319,7 +282,7 @@ public static class Events
                     {
                         args[1] = args[1][1..^1];
                         await Parser.SendMessage(eventType, sourceUin,
-                            shooting.Invoke(eventType, userName, userId, args));
+                            shooting!.Invoke(eventType, userName, userId, args));
                         break;
                     }
 
@@ -329,15 +292,15 @@ public static class Events
                 }
                 case "转轮":
                 {
-                    Rotating rotating = Commands.GetHarmonyCommand<Rotating>("转轮")!;
+                    Rotating rotating = Commands.GetCommand(Platform.QQ, "转轮")! as Rotating;
                     args[0] = sourceUin.ToString(); // 群聊 ID
                     await Parser.SendMessage(eventType, sourceUin,
-                        rotating.Invoke(eventType, userName, userId, args));
+                        rotating!.Invoke(eventType, userName, userId, args));
                     break;
                 }
                 case "xibao":
                 {
-                    Xibao xibao = Commands.GetHarmonyCommand<Xibao>("xibao")!;
+                    Xibao xibao = Commands.GetCommand(Platform.QQ, "xibao")! as Xibao;
                     string result = xibao.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
@@ -351,8 +314,8 @@ public static class Events
                 }
                 case "beibao":
                 {
-                    Beibao beibao = Commands.GetHarmonyCommand<Beibao>("beibao")!;
-                    string result = beibao.Invoke(eventType, userName, userId, args);
+                    Beibao beibao = Commands.GetCommand(Platform.QQ, "beibao")! as Beibao;
+                    string result = beibao!.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
                         await Parser.SendMessage(eventType, sourceUin, result);
@@ -365,8 +328,8 @@ public static class Events
                 }
                 case "balogo":
                 {
-                    BALogo baLogo = Commands.GetHarmonyCommand<BALogo>("balogo")!;
-                    string result = baLogo.Invoke(eventType, userName, userId, args);
+                    BALogo baLogo = Commands.GetCommand(Platform.QQ, "balogo")! as BALogo;
+                    string result = baLogo!.Invoke(eventType, userName, userId, args);
                     if (result != "")
                     {
                         await Parser.SendMessage(eventType, sourceUin, result);
@@ -385,20 +348,20 @@ public static class Events
                         break;
                     }
 
-                    HarmonyCommand? harmony = Commands.GetHarmonyCommand<HarmonyCommand>(args[0]);
-                    if (harmony is not null)
+                    GeneralCommand? command = Commands.GetCommand(Platform.QQ, args[0]);
+                    if (command is not null)
                     {
-                        await Parser.SendMessage(eventType, sourceUin,
-                            harmony.Invoke(eventType, userName, userId, args));
-                    }
-                    else
-                    {
-                        GeneralCommand? general =
-                            Commands.GetGeneralCommand<GeneralCommand>(Platform.QQ, args[0]);
-                        if (general is not null)
+                        IEnumerable enumerable = command.Invoke(Platform.QQ, eventType, userName, userId, args);
+                        if (enumerable is string commandMessage)
                         {
-                            await Parser.SendMessage(eventType, sourceUin,
-                                general.QQInvoke(eventType, userName, userId, args));
+                            await Parser.SendMessage(eventType, sourceUin, commandMessage);
+                        }
+                        else
+                        {
+                            foreach (string singleCommandMessage in enumerable)
+                            {
+                                await Parser.SendMessage(eventType, sourceUin, singleCommandMessage);
+                            }
                         }
                     }
 

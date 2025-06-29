@@ -16,7 +16,7 @@ public class Chat : GeneralCommand
     {
         using FileStream stream = new FileStream("resources/system.md", FileMode.OpenOrCreate);
         using StreamReader reader = new StreamReader(stream);
-        SystemPrompt = reader.ReadToEnd().Replace("\r", "\\r").Replace("\n", "\\n");
+        SystemPrompt = reader.ReadToEnd().JsonFriendly();
     }
 
     public override string Id => "chat";
@@ -71,24 +71,114 @@ public class Chat : GeneralCommand
         return JsonNode.Parse(res)!;
     }
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override IEnumerable<string> Invoke(Platform platform, EventType eventType, string userName, ulong userId,
+        string[] args)
     {
-        if (args.Length < 2) return "参数数量不足。使用“/help chat”查看命令用法。";
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
-        
+        if (args.Length < 2)
+        {
+            yield return "参数数量不足。使用“/help chat”查看命令用法。";
+            yield break;
+        }
+
+        if (!RateLimit.TryPassRateLimit(this, platform, eventType, userId))
+        {
+            if (platform == Platform.QQ)
+            {
+                yield return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+            }
+            else
+            {
+                yield return "频率已达限制（1 分钟 1 条）";
+            }
+
+            yield break;
+        }
+
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
-        return "";
-    }
 
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (args.Length < 1) return "参数数量不足。使用“/help chat”查看命令用法。";
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（1 分钟 1 条）";
-        
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        return "";
+        yield return "深度思考中...";
+        DateTime prev = DateTime.Now;
+
+        using HttpClient client = new HttpClient();
+        using HttpRequestMessage request =
+            new HttpRequestMessage(HttpMethod.Post,
+                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
+        request.Headers.Add("Accept", "application/json");
+        request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
+        using StringContent requestContent = new StringContent("""
+                {
+                  "messages": [
+                    {
+                      "content": "%system_prompt% %april%",
+                      "role": "system"
+                    },
+                    {
+                      "content": "%question%",
+                      "role": "user"
+                    }
+                  ],
+                  "model": "deepseek-r1"
+                }
+                """.Replace("%system_prompt%", SystemPrompt)
+                .Replace("%april%", DateTime.Today.Month == 4 && DateTime.Today.Day == 1 ? "用贴吧风格回答之后的问题，要尽量刻薄。" : "")
+                .Replace("%question%", string.Join(' ', args[1..]).JsonFriendly())
+            /*.Replace("%token%", (qq ? 1024 : 4096).ToString())*/, Encoding.UTF8, "application/json");
+        request.Content = requestContent;
+        using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
+        if (!response.IsSuccessStatusCode)
+        {
+            yield return "DeepSeek 服务连接错误。";
+            yield break;
+        }
+
+        string responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+        if (responseContent == "")
+        {
+            yield return "DeepSeek 服务连接超时。";
+            yield break;
+        }
+
+        DateTime last = DateTime.Now;
+        JsonNode responseResult = JsonNode.Parse(responseContent)!;
+        string reasoningContent = responseResult["reasoning_content"]!.GetValue<string>();
+        if (reasoningContent.StartsWith('\n')) reasoningContent = reasoningContent[1..];
+        if (reasoningContent.EndsWith('\n')) reasoningContent = reasoningContent[..^1];
+
+        string[] reasons = reasoningContent.Split('\n');
+        string content = responseResult["content"]!.GetValue<string>();
+        StringBuilder builder = new StringBuilder();
+        builder.Append($"`已深度思考 {(last - prev).Seconds} 秒`\n\n");
+        if (platform == Platform.Discord)
+        {
+            foreach (string reason in reasons)
+            {
+                builder.Append("> ").Append(reason);
+            }
+
+            if (builder.Length + content.Length > 1900) // 如果消息过长...
+            {
+                yield return builder.ToString(); // 拆成两条消息
+                if (content.Length > 1900) // 如果还是过长...
+                {
+                    yield return content[..1900] + "\n**内容超过 Discord 消息限制，以下内容已被截断。**"; // 不管了直接砍！
+                }
+                else
+                {
+                    yield return content;
+                }
+
+                yield break;
+            }
+
+            builder.Append('\n').Append(content);
+        }
+        else
+        {
+            builder.Append(content);
+        }
+
+        yield return builder.ToString();
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)

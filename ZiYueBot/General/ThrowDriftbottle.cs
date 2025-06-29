@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text.RegularExpressions;
 using log4net;
 using MySql.Data.MySqlClient;
@@ -6,7 +7,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class ThrowDriftbottle : GeneralCommand
+public partial class ThrowDriftbottle : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("扔云瓶");
 
@@ -26,8 +27,17 @@ public class ThrowDriftbottle : GeneralCommand
 
     public override Platform SupportedPlatform => Platform.Both;
 
-    private string Invoke(string userName, ulong userId, string content)
+    public override string Invoke(Platform platform, EventType eventType, string userName, ulong userId,
+        string[] args)
     {
+        if (args.Length < 2) return "参数数量不足。使用“/help 扔云瓶”查看命令用法。";
+        string arguments = string.Join(' ', args[1..]);
+        if (arguments.Contains('\u2406') || PlatformEmojiRegex().IsMatch(arguments)) return "云瓶内容禁止包含表情！";
+        if (!RateLimit.TryPassRateLimit(this, platform, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+
+        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+        UpdateInvokeRecords(userId);
+
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
             if (Random.Shared.Next(3) == 1) // 25% 概率瓶子飘回来
@@ -43,37 +53,16 @@ public class ThrowDriftbottle : GeneralCommand
                 database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
-        command.Parameters.AddWithValue("@content", content.DatabaseFriendly());
+        command.Parameters.AddWithValue("@content", arguments.DatabaseFriendly());
         command.ExecuteNonQuery();
         return $"你的 {command.LastInsertedId} 号漂流瓶扔出去了！";
-    }
-
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        if (args.Length < 2) return "参数数量不足。使用“/help 扔云瓶”查看命令用法。";
-        string arguments = string.Join(' ', args[1..]);
-        if (arguments.Contains('\u2406')) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(userName, userId, arguments);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (Regex.IsMatch(args[0], "<:.*:\\d+>")) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(Message.MentionedUinAndName[userId], userId, args[0]);
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }
+
+    [GeneratedRegex("<:.*:\\d+>")]
+    internal static partial Regex PlatformEmojiRegex();
 }
