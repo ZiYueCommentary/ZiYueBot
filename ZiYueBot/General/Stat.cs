@@ -141,22 +141,22 @@ public class Stat : GeneralCommand
 
         // 俄罗斯轮盘
         string? revolverStat = null;
-        using (MySqlCommand query = new MySqlCommand($"SELECT * FROM invoke_records_revolver WHERE userid = {userId}",
+        using (MySqlCommand query = new MySqlCommand($"SELECT * FROM revolver WHERE userid = {userId}",
                    ZiYueBot.Instance.ConnectDatabase()))
         {
             using MySqlDataReader reader = query.ExecuteReader();
             if (reader.Read())
             {
-                int shootingOtherCount = reader.GetInt32("shooting_other_count");
-                int shootingOtherDeath = reader.GetInt32("shooting_other_death");
-                int shootingSelfCount = reader.GetInt32("shooting_self_count");
-                int shootingSelfDeath = reader.GetInt32("shooting_self_death");
+                double shootingOtherCount = reader.GetInt32("shooting_other_count");
+                double shootingOtherDeath = reader.GetInt32("shooting_other_death");
+                double shootingSelfCount = reader.GetInt32("shooting_self_count");
+                double shootingSelfDeath = reader.GetInt32("shooting_self_death");
                 if (shootingOtherCount + shootingSelfCount > 0)
                 {
                     revolverStat =
                         $"您在 {reader.GetDateTime("first_invoke"):yyyy年MM月dd日} 第一次调用俄罗斯轮盘命令，开始过 {reader.GetInt32("start_count")} 局轮盘，转轮 {reader.GetInt32("rotating_count")} 次，重置 {reader.GetInt32("restart_count")} 次。";
                     revolverStat +=
-                        $"您向别人开过 {shootingOtherCount} 枪，其中打死过 {shootingOtherDeath} 次。您向自己开过 {shootingSelfCount} 次枪，其中打死过 {shootingSelfDeath} 次。总射击准度 {(shootingOtherDeath + shootingSelfDeath) / (shootingOtherCount + shootingSelfCount):F4}%";
+                        $"您向别人开过 {shootingOtherCount} 枪，其中打死过 {shootingOtherDeath} 次。您向自己开过 {shootingSelfCount} 次枪，其中打死过 {shootingSelfDeath} 次。总射击准度 {((shootingOtherDeath + shootingSelfDeath) / (shootingOtherCount + shootingSelfCount) * 100):F4}%";
                 }
             }
         }
