@@ -101,13 +101,26 @@ public class ZiYueBot
             MySqlCommand command = new MySqlCommand("""
                                                     CREATE TABLE win
                                                     (
-                                                        userid      bigint      default 0,
-                                                        username    tinytext         null,
-                                                        channel     bigint      default 0,
-                                                        date        date             null,
-                                                        score       tinyint          null,
-                                                        prospered   boolean default false,
-                                                        miniWinDays tinyint     default 0,
+                                                        userid                bigint      default 0,
+                                                        username              tinytext         null,
+                                                        channel               bigint      default 0,
+                                                        date                  date             null,
+                                                        score                 tinyint          null,
+                                                        prospered             boolean default false,
+                                                        miniWinDays           tinyint     default 0,
+                                                        invoke_days           int         default 0,
+                                                        flexible_win_days     int         default 0,
+                                                        mini_win_days         int         default 0,
+                                                        middle_win_days       int         default 0,
+                                                        big_win_days          int         default 0,
+                                                        very_big_win_days     int         default 0,
+                                                        ultra_win_days        int         default 0,
+                                                        lose_days             int         default 0,
+                                                        couple_win_days       int         default 0,
+                                                        wind_window_days      int         default 0,
+                                                        alleviated_days       int         default 0,
+                                                        prosperity_days       int         default 0,
+                                                        prosperity_other_days int         default 0,
                                                         PRIMARY KEY (userid, channel)
                                                     ) CHARSET = utf8mb4;
                                                     """, database);

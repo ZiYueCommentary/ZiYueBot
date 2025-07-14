@@ -95,7 +95,7 @@ public class Win : GeneralCommand
 
     private string GetReview(int level)
     {
-        return Reviews[level][Random.Shared.Next(0, Reviews[level].Count - 1)] + (level == 0 ? "\n（提示：试试再win一次）" : "");
+        return Reviews[level][Random.Shared.Next(0, Reviews[level].Count - 1)];
     }
 
     /// <summary>
@@ -158,6 +158,26 @@ public class Win : GeneralCommand
             update.ExecuteNonQuery();
         }
 
+        string recordsInsertStatement = "UPDATE win SET invoke_days = invoke_days + 1, ";
+        switch (level)
+        {
+            case 0: recordsInsertStatement += "flexible_win_days = flexible_win_days + 1"; break;
+            case 1: recordsInsertStatement += "mini_win_days = mini_win_days + 1"; break;
+            case 2: recordsInsertStatement += "middle_win_days = middle_win_days + 1"; break;
+            case 3: recordsInsertStatement += "big_win_days = big_win_days + 1"; break;
+            case 4: recordsInsertStatement += "very_big_win_days = very_big_win_days + 1"; break;
+            case 5: recordsInsertStatement += "ultra_win_days = ultra_win_days + 1"; break;
+            case 6: recordsInsertStatement += "lose_days = lose_days + 1"; break;
+        }
+
+        if (blowed) recordsInsertStatement += ", wind_window_days = wind_window_days + 1";
+        if (targetedPovertyAlleviation) recordsInsertStatement += ", alleviated_days = alleviated_days + 1";
+        recordsInsertStatement += $" WHERE userid = {userId} AND channel = {channel}";
+
+        using MySqlCommand recordsInsert =
+            new MySqlCommand(recordsInsertStatement, ZiYueBot.Instance.ConnectDatabase());
+        recordsInsert.ExecuteNonQuery();
+
         if (blowed)
         {
             return $"""
@@ -190,10 +210,9 @@ public class Win : GeneralCommand
 
     public bool TryCommonProsperity(ulong userId, string userName, string channel, out string message)
     {
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand score = new MySqlCommand(
             $"SELECT * FROM win WHERE userid = {userId} AND channel = {channel} LIMIT 1",
-            database
+            ZiYueBot.Instance.ConnectDatabase()
         );
         using MySqlDataReader scoreReader = score.ExecuteReader();
         if (scoreReader.Read() && !scoreReader.GetBoolean("prospered"))
@@ -204,7 +223,7 @@ public class Win : GeneralCommand
                 scoreReader.Close();
                 using MySqlCommand query = new MySqlCommand(
                     $"SELECT * FROM win WHERE userid != {userId} AND channel = {channel} AND date = current_date() ORDER BY score DESC LIMIT 1",
-                    database
+                    ZiYueBot.Instance.ConnectDatabase()
                 );
                 using MySqlDataReader queryReader = query.ExecuteReader();
                 if (queryReader.Read())
@@ -213,12 +232,16 @@ public class Win : GeneralCommand
                     {
                         int rate = (int)Math.Ceiling((double)(oldRate + queryReader.GetInt16("score")) / 2);
                         string user = queryReader.GetString("username");
-                        queryReader.Close();
                         using MySqlCommand update = new MySqlCommand(
-                            $"UPDATE win SET score = {rate}, miniWinDays = 0, prospered = true WHERE userid = {userId} AND channel = {channel}",
-                            database
+                            $"UPDATE win SET score = {rate}, miniWinDays = 0, prospered = true, prosperity_days = prosperity_days + 1 WHERE userid = {userId} AND channel = {channel}",
+                            ZiYueBot.Instance.ConnectDatabase()
                         );
                         update.ExecuteNonQuery();
+                        using MySqlCommand updateHelperQuery = new MySqlCommand(
+                            $"UPDATE win SET prosperity_other_days = prosperity_other_days + 1 WHERE userid = {queryReader.GetInt64("userid")} AND channel = {channel}",
+                            ZiYueBot.Instance.ConnectDatabase());
+                        updateHelperQuery.ExecuteNonQuery();
+
                         message = $"""
                                    恭喜 {userName} 在 {user} 的帮扶下实现共同富 win，使赢级达到了 {rate}%！
                                    维为寄语：{GetReview(8)}
@@ -248,6 +271,10 @@ public class Win : GeneralCommand
         using MySqlDataReader reader = query.ExecuteReader();
         if (reader.Read())
         {
+            using MySqlCommand recordsUpdateQuery =
+                new MySqlCommand(
+                    $"UPDATE win SET couple_win_days = couple_win_days + 1 WHERE (userid = {userId} OR userid = {reader.GetInt64("userid")}) AND channel = {channel}");
+
             message = $"""
                        恭喜 {userName} 与 {reader.GetString("username")} 的赢级之和达到 99，实现心心相 win！
                        愿你们永结同心，在未来的日子里风雨同舟、携手共赢！
