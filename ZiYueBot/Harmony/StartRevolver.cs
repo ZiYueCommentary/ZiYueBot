@@ -74,13 +74,10 @@ public class StartRevolver : HarmonyCommand
             Revolvers.Remove(group, out _);
         }
 
-        if (Revolvers.TryAdd(group, new RevolverRound()))
-        {
-            UpdateRevolverRecords(userId, "start_count");
-            return "俄罗斯轮盘开始了，今天轮到谁倒霉呢";
-        }
+        if (!Revolvers.TryAdd(group, new RevolverRound())) return "俄罗斯轮盘已开始";
 
-        return "俄罗斯轮盘已开始";
+        UpdateRevolverRecords(userId, "start_count");
+        return "俄罗斯轮盘开始了，今天轮到谁倒霉呢";
     }
 
     public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
@@ -95,7 +92,7 @@ public class StartRevolver : HarmonyCommand
         {
             await using MySqlCommand insert =
                 new MySqlCommand(
-                    $"INSERT INTO invoke_records_revolver (userid, first_invoke, last_invoke) VALUE ({userId}, now(), now())",
+                    $"INSERT INTO revolver (userid, first_invoke, last_invoke) VALUE ({userId}, now(), now())",
                     connection);
             insert.ExecuteNonQuery();
         }
@@ -106,7 +103,7 @@ public class StartRevolver : HarmonyCommand
 
         await using MySqlCommand update =
             new MySqlCommand(
-                $"UPDATE invoke_records_revolver SET last_invoke = now(), {column} = {column} + 1 WHERE userid = {userId}",
+                $"UPDATE revolver SET last_invoke = now(), {column} = {column} + 1 WHERE userid = {userId}",
                 connection);
         update.ExecuteNonQuery();
     }

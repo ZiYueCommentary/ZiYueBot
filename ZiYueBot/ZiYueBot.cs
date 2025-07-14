@@ -192,7 +192,7 @@ public class ZiYueBot
         try
         {
             MySqlCommand command = new MySqlCommand("""
-                                                    CREATE TABLE invoke_records_revolver
+                                                    CREATE TABLE revolver
                                                     (
                                                         userid               bigint   not null primary key,
                                                         first_invoke         datetime null,
