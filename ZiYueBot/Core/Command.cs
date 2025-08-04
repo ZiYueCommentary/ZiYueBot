@@ -29,7 +29,7 @@ public abstract class Command
     /// <summary>
     /// 获取该命令的调用频率限制，用户无关型。
     /// </summary>
-    public virtual TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public virtual TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.Zero;
     }
@@ -37,7 +37,7 @@ public abstract class Command
     /// <summary>
     /// 获取该命令的调用频率限制。
     /// </summary>
-    public virtual TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
+    public virtual TimeSpan GetRateLimit(Platform? platform, EventType eventType, ulong userId)
     {
         return GetRateLimit(platform, eventType);
     }

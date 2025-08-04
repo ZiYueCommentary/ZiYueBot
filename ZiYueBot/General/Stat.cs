@@ -23,8 +23,6 @@ public class Stat : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/stat
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     public string Collect(string userName, ulong userId, Platform platform)
     {
         // 云瓶
@@ -162,7 +160,7 @@ public class Stat : GeneralCommand
         return Collect(userPing, userId, Platform.Discord);
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType, ulong userId)
     {
         using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(

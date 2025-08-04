@@ -22,8 +22,6 @@ public class Win : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/win
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     private struct WindWindow
     {
         public readonly DateTime Date = DateTime.Today;

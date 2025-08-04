@@ -80,7 +80,7 @@ public class StartRevolver : HarmonyCommand
         return "俄罗斯轮盘开始了，今天轮到谁倒霉呢";
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromSeconds(30);
     }

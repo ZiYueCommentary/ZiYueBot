@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35309.182
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZiYueBot", "ZiYueBot\ZiYueBot.csproj", "{314DE61E-6F78-422E-8ECF-90279C760384}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunhu", "Yunhu.NET\Yunhu\Yunhu.csproj", "{BA12F105-B40F-4327-A0B2-3ACFCB32FA50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{314DE61E-6F78-422E-8ECF-90279C760384}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{314DE61E-6F78-422E-8ECF-90279C760384}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{314DE61E-6F78-422E-8ECF-90279C760384}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA12F105-B40F-4327-A0B2-3ACFCB32FA50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA12F105-B40F-4327-A0B2-3ACFCB32FA50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA12F105-B40F-4327-A0B2-3ACFCB32FA50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA12F105-B40F-4327-A0B2-3ACFCB32FA50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

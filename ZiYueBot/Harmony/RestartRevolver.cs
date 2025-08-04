@@ -37,7 +37,7 @@ public class RestartRevolver : HarmonyCommand
         return "轮盘已重新旋转";
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromSeconds(10);
     }

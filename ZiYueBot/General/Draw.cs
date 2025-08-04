@@ -27,8 +27,6 @@ public class Draw : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/draw
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     public JsonNode PostRequest(string prompt)
     {
         using HttpClient client = new HttpClient();
@@ -130,7 +128,7 @@ public class Draw : GeneralCommand
         Succeed
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

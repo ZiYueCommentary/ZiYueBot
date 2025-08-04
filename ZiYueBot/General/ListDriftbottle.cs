@@ -21,8 +21,6 @@ public class ListDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     private string Invoke(string userName, ulong userId)
     {
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
@@ -65,7 +63,7 @@ public class ListDriftbottle : GeneralCommand
         return Invoke(userPing, userId);
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         if (platform == Platform.Discord || eventType == EventType.DirectMessage) return TimeSpan.FromMinutes(10);
         return TimeSpan.FromMinutes(30);

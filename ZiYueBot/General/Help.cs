@@ -21,13 +21,11 @@ public class Help : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/help
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     private string Invoke(Platform platform, string userName, ulong userId, string[] args)
     {
         Logger.Info($"平台：${platform}，调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
-        
+
         if (args.Length >= 2 && args[1] != "")
         {
             HarmonyCommand? harmony = Commands.GetHarmonyCommand<HarmonyCommand>(args[1]);
@@ -44,8 +42,7 @@ public class Help : GeneralCommand
             (current, command) => current + $"\t/{command.Id}\t{command.Name}\n");
 
         help = Commands.GeneralCommands.Values.ToHashSet()
-            .Where(command => command.SupportedPlatform == Platform.Both ||
-                              command.SupportedPlatform == platform).Aggregate(help,
+            .Where(command => command.SupportedPlatform.Contains(platform)).Aggregate(help,
                 (current, command) => current + $"\t/{command.Id}\t{command.Name}\n");
 
         help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：https://docs.ziyuebot.cn/";

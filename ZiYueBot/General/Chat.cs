@@ -34,8 +34,6 @@ public class Chat : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/chat
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     public JsonNode PostQuestion(bool qq, string question)
     {
         using HttpClient client = new HttpClient();
@@ -75,7 +73,7 @@ public class Chat : GeneralCommand
     {
         if (args.Length < 2) return "参数数量不足。使用“/help chat”查看命令用法。";
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
-        
+
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
         return "";
@@ -85,13 +83,13 @@ public class Chat : GeneralCommand
     {
         if (args.Length < 1) return "参数数量不足。使用“/help chat”查看命令用法。";
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（1 分钟 1 条）";
-        
+
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
         return "";
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType, ulong userId)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType, ulong userId)
     {
         using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(

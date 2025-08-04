@@ -24,8 +24,6 @@ public class ThrowStraitbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/straitbottle/throw
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (args.Length < 2) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
@@ -69,7 +67,7 @@ public class ThrowStraitbottle : GeneralCommand
         return "你的海峡云瓶扔出去了！";
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

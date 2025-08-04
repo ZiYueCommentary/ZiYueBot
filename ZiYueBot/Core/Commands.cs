@@ -88,7 +88,7 @@ public static class Commands
         foreach (GeneralCommand command in GeneralCommands.Values)
         {
             if (command is not T t) continue;
-            if (t.SupportedPlatform == Platform.Both || t.SupportedPlatform == platform)
+            if (t.SupportedPlatform.Contains(platform))
             {
                 return t;
             }
@@ -103,7 +103,7 @@ public static class Commands
     public static T? GetGeneralCommand<T>(Platform platform, string name) where T : GeneralCommand
     {
         if (GeneralCommands.GetValueOrDefault(name) is not T t) return default;
-        if (t.SupportedPlatform == Platform.Both || t.SupportedPlatform == platform)
+        if (t.SupportedPlatform.Contains(platform))
         {
             return t;
         }

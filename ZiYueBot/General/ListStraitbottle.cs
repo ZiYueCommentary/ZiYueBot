@@ -21,8 +21,6 @@ public class ListStraitbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
@@ -73,7 +71,7 @@ public class ListStraitbottle : GeneralCommand
         return $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 Discord 捞起，{self} 支由你扔出";
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(10);
     }

@@ -23,8 +23,6 @@ public class PickDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/pick
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     private string Invoke(int id)
     {
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
@@ -46,6 +44,17 @@ public class PickDriftbottle : GeneralCommand
                         {aprilReader.GetString("content")}
                         """;
             }
+        }
+
+        if (id == 0) // 说的道理~
+        {
+            return """
+                   你捞到了 0 号瓶子！
+                   来自：DeliciousH2O
+                   日期：2025年02月18日
+
+                   若敢来犯，必叫你大败而归！
+                   """;
         }
 
         using MySqlCommand command = new MySqlCommand(
@@ -93,10 +102,10 @@ public class PickDriftbottle : GeneralCommand
         }
 
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
+
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
-        
+
         return Invoke(id);
     }
 
@@ -117,14 +126,14 @@ public class PickDriftbottle : GeneralCommand
         }
 
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 0 条）";
-        
+
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
-        
+
         return Invoke(id);
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         if (platform == Platform.Discord || eventType == EventType.DirectMessage) return TimeSpan.Zero;
         return TimeSpan.FromMinutes(1);

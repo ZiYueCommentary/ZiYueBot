@@ -7,5 +7,5 @@ public enum Platform
 {
     QQ,
     Discord,
-    Both
+    Yunhu
 }

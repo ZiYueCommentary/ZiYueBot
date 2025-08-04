@@ -60,8 +60,7 @@ public static class Handler
         }
 
         foreach (GeneralCommand general in Commands.GeneralCommands.Values.ToHashSet().Where(general =>
-                     general.SupportedPlatform == Platform.Both ||
-                     general.SupportedPlatform == Platform.Discord))
+                     general.SupportedPlatform.Contains(Platform.Discord)))
         {
             builder.AddChoice($"{general.Name}（{general.Id}）", general.Id);
         }

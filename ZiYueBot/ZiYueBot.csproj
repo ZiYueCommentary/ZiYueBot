@@ -2,11 +2,12 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <StartupObject>ZiYueBot.ZiYueBot</StartupObject>
         <ApplicationIcon>logo.ico</ApplicationIcon>
+        <LangVersion>13</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -66,6 +67,10 @@
       <AdditionalFiles Include="resources\words.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </AdditionalFiles>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Yunhu.NET\Yunhu\Yunhu.csproj" />
     </ItemGroup>
 
 </Project>

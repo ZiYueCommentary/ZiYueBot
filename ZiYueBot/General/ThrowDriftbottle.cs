@@ -24,8 +24,6 @@ public class ThrowDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/throw
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     private string Invoke(string userName, ulong userId, string content)
     {
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
@@ -72,7 +70,7 @@ public class ThrowDriftbottle : GeneralCommand
         return Invoke(Message.MentionedUinAndName[userId], userId, args[0]);
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

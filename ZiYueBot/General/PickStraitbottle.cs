@@ -21,8 +21,6 @@ public class PickStraitbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/straitbottle/pick
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
@@ -81,7 +79,7 @@ public class PickStraitbottle : GeneralCommand
         return result;
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

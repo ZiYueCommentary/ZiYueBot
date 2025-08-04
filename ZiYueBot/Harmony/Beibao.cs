@@ -33,7 +33,7 @@ public class Beibao : HarmonyCommand
         return "";
     }
 
-    public override TimeSpan GetRateLimit(Platform platform, EventType eventType)
+    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }

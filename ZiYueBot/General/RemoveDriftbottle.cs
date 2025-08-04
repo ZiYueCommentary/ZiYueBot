@@ -21,8 +21,6 @@ public class RemoveDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/remove
                                           """;
 
-    public override Platform SupportedPlatform => Platform.Both;
-
     private string Invoke(ulong userId, int id)
     {
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
