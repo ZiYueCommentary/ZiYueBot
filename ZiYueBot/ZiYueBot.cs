@@ -31,17 +31,20 @@ public class ZiYueBot
 
     private ZiYueBot()
     {
+#if !DEBUG
         QqEvent = new ClientWebSocket();
         QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"), CancellationToken.None).Wait();
         QqApi = new ClientWebSocket();
         QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None).Wait();
         Logger.Info("QQ - 连接成功！");
+#endif
 
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
             Config = JsonSerializer.Deserialize<Config>(stream);
         }
 
+#if !DEBUG
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
             RestClientProvider = DefaultRestClientProvider.Create(true),
@@ -50,8 +53,12 @@ public class ZiYueBot
         Discord.LoginAsync(TokenType.Bot, Config.DiscordToken).Wait();
         Discord.StartAsync().Wait();
         Logger.Info("Discord - 登录成功！");
+#endif
 
+#if DEBUG
         Yunhu = new YunhuRestClient(new YunhuConfig($"http://+:{Config.YunhuPort}/", Config.YunhuToken));
+        Logger.Info("云湖 - 登录成功！");
+#endif
 
         InitializeDatabase();
         Logger.Info("MySQL - 初始化完毕");
@@ -169,7 +176,7 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
-        
+
         try
         {
             MySqlCommand command = new MySqlCommand("""
@@ -184,7 +191,7 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
-        
+
         try
         {
             MySqlCommand command = new MySqlCommand("""
@@ -206,7 +213,7 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
-        
+
         try
         {
             MySqlCommand command = new MySqlCommand("""
@@ -258,8 +265,13 @@ public class ZiYueBot
         Directory.CreateDirectory("data/images");
         Commands.Initialize();
         Instance = new ZiYueBot();
+#if !DEBUG
         DiscordHandler.Initialize();
         QqEvents.Initialize().Wait();
+#endif
+#if DEBUG
         YunhuHandler.Initialize();
+        for (;;) ;
+#endif
     }
 }
