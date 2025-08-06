@@ -8,47 +8,6 @@ namespace ZiYueBot.QQ;
 public static class Parser
 {
     /// <summary>
-    /// 解析命令行。该函数会自动跳过开头的斜线，并在空格处分割字符串。
-    /// 如果遇到了引号，则该引号到下一个引号之间的内容会被视为一整个部分。
-    /// 
-    /// 例如：
-    /// <code>
-    /// /example "hello world" ping pong
-    /// </code>
-    /// 将会返回：
-    /// <code>
-    /// example、hello world、ping和pong
-    /// </code>
-    /// </summary>
-    public static string[] Parse(string line)
-    {
-        if (line.Length == 0) return [""];
-        IList<string> args = [];
-        int pos = line.First() == '/' ? 1 : 0;
-        for (int i = pos; i < line.Length; i++)
-        {
-            switch (line[i])
-            {
-                case '"':
-                {
-                    int nextQuote = line.IndexOf('"', i + 1);
-                    if (nextQuote == -1) nextQuote = line.Length - 1;
-                    args.Add(line.Substring(i + 1, nextQuote - i - 1));
-                    i = pos = nextQuote + 2;
-                    continue;
-                }
-                case ' ':
-                    args.Add(line[pos..i]);
-                    pos = i + 1;
-                    break;
-            }
-        }
-
-        if (pos < line.Length) args.Add(line[pos..]);
-        return [.. args];
-    }
-
-    /// <summary>
     /// 扁平化 QQ 消息，以便于传输给各命令。
     /// </summary>
     public static Message FlattenMessage(JsonNode node, bool ignoreForward = false)
@@ -201,7 +160,7 @@ public static class Parser
     {
         if (message == "")
         {
-            Events.Logger.Warn("尝试发送空内容！");
+            QqEvents.Logger.Warn("尝试发送空内容！");
             return;
         }
 
@@ -254,7 +213,7 @@ public static class Parser
             if (response is not null) return response;
         }
 
-        Events.Logger.Error($"API 请求失败：{json}");
+        QqEvents.Logger.Error($"API 请求失败：{json}");
         throw new HttpRequestException();
     }
 }

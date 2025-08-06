@@ -11,7 +11,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.QQ;
 
-public static class Events
+public static class QqEvents
 {
     internal static readonly ILog Logger = LogManager.GetLogger("QQ 消息解析");
 
@@ -82,7 +82,7 @@ public static class Events
         {
             Message flatten = Parser.FlattenMessage(message);
             if (flatten.Text == "/") return;
-            string[] args = Parser.Parse(flatten.Text);
+            string[] args = flatten.Parse();
             if (message.AsArray()[0]!["type"]!.GetValue<string>() == "image" && PicFace.Users.Contains(userId))
             {
                 string url = message.AsArray()[0]!["data"]!["url"]!.GetValue<string>();

@@ -12,7 +12,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.Discord;
 
-public static class Handler
+public static class DiscordHandler
 {
     private static readonly ILog Logger = LogManager.GetLogger("Discord 消息解析");
 
