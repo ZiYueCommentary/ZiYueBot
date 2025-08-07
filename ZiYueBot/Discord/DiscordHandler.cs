@@ -436,22 +436,6 @@ public static class DiscordHandler
                         [((ulong)command.ChannelId!).ToString()]));
                     break;
                 }
-                case "ask":
-                {
-                    SocketSlashCommandDataOption? question = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetHarmonyCommand<Ask>("ask")!.Invoke(eventType,
-                        userMention, userId,
-                        question is null ? ["ask"] : ["", (string)question.Value]));
-                    break;
-                }
-                case "help":
-                {
-                    SocketSlashCommandDataOption? first = command.Data.Options.FirstOrDefault();
-                    await command.RespondAsync(Commands.GetGeneralCommand<Help>(Platform.Discord, "help")!
-                        .DiscordInvoke(eventType, userMention, userId,
-                            ["help", first is null ? "" : (string)first.Value]));
-                    break;
-                }
                 case "balogo":
                 {
                     SocketSlashCommandDataOption? left = command.Data.Options.ToList()[0];
@@ -556,16 +540,6 @@ public static class DiscordHandler
 
                     break;
                 }
-                case "扔海峡云瓶":
-                {
-                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    ThrowStraitbottle throwStraitbottle =
-                        Commands.GetGeneralCommand<ThrowStraitbottle>(Platform.Discord, "扔海峡云瓶")!;
-                    await command.RespondAsync(throwStraitbottle.DiscordInvoke(eventType, userMention,
-                        userId,
-                        ["扔海峡云瓶", (string)content!.Value]));
-                    break;
-                }
                 case "捞海峡云瓶":
                 {
                     PickStraitbottle pickStraitbottle =
@@ -573,26 +547,6 @@ public static class DiscordHandler
                     string result =
                         pickStraitbottle.DiscordInvoke(eventType, userMention, userId, ["捞海峡云瓶"]);
                     await SendComplexMessage(command, result);
-                    break;
-                }
-                case "删除云瓶":
-                {
-                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    RemoveDriftbottle removeDriftbottle =
-                        Commands.GetGeneralCommand<RemoveDriftbottle>(Platform.Discord, "删除云瓶")!;
-                    await command.RespondAsync(removeDriftbottle.DiscordInvoke(eventType, userMention,
-                        userId,
-                        [((long)content!.Value).ToString()]));
-                    break;
-                }
-                case "扔云瓶":
-                {
-                    SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
-                    ThrowDriftbottle throwDriftbottle =
-                        Commands.GetGeneralCommand<ThrowDriftbottle>(Platform.Discord, "扔云瓶")!;
-                    await command.RespondAsync(throwDriftbottle.DiscordInvoke(eventType, userMention,
-                        userId,
-                        [(string)content!.Value]));
                     break;
                 }
                 case "捞云瓶":
@@ -607,10 +561,12 @@ public static class DiscordHandler
                 }
                 default:
                 {
+                    string[] args = [command.CommandName];
+                    args = args.Concat(command.Data.Options.Select(option => option.Value.ToString())).ToArray()!;
                     HarmonyCommand? harmony = Commands.GetHarmonyCommand<HarmonyCommand>(command.CommandName);
                     if (harmony is not null)
                     {
-                        await command.RespondAsync(harmony.Invoke(eventType, userMention, userId, []));
+                        await command.RespondAsync(harmony.Invoke(eventType, userMention, userId, args));
                     }
                     else
                     {
@@ -619,7 +575,7 @@ public static class DiscordHandler
                         if (general is not null)
                         {
                             await command.RespondAsync(general.DiscordInvoke(eventType, userMention,
-                                userId, []));
+                                userId, args));
                         }
                     }
 

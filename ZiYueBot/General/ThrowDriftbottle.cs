@@ -6,7 +6,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class ThrowDriftbottle : GeneralCommand
+public partial class ThrowDriftbottle : GeneralCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("扔云瓶");
 
@@ -52,7 +52,7 @@ public class ThrowDriftbottle : GeneralCommand
         string arguments = string.Join(' ', args[1..]);
         if (arguments.Contains('\u2406')) return "云瓶内容禁止包含表情！";
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
+
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
 
@@ -61,17 +61,20 @@ public class ThrowDriftbottle : GeneralCommand
 
     public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
     {
-        if (Regex.IsMatch(args[0], "<:.*:\\d+>")) return "云瓶内容禁止包含表情！";
+        if (EmotionRegex().IsMatch(args[1])) return "云瓶内容禁止包含表情！";
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
+
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
 
-        return Invoke(Message.MentionedUinAndName[userId], userId, args[0]);
+        return Invoke(Message.MentionedUinAndName[userId], userId, args[1]);
     }
 
     public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
     {
         return TimeSpan.FromMinutes(1);
     }
+
+    [GeneratedRegex("<:.*:\\d+>")]
+    public static partial Regex EmotionRegex();
 }

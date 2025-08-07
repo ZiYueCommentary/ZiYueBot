@@ -65,7 +65,7 @@ public class RemoveDriftbottle : GeneralCommand
         int id = int.MinValue;
         try
         {
-            id = int.Parse(args[0]);
+            id = int.Parse(args[1]);
         }
         catch (FormatException)
         {
