@@ -89,4 +89,12 @@ public static class StringExtension
             .Replace("\r", "\\r")
             .Replace("\t", "\\t");
     }
+
+    public static string SafeArgument(this string str)
+    {
+        return str.Replace('\u2402', '[').Replace('\u2403', ']')
+            .Replace('\u2404', '[').Replace('\u2405', ']')
+            .Replace('\u2406', '[').Replace('\u2407', ']')
+            .Replace('\u2408', '[').Replace('\u2409', ']');
+    }
 }

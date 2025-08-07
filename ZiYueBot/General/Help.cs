@@ -58,4 +58,9 @@ public class Help : GeneralCommand
     {
         return Invoke(Platform.Discord, userPing, userId, args);
     }
+
+    public override string YunhuInvoke(EventType eventType, string userName, uint userId, string[] args)
+    {
+        return Invoke(Platform.Yunhu, userName, userId, args);
+    }
 }

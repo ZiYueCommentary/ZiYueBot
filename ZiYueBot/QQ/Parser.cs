@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using ZiYueBot.Core;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.QQ;
 
@@ -32,13 +33,13 @@ public static class Parser
                                                        }
                                                        """.Replace("%id%", segment["data"]!["id"]!.GetValue<string>()))
                         .GetAwaiter().GetResult();
-                    forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text;
+                    forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text.SafeArgument();
                     wasMention = false;
                     break;
                 }
                 case "text":
                 {
-                    message.Text += segment["data"]!["text"]!.GetValue<string>()[(wasMention ? 1 : 0)..];
+                    message.Text += segment["data"]!["text"]!.GetValue<string>()[(wasMention ? 1 : 0)..].SafeArgument();
                     wasMention = false;
                     break;
                 }

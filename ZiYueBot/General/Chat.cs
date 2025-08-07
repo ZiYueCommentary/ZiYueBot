@@ -54,7 +54,7 @@ public class Chat : GeneralCommand
                       "role": "user"
                     }
                   ],
-                  "model": "deepseek-r1"
+                  "model": "deepseek-r1-0528"
                 }
                 """.Replace("%system_prompt%", SystemPrompt)
                 .Replace("%april%", DateTime.Today.Month == 4 && DateTime.Today.Day == 1 ? "用贴吧风格回答之后的问题，要尽量刻薄。" : "")
