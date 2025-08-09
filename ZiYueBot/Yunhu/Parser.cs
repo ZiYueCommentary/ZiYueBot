@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using Yunhu.Api;
 using Yunhu.Chat.Request;
 using Yunhu.Chat.Request.ChatContent;
@@ -6,7 +5,6 @@ using Yunhu.Chat.Response;
 using Yunhu.Content;
 using Yunhu.Event;
 using Message = ZiYueBot.Core.Message;
-using YunhuMessage = Yunhu.Api.Message;
 
 namespace ZiYueBot.Yunhu;
 
@@ -61,6 +59,7 @@ public static class Parser
             ChatType.Bot => new UserReceiver((UserId)chat.ChatId),
             ChatType.Group => new GroupReceiver((GroupId)chat.ChatId)
         };
-        ZiYueBot.Instance.Yunhu.ApiProvider.Request<ChatRequest, ChatResponse>(new ChatRequest(receiver,new TextChatContent(message)));
+        ZiYueBot.Instance.Yunhu.ApiProvider.Request<ChatRequest, ChatResponse>(new ChatRequest(receiver,
+            new TextChatContent(message)));
     }
 }
