@@ -21,6 +21,8 @@ public class Help : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/help
                                           """;
 
+    public override Platform[] SupportedPlatform => [Platform.Discord, Platform.QQ, Platform.Yunhu];
+
     private string Invoke(Platform platform, string userName, ulong userId, string[] args)
     {
         Logger.Info($"平台：${platform}，调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
@@ -61,6 +63,6 @@ public class Help : GeneralCommand
 
     public override string YunhuInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        return Invoke(Platform.Yunhu, userName, userId, args);
+        return Invoke(Platform.Yunhu, userName, userId, ["help"]);
     }
 }

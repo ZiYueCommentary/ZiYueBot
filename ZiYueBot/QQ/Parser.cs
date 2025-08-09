@@ -33,7 +33,7 @@ public static class Parser
                                                        }
                                                        """.Replace("%id%", segment["data"]!["id"]!.GetValue<string>()))
                         .GetAwaiter().GetResult();
-                    forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text.SafeArgument();
+                    forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text;
                     wasMention = false;
                     break;
                 }

@@ -44,11 +44,11 @@ public class YunhuHandler
                 else
                 {
                     GeneralCommand? general =
-                        Commands.GetGeneralCommand<GeneralCommand>(Platform.QQ, args[0]);
+                        Commands.GetGeneralCommand<GeneralCommand>(Platform.Yunhu, args[0]);
                     if (general is not null)
                     {
                         Parser.SendMessage(context.Chat,
-                            general.QQInvoke(
+                            general.YunhuInvoke(
                                 context.Chat.ChatType == ChatType.Group ? EventType.GroupMessage : EventType.DirectMessage,
                                 context.Sender.Nickname, (uint)context.Sender.Id.Id, args));
                     }

@@ -4,7 +4,7 @@ namespace ZiYueBot.General;
 
 public abstract class GeneralCommand : Command
 {
-    public virtual Platform[] SupportedPlatform => Enum.GetValues<Platform>();
+    public virtual Platform[] SupportedPlatform => [Platform.Discord, Platform.QQ];
 
     public virtual string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
