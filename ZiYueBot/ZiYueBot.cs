@@ -195,6 +195,23 @@ public class ZiYueBot
         try
         {
             MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE draw
+                                                    (
+                                                        userid        bigint default 0 primary key,
+                                                        current_month date   null,
+                                                        limitation    int    null,
+                                                        consumed      int    null
+                                                    ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
+
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
                                                     CREATE TABLE invoke_records_general
                                                     (
                                                         userid       bigint      not null,

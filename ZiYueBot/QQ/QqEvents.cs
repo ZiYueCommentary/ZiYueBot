@@ -156,7 +156,7 @@ public static class QqEvents
                         break;
                     }
 
-                    if (validation is Draw.InvokeValidation.SponsorExpired or Draw.InvokeValidation.NotSponsor)
+                    if (validation is Draw.InvokeValidation.SponsorExpired or Draw.InvokeValidation.NotSponsor or Draw.InvokeValidation.HitDrawLimit)
                     {
                         if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
                         {
@@ -173,7 +173,7 @@ public static class QqEvents
                         }
                     }
 
-                    await Parser.SendMessage(eventType, sourceUin, "机器绘画中...");
+                    await Parser.SendMessage(eventType, sourceUin, $"机器绘画中（本月 {output} 次）");
                     try
                     {
                         JsonNode posted = draw.PostRequest(string.Join(' ', args[1..]));

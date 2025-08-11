@@ -38,7 +38,7 @@ public class Draw : GeneralCommand
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
         using StringContent content = new StringContent("""
                                                         {
-                                                        "model": "wan2.2-t2i-flash",
+                                                        "model": "wan2.2-t2i-plus",
                                                         "input": {
                                                             "prompt": "%prompt%"
                                                         },
@@ -73,7 +73,7 @@ public class Draw : GeneralCommand
     public InvokeValidation TryInvoke(EventType eventType, string userName, ulong userId, string[] args,
         out string output)
     {
-        if (args.Length < 1)
+        if (args.Length < 2)
         {
             output = "参数数量不足。使用“/help draw”查看命令用法。";
             return InvokeValidation.NotEnoughParameters;
@@ -113,10 +113,46 @@ public class Draw : GeneralCommand
             }
         }
 
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        output = "";
-        return InvokeValidation.Succeed;
+        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+        {
+            using MySqlCommand command = new MySqlCommand($"SELECT * FROM draw WHERE userid = {userId} ", connection);
+            using MySqlDataReader reader = command.ExecuteReader();
+            if (!reader.Read() || reader.GetDateTime("current_month").ToYearMonth() != DateTime.Today.ToYearMonth())
+            {
+                using MySqlConnection updateConnection = ZiYueBot.Instance.ConnectDatabase();
+                using MySqlCommand updateCommand =
+                    new MySqlCommand(
+                        $"""
+                         INSERT INTO draw (userid, current_month, limitation, consumed) VALUES ({userId}, '{DateTime.Today.ToYearMonth():yyyy-M-d}', 50, 0) 
+                         ON DUPLICATE KEY UPDATE current_month = '{DateTime.Today.ToYearMonth():yyyy-M-d}', limitation = 50, consumed = 0
+                         """,
+                        updateConnection);
+                updateCommand.ExecuteNonQuery();
+            }
+        }
+
+        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+        {
+            using MySqlCommand command = new MySqlCommand($"SELECT * FROM draw WHERE userid = {userId} ", connection);
+            using MySqlDataReader reader = command.ExecuteReader();
+            reader.Read();
+            if (reader.GetInt32("consumed") >= reader.GetInt32("limitation"))
+            {
+                output = "您本月的调用额度已耗尽。";
+                return InvokeValidation.HitDrawLimit;
+            }
+
+            using MySqlConnection updateConnection = ZiYueBot.Instance.ConnectDatabase();
+            using MySqlCommand updateCommand =
+                new MySqlCommand($"UPDATE draw SET consumed = consumed + 1 WHERE userid = {userId}",
+                    updateConnection);
+            updateCommand.ExecuteNonQuery();
+
+            Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
+            UpdateInvokeRecords(userId);
+            output = $"{reader.GetInt32("consumed") + 1}/{reader.GetInt32("limitation")}";
+            return InvokeValidation.Succeed;
+        }
     }
 
     public enum InvokeValidation
@@ -125,6 +161,7 @@ public class Draw : GeneralCommand
         RateLimited,
         NotSponsor,
         SponsorExpired,
+        HitDrawLimit,
         Succeed
     }
 
