@@ -37,13 +37,13 @@ public partial class ThrowDriftbottle : GeneralCommand
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command =
             new MySqlCommand(
-                "INSERT INTO driftbottles(userid, username, created, content) VALUE (@userid, @username, now(), @content)",
+                "INSERT INTO driftbottles_queue(userid, username, created, content) VALUE (@userid, @username, now(), @content)",
                 database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", userName);
         command.Parameters.AddWithValue("@content", content.DatabaseFriendly());
         command.ExecuteNonQuery();
-        return $"你的 {command.LastInsertedId} 号漂流瓶扔出去了！";
+        return $"您的云瓶已提交待审，审核编号：{command.LastInsertedId}\r审核列表：https://www.ziyuebot.cn/queue.php?id={userId}";
     }
 
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)

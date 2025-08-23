@@ -253,6 +253,25 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
+
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE driftbottles_queue
+                                                    (
+                                                        queue_id int auto_increment primary key,
+                                                        userid   bigint                    null,
+                                                        username tinytext                  null,
+                                                        created  datetime                  null,
+                                                        content  text                      null,
+                                                        reviewed tinyint(1)           default 0
+                                                    ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
     }
 
     public MySqlConnection ConnectDatabase()
