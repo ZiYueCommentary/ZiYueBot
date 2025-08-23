@@ -86,7 +86,7 @@ public static class QqEvents
             if (message.AsArray()[0]!["type"]!.GetValue<string>() == "image" && PicFace.Users.Contains(userId))
             {
                 string url = message.AsArray()[0]!["data"]!["url"]!.GetValue<string>();
-                await Parser.SendMessage(eventType, sourceUin, $"\u2402{url}\u2403\\r{url}");
+                await Parser.SendMessage(eventType, sourceUin, $"\u2402{url}\u2403\r{url}");
                 PicFace.Users.Remove(userId);
                 PicFace.Logger.Info($"{userName} 的表情转图片已完成：{url}");
                 return;

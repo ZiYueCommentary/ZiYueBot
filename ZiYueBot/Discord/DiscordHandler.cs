@@ -287,7 +287,7 @@ public static class DiscordHandler
                     SocketSlashCommandDataOption? content = command.Data.Options.FirstOrDefault();
                     Draw draw = Commands.GetGeneralCommand<Draw>(Platform.Discord, "draw")!;
                     Draw.InvokeValidation validation = draw.TryInvoke(eventType, userMention, userId,
-                        [(string)content!.Value], out string output);
+                        ["draw", (string)content!.Value], out string output);
                     if (validation is Draw.InvokeValidation.RateLimited or Draw.InvokeValidation.NotEnoughParameters)
                     {
                         await command.RespondAsync(output);
