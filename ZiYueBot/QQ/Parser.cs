@@ -24,16 +24,26 @@ public static class Parser
                 {
                     if (ignoreForward) continue;
                     message.HasForward = true;
-                    JsonNode response = SendApiRequest("""
-                                                       {
-                                                           "action": "get_msg",
-                                                           "params": {
-                                                               "message_id": %id%
+                    try
+                    {
+                        JsonNode response = SendApiRequest("""
+                                                           {
+                                                               "action": "get_msg",
+                                                               "params": {
+                                                                   "message_id": %id%
+                                                               }
                                                            }
-                                                       }
-                                                       """.Replace("%id%", segment["data"]!["id"]!.GetValue<string>()))
-                        .GetAwaiter().GetResult();
-                    forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text;
+                                                           """.Replace("%id%",
+                                segment["data"]!["id"]!.GetValue<string>()))
+                            .GetAwaiter().GetResult();
+                        forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text;
+                    }
+                    catch (Exception e)
+                    {
+                        QqEvents.Logger.Warn("获取引用内容出错：", e);
+                        forwardMessage = "[未知引用消息]";
+                    }
+
                     wasMention = false;
                     break;
                 }
@@ -51,26 +61,35 @@ public static class Parser
                 }
                 case "at":
                 {
-                    string qq = segment["data"]!["qq"]!.GetValue<string>();
-                    if (qq != "all")
+                    try
                     {
-                        message.Text += $"\u2404{qq}\u2405";
-                        JsonNode response = SendApiRequest("""
-                                                           {
-                                                               "action": "get_stranger_info",
-                                                               "params": {
-                                                                   "user_id": %qq%,
-                                                                   "no_cache": false
+                        string qq = segment["data"]!["qq"]!.GetValue<string>();
+                        if (qq != "all")
+                        {
+                            message.Text += $"\u2404{qq}\u2405";
+                            JsonNode response = SendApiRequest("""
+                                                               {
+                                                                   "action": "get_stranger_info",
+                                                                   "params": {
+                                                                       "user_id": %qq%,
+                                                                       "no_cache": false
+                                                                   }
                                                                }
-                                                           }
-                                                           """.Replace("%qq%", qq)).GetAwaiter().GetResult();
-                        Message.MentionedUinAndName[ulong.Parse(qq)] =
-                            response["data"]!["nickname"]!.GetValue<string>();
+                                                               """.Replace("%qq%", qq)).GetAwaiter().GetResult();
+                            Message.MentionedUinAndName[ulong.Parse(qq)] =
+                                response["data"]!["nickname"]!.GetValue<string>();
+                        }
+                        else
+                        {
+                            message.Text += "\u24040\u2405";
+                            Message.MentionedUinAndName[0] = "全体成员";
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        message.Text += "\u24040\u2405";
-                        Message.MentionedUinAndName[0] = "全体成员";
+                        QqEvents.Logger.Warn("用户信息获取失败", e);
+                        message.Text += "\u24041\u2405";
+                        Message.MentionedUinAndName[1] = "[未知用户]";
                     }
 
                     wasMention = true;
