@@ -67,7 +67,7 @@ public partial class ThrowDriftbottle : GeneralCommand
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
         UpdateInvokeRecords(userId);
 
-        return Invoke(Message.MentionedUinAndName[userId], userId, args[1]);
+        return Invoke(Message.MentionedUinAndName[userId], userId, args[1].SafeArgument());
     }
 
     public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
