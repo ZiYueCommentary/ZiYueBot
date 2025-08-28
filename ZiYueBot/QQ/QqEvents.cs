@@ -263,6 +263,10 @@ public static class QqEvents
                         {
                             await Parser.SendMessage(eventType, sourceUin, "DeepSeek 回答超时。");
                         }
+                        catch (Exception)
+                        {
+                            await Parser.SendMessage(eventType, sourceUin, "与第三方通讯出错。");
+                        }
                     }
 
                     break;
