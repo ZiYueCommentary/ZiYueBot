@@ -61,7 +61,7 @@ public class ThrowStraitbottle : GeneralCommand
                 database);
         command.Parameters.AddWithValue("@userid", userId);
         command.Parameters.AddWithValue("@username", Message.MentionedUinAndName[userId]);
-        command.Parameters.AddWithValue("@content", args[1].DatabaseFriendly());
+        command.Parameters.AddWithValue("@content", args[1].SafeArgument().DatabaseFriendly());
         command.ExecuteNonQuery();
         return "你的海峡云瓶扔出去了！";
     }
