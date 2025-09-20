@@ -245,7 +245,8 @@ public class ZiYueBot
                                                         shooting_self_death  int      default 0,
                                                         shooting_other_death int      default 0,
                                                         rotating_count       int      default 0,
-                                                        restart_count        int      default 0
+                                                        restart_count        int      default 0,
+                                                        being_shot           int      default 0
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();
