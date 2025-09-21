@@ -40,7 +40,7 @@ public static class StringExtension
                         _ => "bin"
                     };
 
-                    string path = $"data/images/{Guid.NewGuid()}.{type}";
+                    string path = $"data/images/{DateTime.Today.Date:yyyy-MM-dd}/{Guid.NewGuid()}.{type}";
                     File.WriteAllBytesAsync(path, fileData);
                     result += $"\u2408{path}\u2409";
                     i = pos = end;
