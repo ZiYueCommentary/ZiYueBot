@@ -496,26 +496,17 @@ public static class DiscordHandler
                     }
                     else
                     {
-                        await command.RespondAsync("深度思考中...");
+                        await command.RespondAsync("机器思考中...");
                         try
                         {
                             DateTime prev = DateTime.Now;
                             JsonNode node = chat.PostQuestion(false, (string)content.Value)["choices"]![0]!["message"]!;
                             DateTime last = DateTime.Now;
 
-                            string think = node["reasoning_content"]!.GetValue<string>();
-                            if (think.StartsWith('\n')) think = think[1..];
-                            if (think.EndsWith('\n')) think = think[..^1];
-
-                            string[] reason = think.Split('\n');
                             StringBuilder builder = new StringBuilder();
-                            builder.Append($"`已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
-                            foreach (string se in reason)
-                            {
-                                builder.Append("> ").Append(se).Append('\n');
-                            }
+                            builder.Append($"`已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
 
-                            builder.Append('\n').Append(node["content"]!.GetValue<string>());
+                            builder.Append(node["content"]!.GetValue<string>());
                             if (builder.Length > 1900)
                             {
                                 builder.Remove(1900, builder.Length - 1900);
@@ -526,11 +517,11 @@ public static class DiscordHandler
                         }
                         catch (TimeoutException)
                         {
-                            await command.Channel.SendMessageAsync("DeepSeek 服务连接超时。");
+                            await command.Channel.SendMessageAsync("服务连接超时。");
                         }
                         catch (TaskCanceledException)
                         {
-                            await command.Channel.SendMessageAsync("DeepSeek 回答超时。");
+                            await command.Channel.SendMessageAsync("回答超时。");
                         }
                         catch (Exception)
                         {

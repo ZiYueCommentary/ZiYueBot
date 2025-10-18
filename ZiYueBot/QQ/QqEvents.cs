@@ -156,7 +156,8 @@ public static class QqEvents
                         break;
                     }
 
-                    if (validation is Draw.InvokeValidation.SponsorExpired or Draw.InvokeValidation.NotSponsor or Draw.InvokeValidation.HitDrawLimit)
+                    if (validation is Draw.InvokeValidation.SponsorExpired or Draw.InvokeValidation.NotSponsor
+                        or Draw.InvokeValidation.HitDrawLimit)
                     {
                         if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
                         {
@@ -243,25 +244,24 @@ public static class QqEvents
                     }
                     else
                     {
-                        await Parser.SendMessage(eventType, sourceUin, "深度思考中...");
+                        await Parser.SendMessage(eventType, sourceUin, "机器思考中...");
                         try
                         {
                             DateTime prev = DateTime.Now;
                             string answer =
-                                chat.PostQuestion(true, string.Join(' ', args[1..]))["choices"]![0]!["message"]![
-                                        "content"]!
-                                    .GetValue<string>();
+                                chat.PostQuestion(true, string.Join(' ', args[1..]))["choices"]![0]!["message"]!
+                                    ["content"]!.GetValue<string>();
                             DateTime last = DateTime.Now;
                             await Parser.SendMessage(eventType, sourceUin,
-                                $"已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒\n\n{answer}");
+                                $"已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒\n\n{answer}");
                         }
                         catch (TimeoutException)
                         {
-                            await Parser.SendMessage(eventType, sourceUin, "DeepSeek 服务连接超时。");
+                            await Parser.SendMessage(eventType, sourceUin, "服务连接超时。");
                         }
                         catch (TaskCanceledException)
                         {
-                            await Parser.SendMessage(eventType, sourceUin, "DeepSeek 回答超时。");
+                            await Parser.SendMessage(eventType, sourceUin, "回答超时。");
                         }
                         catch (Exception)
                         {
