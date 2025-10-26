@@ -500,7 +500,7 @@ public static class DiscordHandler
                         try
                         {
                             DateTime prev = DateTime.Now;
-                            JsonNode node = chat.PostQuestion(false, (string)content.Value)["choices"]![0]!["message"]!;
+                            JsonNode node = chat.PostQuestion(false, command.User.GlobalName, (string)content.Value)["choices"]![0]!["message"]!;
                             DateTime last = DateTime.Now;
 
                             StringBuilder builder = new StringBuilder();

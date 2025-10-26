@@ -34,7 +34,7 @@ public class Chat : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/chat
                                           """;
 
-    public JsonNode PostQuestion(bool qq, string question)
+    public JsonNode PostQuestion(bool qq, string userName, string question)
     {
         using HttpClient client = new HttpClient();
         using HttpRequestMessage request =
@@ -50,6 +50,10 @@ public class Chat : GeneralCommand
                       "role": "system"
                     },
                     {
+                      "content": "我叫“%user%”，一名%platform%用户。",
+                      "role": "user"
+                    },
+                    {
                       "content": "%question%",
                       "role": "user"
                     }
@@ -59,6 +63,8 @@ public class Chat : GeneralCommand
                 }
                 """.Replace("%system_prompt%", SystemPrompt)
                 .Replace("%april%", DateTime.Today.Month == 4 && DateTime.Today.Day == 1 ? "用贴吧风格回答之后的问题，要尽量刻薄。" : "")
+                .Replace("%user%", userName)
+                .Replace("%platform%", qq ? "QQ": "Discord")
                 .Replace("%question%", question.JsonFriendly())
             /*.Replace("%token%", (qq ? 1024 : 4096).ToString())*/, Encoding.UTF8, "application/json");
         request.Content = content;

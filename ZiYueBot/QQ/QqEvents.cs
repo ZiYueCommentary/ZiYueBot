@@ -249,8 +249,8 @@ public static class QqEvents
                         {
                             DateTime prev = DateTime.Now;
                             string answer =
-                                chat.PostQuestion(true, string.Join(' ', args[1..]))["choices"]![0]!["message"]!
-                                    ["content"]!.GetValue<string>();
+                                chat.PostQuestion(true, userName, string.Join(' ', args[1..]))["choices"]!
+                                    [0]!["message"]!["content"]!.GetValue<string>();
                             DateTime last = DateTime.Now;
                             await Parser.SendMessage(eventType, sourceUin,
                                 $"已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒\n\n{answer}");
