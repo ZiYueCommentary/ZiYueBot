@@ -18,9 +18,7 @@ public partial class ThrowDriftbottle : GeneralCommand
 
     public override string Description => """
                                           /扔云瓶 [content]
-                                          扔一个漂流云瓶。“content”是瓶子的内容，要求不包含表情。
-                                          频率限制：每次调用间隔 1 分钟。
-                                          云瓶生态建设条例：https://docs.ziyuebot.cn/tos-driftbottle
+                                          扔一个漂流云瓶。隐玖机器上不可用，请使用子悦机器。
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/throw
                                           """;
 

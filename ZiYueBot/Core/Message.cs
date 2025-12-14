@@ -23,7 +23,7 @@ public struct Message()
     {
         if (Text.Length == 0) return [""];
         IList<string> args = [];
-        int pos = Text.First() == '/' ? 1 : 0;
+        int pos = Text.First() == '.' ? 1 : 0;
         for (int i = pos; i < Text.Length; i++)
         {
             switch (Text[i])

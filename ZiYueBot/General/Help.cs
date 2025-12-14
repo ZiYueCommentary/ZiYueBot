@@ -40,7 +40,7 @@ public class Help : GeneralCommand
             return general is not null ? general.Description : $"命令未找到：{args[1]}";
         }
 
-        string help = Commands.HarmonyCommands.Values.ToHashSet().Aggregate("子悦机器可用命令：\n",
+        string help = Commands.HarmonyCommands.Values.ToHashSet().Where(command => command.Id != "draw" && !command.Name.Contains("云瓶")).Aggregate("隐玖机器可用命令：\n",
             (current, command) => current + $"\t/{command.Id}\t{command.Name}\n");
 
         help = Commands.GeneralCommands.Values.ToHashSet()

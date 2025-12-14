@@ -16,8 +16,7 @@ public class PickStraitbottle : GeneralCommand
 
     public override string Description => """
                                           /捞海峡云瓶
-                                          扔一个海峡云瓶。由 QQ 扔出的瓶子只能被 Discord 捞起，反之亦然。所有瓶子只能被捞起一次。
-                                          频率限制：每次调用间隔 1 分钟。
+                                          扔一个海峡云瓶。隐玖机器上不可用，请使用子悦机器。
                                           在线文档：https://docs.ziyuebot.cn/general/straitbottle/pick
                                           """;
 

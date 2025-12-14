@@ -16,8 +16,7 @@ public class ListStraitbottle : GeneralCommand
 
     public override string Description => """
                                           /海峡云瓶列表
-                                          查看当前海峡云瓶生态的数据，包括总瓶子数、可捞起数和扔出数。
-                                          频率限制：每次调用间隔 10 分钟。
+                                          查看当前海峡云瓶生态的数据。隐玖机器上不可用，请使用子悦机器。
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
                                           """;
 

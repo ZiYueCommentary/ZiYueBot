@@ -46,11 +46,6 @@ public class Jrrp : HarmonyCommand
         Logger.Info($"调用者：{userName} ({userId})");
         UpdateInvokeRecords(userId);
 
-        if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
-        {
-            return $"{userName} 的今日人品是 {Random.Shared.Next(Int32.MinValue, 0)}。子悦机器不予评价。";
-        }
-
         StringBuilder builder = new StringBuilder();
         builder.Append(userId).Append(DateTime.Today.ToBinary()).Append(42);
         byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));

@@ -1,64 +1,34 @@
-﻿using Discord;
-using Discord.Net.WebSockets;
-using Discord.WebSocket;
-using ZiYueBot.Discord;
-using ZiYueBot.QQ;
-using log4net;
-using System.Net;
+﻿using log4net;
 using System.Net.WebSockets;
 using System.Text.Json;
-using Discord.Net.Rest;
 using MySql.Data.MySqlClient;
-using Yunhu;
 using ZiYueBot.Core;
-using ZiYueBot.Yunhu;
+using ZiYueBot.QQ;
 
 namespace ZiYueBot;
 
 public class ZiYueBot
 {
-    public const string Version = "0.1.2";
-
     private static readonly ILog Logger = LogManager.GetLogger("主程序");
     public static ZiYueBot Instance;
 
     public readonly ClientWebSocket QqEvent;
     public readonly ClientWebSocket QqApi;
-    public readonly DiscordSocketClient Discord;
-    public readonly YunhuRestClient Yunhu;
 
     public readonly Config Config;
 
     private ZiYueBot()
     {
-#if !DEBUG
         QqEvent = new ClientWebSocket();
         QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"), CancellationToken.None).Wait();
         QqApi = new ClientWebSocket();
         QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None).Wait();
         Logger.Info("QQ - 连接成功！");
-#endif
 
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
             Config = JsonSerializer.Deserialize<Config>(stream);
         }
-
-#if !DEBUG
-        Discord = new DiscordSocketClient(new DiscordSocketConfig
-        {
-            RestClientProvider = DefaultRestClientProvider.Create(true),
-            WebSocketProvider = DefaultWebSocketProvider.Create(new WebProxy("http://127.0.0.1:7890"))
-        });
-        Discord.LoginAsync(TokenType.Bot, Config.DiscordToken).Wait();
-        Discord.StartAsync().Wait();
-        Logger.Info("Discord - 登录成功！");
-#endif
-
-#if DEBUG
-        Yunhu = new YunhuRestClient(new YunhuConfig($"http://+:{Config.YunhuPort}/", Config.YunhuToken));
-        Logger.Info("云湖 - 登录成功！");
-#endif
 
         InitializeDatabase();
         Logger.Info("MySQL - 初始化完毕");
@@ -302,13 +272,6 @@ public class ZiYueBot
         Directory.CreateDirectory("data/images");
         Commands.Initialize();
         Instance = new ZiYueBot();
-#if !DEBUG
-        DiscordHandler.Initialize();
         QqEvents.Initialize().Wait();
-#endif
-#if DEBUG
-        YunhuHandler.Initialize();
-        for (;;) ;
-#endif
     }
 }

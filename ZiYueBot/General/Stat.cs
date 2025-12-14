@@ -16,76 +16,13 @@ public class Stat : GeneralCommand
 
     public override string Description => """
                                           /stat
-                                          统计你的账号在子悦机器上的数据。
-                                          内容包括：所在平台、账号信息、赞助信息、云瓶统计和黑名单信息。
-                                          频率限制：每次调用间隔 5 分钟；赞助者 1 分钟。
-                                          完整版统计数据：https://www.ziyuebot.cn/stat.html
+                                          统计你的账号在隐玖机器上的数据。
+                                          频率限制：每次调用间隔 5 分钟。
                                           在线文档：https://docs.ziyuebot.cn/general/stat
                                           """;
 
     public string Collect(string userName, ulong userId, Platform platform)
     {
-        // 云瓶
-        string? driftbottlesStat = null;
-        using (MySqlCommand query = new MySqlCommand($"""
-                                                      SELECT (SELECT COUNT(*) FROM driftbottles WHERE userid = {userId})                AS bottle_counts,
-                                                             (SELECT COALESCE(SUM(views), 0) FROM driftbottles WHERE userid = {userId}) AS total_views,
-                                                             (SELECT MAX(id) FROM driftbottles)                                         AS last_bottle_id
-                                                      """,
-                   ZiYueBot.Instance.ConnectDatabase()))
-        {
-            using MySqlDataReader reader = query.ExecuteReader();
-            if (reader.Read())
-            {
-                int bottleCounts = reader.GetInt32("bottle_counts");
-                double percent = (double)bottleCounts / reader.GetInt32("last_bottle_id") * 100;
-                driftbottlesStat =
-                    $"您共扔出了 {bottleCounts} 支云瓶，占全部云瓶的 {percent:F4}%，总浏览量 {reader.GetInt32("total_views")} 次。";
-            }
-        }
-
-        // 云瓶增长
-        string? driftbottlesIncrementalStat = null;
-        using (MySqlCommand query = new MySqlCommand($"""
-                                                      SELECT 
-                                                          (SELECT COUNT(*) FROM driftbottles WHERE userid = {userId} AND created >= current_date() - INTERVAL 7 DAY) AS your_new_bottles,
-                                                          (SELECT COUNT(*) FROM driftbottles WHERE created >= CURRENT_DATE - INTERVAL 7 DAY) AS new_bottles;
-                                                      """,
-                   ZiYueBot.Instance.ConnectDatabase()))
-        {
-            using MySqlDataReader reader = query.ExecuteReader();
-            if (reader.Read())
-            {
-                int userNewBottles = reader.GetInt32("your_new_bottles");
-                int totalNewBottles = reader.GetInt32("new_bottles");
-                double percent = (double)userNewBottles / totalNewBottles * 100;
-                driftbottlesIncrementalStat =
-                    $"最近七天内增加了 {totalNewBottles} 支云瓶，由您扔出的有 {userNewBottles} 支，占总增长的 {percent:F4}%。";
-            }
-        }
-
-        // 赞助
-        string? sponsorStatus = null;
-        using (MySqlCommand query = new MySqlCommand(
-                   $"SELECT * FROM sponsors WHERE userid = {userId} LIMIT 1",
-                   ZiYueBot.Instance.ConnectDatabase()))
-        {
-            using MySqlDataReader reader = query.ExecuteReader();
-            if (reader.Read())
-            {
-                DateTime sponsorExpiry = reader.GetDateTime("expiry");
-                sponsorStatus = $"赞助到期时间：{sponsorExpiry:yyyy年MM月dd日}";
-                if (DateTime.Today > sponsorExpiry)
-                {
-                    sponsorStatus += $"（已到期 {(int)(DateTime.Today - sponsorExpiry).TotalDays} 天）";
-                }
-                else
-                {
-                    sponsorStatus += $"（{(int)(sponsorExpiry - DateTime.Today).TotalDays} 天）";
-                }
-            }
-        }
-
         // 俄罗斯轮盘
         string? revolverStat = null;
         using (MySqlCommand query = new MySqlCommand($"SELECT * FROM revolver WHERE userid = {userId}",
@@ -129,21 +66,17 @@ public class Stat : GeneralCommand
 
         return $"""
                 {userName} 的统计数据
-                平台：{(platform == Platform.Discord ? "Discord" : "QQ")}
                 ID: {userId}
-                {sponsorStatus ?? "您不是子悦机器的赞助者。"}
-                {driftbottlesStat ?? "云瓶统计失败，请联系子悦。"}
-                {driftbottlesIncrementalStat ?? "云瓶增长统计失败，请联系子悦。"}
                 {revolverStat ?? "您没有调用过俄罗斯轮盘命令。"}
                 {blacklists ?? "您没有被列入黑名单的命令。"}
                 
-                完整版统计数据另见：https://www.ziyuebot.cn/stat.html?id={userId}
+                子悦机器统计数据另见：https://www.ziyuebot.cn/stat.html?id={userId}
                 """;
     }
 
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})");
         UpdateInvokeRecords(userId);

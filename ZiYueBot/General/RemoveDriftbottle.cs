@@ -17,7 +17,7 @@ public class RemoveDriftbottle : GeneralCommand
 
     public override string Description => """
                                           /删除云瓶 [id]
-                                          删除一个自己扔出的漂流云瓶。“id”是瓶子的数字编号。
+                                          删除一个自己扔出的漂流云瓶。隐玖机器上不可用，请使用子悦机器。
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/remove
                                           """;
 

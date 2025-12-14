@@ -11,7 +11,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Discord.Net" Version="3.16.0" />
       <PackageReference Include="log4net" Version="3.0.3-preview.1" />
       <PackageReference Include="MySql.Data" Version="9.1.0" />
       <PackageReference Include="QRCoder" Version="1.6.0" />
@@ -67,10 +66,6 @@
       <AdditionalFiles Include="resources\words.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </AdditionalFiles>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Yunhu.NET\Yunhu\Yunhu.csproj" />
     </ItemGroup>
 
 </Project>
