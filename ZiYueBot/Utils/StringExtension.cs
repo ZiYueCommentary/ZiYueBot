@@ -40,8 +40,8 @@ public static class StringExtension
                         _ => "bin"
                     };
 
-                    Directory.CreateDirectory($"data/images/{DateTime.Today.Date:yyyy-MM-dd}");
-                    string path = $"data/images/{DateTime.Today.Date:yyyy-MM-dd}/{Guid.NewGuid()}.{type}";
+                    Directory.CreateDirectory($"data/images/{DateTime.Today:yyyy-MM}");
+                    string path = $"data/images/{DateTime.Today:yyyy-MM}/{Guid.NewGuid()}.{type}";
                     File.WriteAllBytesAsync(path, fileData);
                     result += $"\u2408{path}\u2409";
                     i = pos = end;
