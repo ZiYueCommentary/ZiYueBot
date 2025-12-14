@@ -140,11 +140,24 @@ public class Win : GeneralCommand
 
         if (targetedPovertyAlleviation) rate = (int)Math.Ceiling(rate * 1.5);
 
-        using MySqlCommand insert = new MySqlCommand(
-            hasRecord
-                ? $"UPDATE win SET date = current_date(), username = '{userName}', score = {rate}, prospered = false WHERE userid = {userId} AND channel = {channel}"
-                : $"INSERT INTO win(userid, username, channel, date, score) VALUE({userId}, '{userName}', {channel}, current_date(), {rate})",
-            database);
+        MySqlCommand insert;
+        if (hasRecord)
+        {
+            insert = new MySqlCommand(
+                "UPDATE win SET date = current_date(), username = @userName, score = @rate, prospered = false WHERE userid = @userId AND channel = @channel",
+                database);
+        }
+        else
+        {
+            insert = new MySqlCommand(
+                "INSERT INTO win(userid, username, channel, date, score) VALUES(@userId, @userName, @channel, current_date(), @rate)",
+                database);
+        }
+
+        insert.Parameters.AddWithValue("@userName", userName);
+        insert.Parameters.AddWithValue("@rate", rate);
+        insert.Parameters.AddWithValue("@userId", userId);
+        insert.Parameters.AddWithValue("@channel", channel);
         insert.ExecuteNonQuery();
         int level = GetWinLevel(rate);
         if (level == 1)
