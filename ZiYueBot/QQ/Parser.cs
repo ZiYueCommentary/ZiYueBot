@@ -184,7 +184,8 @@ public static class Parser
             return;
         }
 
-        message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;").Replace(@"\", @"\\");
+        message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;").Replace(@"\", @"\\")
+            .JsonFriendly();
         string request = eventType == EventType.DirectMessage
             ? """
               {
