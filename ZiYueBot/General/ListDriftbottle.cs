@@ -20,6 +20,8 @@ public class ListDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
                                           """;
 
+    public override bool Hidden => true;
+
     private string Invoke(string userName, ulong userId)
     {
         using MySqlCommand bottleCountCommand =

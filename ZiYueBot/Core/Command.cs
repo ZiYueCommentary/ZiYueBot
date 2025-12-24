@@ -26,6 +26,8 @@ public abstract class Command
     /// </summary>
     public abstract string Description { get; }
 
+    public virtual bool Hidden => false;
+
     /// <summary>
     /// 获取该命令的调用频率限制，用户无关型。
     /// </summary>

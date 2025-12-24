@@ -22,6 +22,8 @@ public partial class ThrowDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/throw
                                           """;
 
+    public override bool Hidden => true;
+
     private string Invoke(string userName, ulong userId, string content)
     {
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！

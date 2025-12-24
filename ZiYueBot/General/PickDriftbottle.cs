@@ -21,6 +21,8 @@ public class PickDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/pick
                                           """;
 
+    public override bool Hidden => true;
+
     private string Invoke(int id)
     {
         using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();

@@ -40,11 +40,12 @@ public class Help : GeneralCommand
             return general is not null ? general.Description : $"命令未找到：{args[1]}";
         }
 
-        string help = Commands.HarmonyCommands.Values.ToHashSet().Where(command => command.Id != "draw" && !command.Name.Contains("云瓶")).Aggregate("隐玖机器可用命令：\n",
+        string help = Commands.HarmonyCommands.Values.ToHashSet()
+            .Where(command => !command.Hidden).Aggregate("隐玖机器可用命令：\n",
             (current, command) => current + $"\t/{command.Id}\t{command.Name}\n");
 
         help = Commands.GeneralCommands.Values.ToHashSet()
-            .Where(command => command.SupportedPlatform.Contains(platform)).Aggregate(help,
+            .Where(command => command.SupportedPlatform.Contains(platform) && !command.Hidden).Aggregate(help,
                 (current, command) => current + $"\t/{command.Id}\t{command.Name}\n");
 
         help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：https://docs.ziyuebot.cn/";

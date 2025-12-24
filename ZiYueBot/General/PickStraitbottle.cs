@@ -20,6 +20,8 @@ public class PickStraitbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/straitbottle/pick
                                           """;
 
+    public override bool Hidden => true;
+
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";

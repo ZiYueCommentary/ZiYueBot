@@ -23,6 +23,8 @@ public class Draw : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/draw
                                           """;
 
+    public override bool Hidden => true;
+
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
     {
         throw new NotSupportedException();

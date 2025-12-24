@@ -20,9 +20,9 @@ public class ZiYueBot
     private ZiYueBot()
     {
         QqEvent = new ClientWebSocket();
-        QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"), CancellationToken.None).Wait();
+        QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/"), CancellationToken.None).Wait();
         QqApi = new ClientWebSocket();
-        QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None).Wait();
+        QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/"), CancellationToken.None).Wait();
         Logger.Info("QQ - 连接成功！");
 
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
