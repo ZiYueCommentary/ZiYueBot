@@ -33,7 +33,6 @@ public static class QqEvents
 
                 JsonNode? message = JsonNode.Parse(builder.ToString());
                 uint userId = message!["user_id"]!.GetValue<uint>();
-                string username = message["sender"]!["nickname"]!.GetValue<string>();
 
                 // 检查云瓶星标
                 if (message["notice_type"]?.ToString() == "group_msg_emoji_like")
@@ -48,9 +47,11 @@ public static class QqEvents
                         if (match.Success)
                         {
                             Parser.SendMessage(EventType.GroupMessage, message["group_id"]!.GetValue<ulong>(),
-                                Stargazers.AddStargazer(userId, username, int.Parse(match.Groups[1].Value)));
+                                Stargazers.AddStargazer(userId, Parser.FetchUsername(userId.ToString()), int.Parse(match.Groups[1].Value)));
                         }
                     }
+
+                    continue;
                 }
 
                 // 一般消息
@@ -59,13 +60,15 @@ public static class QqEvents
                 {
                     case "private":
                         EventHandler(
-                            EventType.DirectMessage, message["message"]!, userId, username,
+                            EventType.DirectMessage, message["message"]!, userId,
+                            message["sender"]!["nickname"]!.GetValue<string>(),
                             message["user_id"]!.GetValue<ulong>()
                         );
                         break;
                     case "group":
                         EventHandler(
-                            EventType.GroupMessage, message["message"]!, userId, username,
+                            EventType.GroupMessage, message["message"]!, userId,
+                            message["sender"]!["nickname"]!.GetValue<string>(),
                             message["group_id"]!.GetValue<ulong>()
                         );
                         break;
