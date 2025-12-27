@@ -71,8 +71,4 @@
       </AdditionalFiles>
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Yunhu.NET\Yunhu\Yunhu.csproj" />
-    </ItemGroup>
-
 </Project>

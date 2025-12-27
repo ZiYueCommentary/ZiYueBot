@@ -9,9 +9,7 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using Discord.Net.Rest;
 using MySql.Data.MySqlClient;
-using Yunhu;
 using ZiYueBot.Core;
-using ZiYueBot.Yunhu;
 
 namespace ZiYueBot;
 
@@ -25,26 +23,22 @@ public class ZiYueBot
     public readonly ClientWebSocket QqEvent;
     public readonly ClientWebSocket QqApi;
     public readonly DiscordSocketClient Discord;
-    public readonly YunhuRestClient Yunhu;
 
     public readonly Config Config;
 
     private ZiYueBot()
     {
-#if !DEBUG
         QqEvent = new ClientWebSocket();
         QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event"), CancellationToken.None).Wait();
         QqApi = new ClientWebSocket();
         QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api"), CancellationToken.None).Wait();
         Logger.Info("QQ - 连接成功！");
-#endif
 
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
             Config = JsonSerializer.Deserialize<Config>(stream);
         }
 
-#if !DEBUG
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
             RestClientProvider = DefaultRestClientProvider.Create(true),
@@ -53,12 +47,6 @@ public class ZiYueBot
         Discord.LoginAsync(TokenType.Bot, Config.DiscordToken).Wait();
         Discord.StartAsync().Wait();
         Logger.Info("Discord - 登录成功！");
-#endif
-
-#if DEBUG
-        Yunhu = new YunhuRestClient(new YunhuConfig($"http://+:{Config.YunhuPort}/", Config.YunhuToken));
-        Logger.Info("云湖 - 登录成功！");
-#endif
 
         InitializeDatabase();
         Logger.Info("MySQL - 初始化完毕");
@@ -285,10 +273,10 @@ public class ZiYueBot
                                                         removed   tinyint(1)           default 0,
                                                         PRIMARY KEY (userid, bottle_id)
                                                     ) CHARSET = utf8mb4;
-                                                    
+
                                                     CREATE INDEX stargazers_bottle_id_index
                                                         ON stargazers (bottle_id, removed);
-                                                    
+
                                                     CREATE INDEX stargazers_userid_index
                                                         ON stargazers (userid, removed);
                                                     """, database);
@@ -326,13 +314,7 @@ public class ZiYueBot
         Directory.CreateDirectory("data/images");
         Commands.Initialize();
         Instance = new ZiYueBot();
-#if !DEBUG
         DiscordHandler.Initialize();
         QqEvents.Initialize().Wait();
-#endif
-#if DEBUG
-        YunhuHandler.Initialize();
-        for (;;) ;
-#endif
     }
 }
