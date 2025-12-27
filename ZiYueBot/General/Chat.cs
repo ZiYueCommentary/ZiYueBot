@@ -69,11 +69,9 @@ public class Chat : GeneralCommand
             /*.Replace("%token%", (qq ? 1024 : 4096).ToString())*/, Encoding.UTF8, "application/json");
         request.Content = content;
         using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
-        Logger.Warn(response.Content);
         response.EnsureSuccessStatusCode();
         string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-        if (res == "") throw new TimeoutException();
-        return JsonNode.Parse(res)!;
+        return res == "" ? throw new TimeoutException() : JsonNode.Parse(res)!;
     }
 
     public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
