@@ -1,4 +1,5 @@
 using log4net;
+using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 using ZiYueBot.General;
 using ZiYueBot.Utils;
@@ -33,13 +34,18 @@ public class Shooting : HarmonyCommand
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
 
         ulong target = ulong.Parse(args[1]);
-        StartRevolver.UpdateRevolverRecords(userId, target == userId ? "shooting_self_count" : "shooting_other_count");
+        _ = StartRevolver.UpdateRevolverRecords(userId, target == userId ? "shooting_self_count" : "shooting_other_count");
+        using MySqlCommand update =
+            new MySqlCommand(
+                $"UPDATE revolver SET being_shot = being_shot + 1 WHERE userid = {target}",
+                ZiYueBot.Instance.ConnectDatabase());
+        update.ExecuteNonQueryAsync();
 
         if ((round.ChamberIndex == round.BulletPos) || (DateTime.Today.Month == 4 && DateTime.Today.Day == 1))
         {
             StartRevolver.Revolvers.Remove(group, out _);
 
-            StartRevolver.UpdateRevolverRecords(userId,
+            _ = StartRevolver.UpdateRevolverRecords(userId,
                 target == userId ? "shooting_self_death" : "shooting_other_death");
             return $"砰！枪声响起，{Message.MentionedUinAndName[target]} 倒下了";
         }

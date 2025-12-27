@@ -46,16 +46,7 @@ public class PickDriftbottle : GeneralCommand
             }
         }
 
-        if (id == 0) // 说的道理~
-        {
-            return """
-                   你捞到了 0 号瓶子！
-                   来自：DeliciousH2O
-                   日期：2025年02月18日
-
-                   若敢来犯，必叫你大败而归！
-                   """;
-        }
+        if (id == 0) id = 625; // 说的道理~
 
         using MySqlCommand command = new MySqlCommand(
             id == int.MinValue
@@ -69,6 +60,7 @@ public class PickDriftbottle : GeneralCommand
                          你捞到了 {reader.GetInt32("id")} 号瓶子！
                          来自：{reader.GetString("username")}
                          日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
+                         星标数：{Stargazers.GetStargazerCount(id)}
 
                          {reader.GetString("content")}
                          """;

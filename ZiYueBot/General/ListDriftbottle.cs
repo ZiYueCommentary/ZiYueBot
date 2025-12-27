@@ -24,7 +24,7 @@ public class ListDriftbottle : GeneralCommand
     private string Invoke(string userName, ulong userId)
     {
         using MySqlCommand bottleCountCommand =
-            new MySqlCommand($"SELECT COUNT(*) AS bottles FROM driftbottles WHERE userid = {userId}",
+            new MySqlCommand($"SELECT COUNT(*) AS bottles FROM driftbottles WHERE userid = {userId} AND pickable = true",
                 ZiYueBot.Instance.ConnectDatabase());
         using MySqlDataReader bottleCountReader = bottleCountCommand.ExecuteReader();
         bottleCountReader.Read();

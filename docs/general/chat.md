@@ -1,6 +1,6 @@
 # 对话 <Badge type="warning" text="测试中命令" /> {#chat}
 
-**对话 (Chat)** 是一个 [一般命令](/general/)，可以与 [DeepSeek-R1](https://api-docs.deepseek.com/zh-cn/news/news250120) 对话。
+**对话 (Chat)** 是一个 [一般命令](/general/)，可以与 [通义千问](https://www.tongyi.com/qianwen/) 对话。
 
 每次调用此命令时都为一次新对话。对话不支持联网搜索。
 
@@ -23,7 +23,7 @@
 ## 输出 {#output}
 
 ```
-已深度思考 {时间} 秒
+已思考 {时间} 秒
 
 {思考}
 

@@ -24,16 +24,7 @@ public static class Parser
                 {
                     if (ignoreForward) continue;
                     message.HasForward = true;
-                    JsonNode response = SendApiRequest("""
-                                                       {
-                                                           "action": "get_msg",
-                                                           "params": {
-                                                               "message_id": %id%
-                                                           }
-                                                       }
-                                                       """.Replace("%id%", segment["data"]!["id"]!.GetValue<string>()))
-                        .GetAwaiter().GetResult();
-                    forwardMessage = FlattenMessage(response["data"]!["message"]!, true).Text;
+                    forwardMessage = FetchMessageContent(segment["data"]!["id"]!.GetValue<string>(), out _);
                     wasMention = false;
                     break;
                 }
@@ -51,26 +42,23 @@ public static class Parser
                 }
                 case "at":
                 {
-                    string qq = segment["data"]!["qq"]!.GetValue<string>();
-                    if (qq != "all")
+                    try
                     {
-                        message.Text += $"\u2404{qq}\u2405";
-                        JsonNode response = SendApiRequest("""
-                                                           {
-                                                               "action": "get_stranger_info",
-                                                               "params": {
-                                                                   "user_id": %qq%,
-                                                                   "no_cache": false
-                                                               }
-                                                           }
-                                                           """.Replace("%qq%", qq)).GetAwaiter().GetResult();
-                        Message.MentionedUinAndName[ulong.Parse(qq)] =
-                            response["data"]!["nickname"]!.GetValue<string>();
+                        string qq = segment["data"]!["qq"]!.GetValue<string>();
+                        FetchUsername(qq);
+                        if (qq != "all")
+                        {
+                            message.Text += $"\u2404{qq}\u2405";
+                        }
+                        else
+                        {
+                            message.Text += "\u24040\u2405";
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        message.Text += "\u24040\u2405";
-                        Message.MentionedUinAndName[0] = "全体成员";
+                        QqEvents.Logger.Warn("提及消息解析失败", e);
+                        QqEvents.Logger.Debug(segment);
                     }
 
                     wasMention = true;
@@ -91,6 +79,58 @@ public static class Parser
             ? message.Text.Insert(message.Text.IndexOf(' '), $" \"{forwardMessage}\" ")
             : $"{message.Text} \"{forwardMessage}\"";
         return message;
+    }
+
+    public static string FetchMessageContent(string messageId, out ulong userId)
+    {
+        string message;
+        try
+        {
+            JsonNode response = SendApiRequest("""
+                                               {
+                                                   "action": "get_msg",
+                                                   "params": {
+                                                       "message_id": %id%
+                                                   }
+                                               }
+                                               """.Replace("%id%", messageId)).GetAwaiter().GetResult();
+            message = FlattenMessage(response["data"]!["message"]!, true).Text;
+            userId = response["data"]!["user_id"]!.GetValue<ulong>();
+        }
+        catch (Exception e)
+        {
+            QqEvents.Logger.Warn("获取引用内容出错：", e);
+            message = "[未知引用消息]";
+            userId = 1;
+        }
+
+        return message;
+    }
+
+    public static string FetchUsername(string userId)
+    {
+        try
+        {
+            if (userId == "all") return "全体成员";
+            JsonNode response = SendApiRequest("""
+                                               {
+                                                   "action": "get_stranger_info",
+                                                   "params": {
+                                                       "user_id": %userid%,
+                                                       "no_cache": false
+                                                   }
+                                               }
+                                               """.Replace("%userid%", userId)).GetAwaiter().GetResult();
+            string userName = response["data"]!["nickname"]!.GetValue<string>();
+            Message.MentionedUinAndName[ulong.Parse(userId)] = userName;
+            return userName;
+        }
+        catch (Exception e)
+        {
+            QqEvents.Logger.Warn("用户信息获取失败", e);
+            Message.MentionedUinAndName[1] = "[未知用户]";
+            return "[未知用户]";
+        }
     }
 
     public static string HierarchizeMessage(string message)
@@ -159,13 +199,14 @@ public static class Parser
 
     public static async Task SendMessage(EventType eventType, ulong target, string message)
     {
-        if (message == "")
+        if (String.IsNullOrEmpty(message))
         {
             QqEvents.Logger.Warn("尝试发送空内容！");
             return;
         }
 
-        message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;").Replace(@"\", @"\\");
+        message = message.Replace("&", "&amp;").Replace("[", "&#91;").Replace("]", "&#93;").Replace(@"\", @"\\")
+            .JsonFriendly();
         string request = eventType == EventType.DirectMessage
             ? """
               {

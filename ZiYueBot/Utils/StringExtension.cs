@@ -40,7 +40,8 @@ public static class StringExtension
                         _ => "bin"
                     };
 
-                    string path = $"data/images/{Guid.NewGuid()}.{type}";
+                    Directory.CreateDirectory($"data/images/{DateTime.Today:yyyy-MM}");
+                    string path = $"data/images/{DateTime.Today:yyyy-MM}/{Guid.NewGuid()}.{type}";
                     File.WriteAllBytesAsync(path, fileData);
                     result += $"\u2408{path}\u2409";
                     i = pos = end;
@@ -96,5 +97,11 @@ public static class StringExtension
             .Replace('\u2404', '[').Replace('\u2405', ']')
             .Replace('\u2406', '[').Replace('\u2407', ']')
             .Replace('\u2408', '[').Replace('\u2409', ']');
+    }
+
+    public static string FirstLine(this string str)
+    {
+        int index = Math.Min(str.IndexOf('\r'), str.IndexOf('\n'));
+        return index == -1 ? str : str[..index];
     }
 }

@@ -52,6 +52,6 @@ public abstract class Command
                                                             INSERT INTO invoke_records_general VALUE ({userid}, '{Id}', now(), now(), 1)
                                                             ON DUPLICATE KEY UPDATE last_invoke = now(), invoke_count = invoke_count + 1
                                                             """, connection);
-        command.ExecuteNonQuery();
+        await command.ExecuteNonQueryAsync();
     }
 }

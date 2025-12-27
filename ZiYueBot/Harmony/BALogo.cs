@@ -49,7 +49,7 @@ public class BALogo : HarmonyCommand
         canvas.Restore();
         using SKBitmap halo = SKBitmap.Decode("resources/halo.png");
         canvas.DrawBitmap(halo, (float)((width - OffsetX) / 2) - (rightWidth - leftWidth) / 2, 0, haloPaint);
-        using SKData? output = surface.Snapshot().Encode();
+        using SKData? output = surface.Snapshot().Encode(SKEncodedImageFormat.Jpeg, 90);
         return output.ToArray();
     }
 

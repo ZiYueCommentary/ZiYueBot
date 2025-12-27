@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Discord;
-using Discord.Net;
 using Discord.WebSocket;
 using log4net;
 using MySql.Data.MySqlClient;
@@ -14,155 +14,125 @@ namespace ZiYueBot.Discord;
 
 public static class DiscordHandler
 {
-    private static readonly ILog Logger = LogManager.GetLogger("Discord 消息解析");
-
-    private static async void RegisterCommand(SlashCommandBuilder builder)
-    {
-        try
-        {
-            try
-            {
-                await ZiYueBot.Instance.Discord.CreateGlobalApplicationCommandAsync(builder.Build());
-            }
-            catch (HttpRequestException e)
-            {
-                Logger.Error("无法连接 Discord 服务器！", e);
-            }
-            catch (TimeoutException)
-            {
-                Logger.Warn("连接超时");
-            }
-        }
-        catch (HttpException e)
-        {
-            if (e.HttpCode == System.Net.HttpStatusCode.MethodNotAllowed)
-            {
-                Logger.Warn($"命令重复注册：{builder.Name}");
-            }
-            else
-            {
-                Logger.Error($"命令注册失败：{builder.Name}", e);
-            }
-        }
-    }
+    internal static readonly ILog Logger = LogManager.GetLogger("Discord 消息解析");
 
     public static void Initialize()
     {
-        ZiYueBot.Instance.Discord.Ready += ClientReady;
-        ZiYueBot.Instance.Discord.SlashCommandExecuted += SlashCommandHandler;
+        ZiYueBot.Instance.Discord.Ready += OnReady;
+        ZiYueBot.Instance.Discord.SlashCommandExecuted += OnSlashCommandExecuted;
+        ZiYueBot.Instance.Discord.ReactionAdded += OnReactionAdded;
     }
 
-    private static void AddCommandsAsChoices(SlashCommandOptionBuilder builder)
+    private static async Task OnReactionAdded(Cacheable<IUserMessage, ulong> user, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
     {
-        foreach (HarmonyCommand harmony in Commands.HarmonyCommands.Values.ToHashSet())
+        try
         {
-            builder.AddChoice($"{harmony.Name} ({harmony.Id})", harmony.Id);
+            IMessage message = await channel.Value.GetMessageAsync(reaction.MessageId);
+            if (message.Author.Id == 1189195615083704422)
+            {
+                Match match = Stargazers.StargazerRegex().Match(message.Content.FirstLine());
+                if (match.Success && reaction.Emote.Name is "👍" or "⭐")
+                {
+                    await message.Channel.SendMessageAsync(Stargazers.AddStargazer(reaction.UserId,
+                        reaction.User.Value.Mention, int.Parse(match.Groups[1].Value)));
+                }
+            }
         }
-
-        foreach (GeneralCommand general in Commands.GeneralCommands.Values.ToHashSet().Where(general =>
-                     general.SupportedPlatform.Contains(Platform.Discord)))
+        catch (Exception e)
         {
-            builder.AddChoice($"{general.Name}（{general.Id}）", general.Id);
+            Logger.Error(e.Message, e);
         }
     }
 
-    private static SlashCommandBuilder EasyCommandBuilder(Command command)
+    private static async Task OnReady()
     {
-        SlashCommandBuilder builder = new SlashCommandBuilder();
-        builder.WithName(command.Id);
-        builder.WithDescription(command.Summary);
-        return builder;
-    }
-
-    private static async Task ClientReady()
-    {
-        RegisterCommand(EasyCommandBuilder(new Jrrp()));
-        RegisterCommand(EasyCommandBuilder(new Hitokoto()));
-        RegisterCommand(EasyCommandBuilder(new About()));
-        RegisterCommand(EasyCommandBuilder(new Quotations()));
-        RegisterCommand(EasyCommandBuilder(new ListDriftbottle()));
-        RegisterCommand(EasyCommandBuilder(new PickStraitbottle()));
-        RegisterCommand(EasyCommandBuilder(new ListStraitbottle()));
-        RegisterCommand(EasyCommandBuilder(new StartRevolver()));
-        RegisterCommand(EasyCommandBuilder(new RestartRevolver()));
-        RegisterCommand(EasyCommandBuilder(new Rotating()));
-        RegisterCommand(EasyCommandBuilder(new Win()));
-        RegisterCommand(EasyCommandBuilder(new Stat()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new Jrrp()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new Hitokoto()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new About()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new Quotations()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new ListDriftbottle()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new PickStraitbottle()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new ListStraitbottle()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new StartRevolver()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new RestartRevolver()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new Rotating()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new Win()));
+        await CommandHelper.RegisterCommand(CommandHelper.EasyCommandBuilder(new Stat()));
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new Chat());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new Chat());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("question").WithDescription("问题内容").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new Draw());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new Draw());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("prompt").WithDescription("正向提示词").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new Shooting());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new Shooting());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("user").WithDescription("开枪目标").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.User);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new ThrowStraitbottle());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new ThrowStraitbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("content").WithDescription("瓶子内容").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new ThrowDriftbottle());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new ThrowDriftbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("content").WithDescription("瓶子内容").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new PickDriftbottle());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new PickDriftbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("id").WithDescription("瓶子编号").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.Integer);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new RemoveDriftbottle());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new RemoveDriftbottle());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("id").WithDescription("瓶子编号").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.Integer);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new Help());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new Help());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("command").WithDescription("获取帮助的命令名").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.String);
-            AddCommandsAsChoices(optionBuilder);
+            CommandHelper.AddCommandsAsChoices(optionBuilder);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new Ask());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new Ask());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("question").WithDescription("向张维为教授提出问题").WithRequired(false)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new BALogo());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new BALogo());
             SlashCommandOptionBuilder optionLeftBuilder = new SlashCommandOptionBuilder();
             optionLeftBuilder.WithName("left").WithDescription("光环左侧文字").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
@@ -170,61 +140,27 @@ public static class DiscordHandler
             optionRightBuilder.WithName("right").WithDescription("光环右侧文字").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOptions(optionLeftBuilder, optionRightBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new Xibao());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new Xibao());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("content").WithDescription("喜报内容").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
         {
-            SlashCommandBuilder builder = EasyCommandBuilder(new Beibao());
+            SlashCommandBuilder builder = CommandHelper.EasyCommandBuilder(new Beibao());
             SlashCommandOptionBuilder optionBuilder = new SlashCommandOptionBuilder();
             optionBuilder.WithName("content").WithDescription("悲报内容").WithRequired(true)
                 .WithType(ApplicationCommandOptionType.String);
             builder.AddOption(optionBuilder);
-            RegisterCommand(builder);
+            await CommandHelper.RegisterCommand(builder);
         }
     }
 
-    private static async Task SendComplexMessage(SocketSlashCommand command, string message)
-    {
-        if (message.Contains('\u2408'))
-        {
-            string reply = "";
-            List<string> images = [];
-            int pos = 0;
-            for (int i = 0; i < message.Length; i++)
-            {
-                switch (message[i])
-                {
-                    case '\u2408':
-                    {
-                        reply += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
-                        int end = message.IndexOf('\u2409', i + 1);
-                        images.Add(message.Substring(i + 1, end - i - 1));
-                        i = pos = end;
-                        continue;
-                    }
-                }
-            }
-
-            if (pos < message.Length - 1) reply += message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..];
-
-            await command.RespondWithFilesAsync(
-                images.ConvertAll(path => new FileAttachment(path, path)),
-                reply);
-        }
-        else
-        {
-            await command.RespondAsync(message);
-        }
-    }
-
-    private static async Task SlashCommandHandler(SocketSlashCommand command)
+    private static async Task OnSlashCommandExecuted(SocketSlashCommand command)
     {
         try
         {
@@ -242,42 +178,10 @@ public static class DiscordHandler
                 }
             }
 
-            await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+            if (Commands.CheckBlacklist(userId, command.CommandName, out string blacklistMessage))
             {
-                await using MySqlCommand command1 = new MySqlCommand(
-                    $"SELECT * FROM blacklists WHERE userid = {userId} AND command = 'all'",
-                    connection);
-                await using MySqlDataReader reader = command1.ExecuteReader();
-                if (reader.Read())
-                {
-                    await command.RespondAsync($"""
-                                                您已被禁止使用子悦机器！
-                                                时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
-                                                原因：{reader.GetString("reason")}
-                                                用户协议：https://docs.ziyuebot.cn/tos.html
-                                                """);
-                    return;
-                }
-            }
-
-            await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
-            {
-                await using MySqlCommand command1 = new MySqlCommand(
-                    "SELECT * FROM blacklists WHERE userid = @userid AND command = @command",
-                    connection);
-                command1.Parameters.AddWithValue("@userid", userId);
-                command1.Parameters.AddWithValue("@command", command.CommandName);
-                await using MySqlDataReader reader = command1.ExecuteReader();
-                if (reader.Read())
-                {
-                    await command.RespondAsync($"""
-                                                您已被禁止使用该命令！
-                                                时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
-                                                原因：{reader.GetString("reason")}
-                                                用户协议：https://docs.ziyuebot.cn/tos.html
-                                                """);
-                    return;
-                }
+                await command.RespondAsync(blacklistMessage);
+                return;
             }
 
             switch (command.CommandName)
@@ -496,26 +400,17 @@ public static class DiscordHandler
                     }
                     else
                     {
-                        await command.RespondAsync("深度思考中...");
+                        await command.RespondAsync("机器思考中...");
                         try
                         {
                             DateTime prev = DateTime.Now;
-                            JsonNode node = chat.PostQuestion(false, (string)content.Value)["choices"]![0]!["message"]!;
+                            JsonNode node = chat.PostQuestion(false, command.User.GlobalName, (string)content.Value)["choices"]![0]!["message"]!;
                             DateTime last = DateTime.Now;
 
-                            string think = node["reasoning_content"]!.GetValue<string>();
-                            if (think.StartsWith('\n')) think = think[1..];
-                            if (think.EndsWith('\n')) think = think[..^1];
-
-                            string[] reason = think.Split('\n');
                             StringBuilder builder = new StringBuilder();
-                            builder.Append($"`已深度思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
-                            foreach (string se in reason)
-                            {
-                                builder.Append("> ").Append(se).Append('\n');
-                            }
+                            builder.Append($"`已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
 
-                            builder.Append('\n').Append(node["content"]!.GetValue<string>());
+                            builder.Append(node["content"]!.GetValue<string>());
                             if (builder.Length > 1900)
                             {
                                 builder.Remove(1900, builder.Length - 1900);
@@ -526,11 +421,11 @@ public static class DiscordHandler
                         }
                         catch (TimeoutException)
                         {
-                            await command.Channel.SendMessageAsync("DeepSeek 服务连接超时。");
+                            await command.Channel.SendMessageAsync("服务连接超时。");
                         }
                         catch (TaskCanceledException)
                         {
-                            await command.Channel.SendMessageAsync("DeepSeek 回答超时。");
+                            await command.Channel.SendMessageAsync("回答超时。");
                         }
                         catch (Exception)
                         {
@@ -546,7 +441,7 @@ public static class DiscordHandler
                         Commands.GetGeneralCommand<PickStraitbottle>(Platform.Discord, "捞海峡云瓶")!;
                     string result =
                         pickStraitbottle.DiscordInvoke(eventType, userMention, userId, ["捞海峡云瓶"]);
-                    await SendComplexMessage(command, result);
+                    await CommandHelper.SendComplexMessage(command, result);
                     break;
                 }
                 case "捞云瓶":
@@ -556,7 +451,7 @@ public static class DiscordHandler
                         Commands.GetGeneralCommand<PickDriftbottle>(Platform.Discord, "捞云瓶")!;
                     string result = pickDriftbottle.DiscordInvoke(eventType, userMention, userId,
                         [content == null ? int.MinValue.ToString() : ((long)content.Value).ToString()]);
-                    await SendComplexMessage(command, result);
+                    await CommandHelper.SendComplexMessage(command, result);
                     break;
                 }
                 default:

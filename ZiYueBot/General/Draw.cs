@@ -38,13 +38,15 @@ public class Draw : GeneralCommand
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
         using StringContent content = new StringContent("""
                                                         {
-                                                        "model": "wan2.2-t2i-plus",
-                                                        "input": {
-                                                            "prompt": "%prompt%"
-                                                        },
-                                                        "parameters": {
-                                                            "size": "1024*1024",
-                                                            "n": 1
+                                                            "model": "wan2.6-t2i",
+                                                            "input": {
+                                                                "prompt": "%prompt%"
+                                                            },
+                                                            "parameters": {
+                                                                "negative_prompt": "",
+                                                                "size": "1328*1328",
+                                                                "n": 1
+                                                            }
                                                         }
                                                         """.Replace("%prompt%", prompt.JsonFriendly()),
             Encoding.UTF8,

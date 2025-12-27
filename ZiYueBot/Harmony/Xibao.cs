@@ -38,7 +38,7 @@ public class Xibao : HarmonyCommand
         SKBitmap image = isXibao ? ImageXibao : ImageBeibao;
         canvas.DrawBitmap(image, 0, 0, paint);
         DrawCenteredText(canvas, text, 1024, 512, 384, Font, paint);
-        using SKData? output = surface.Snapshot().Encode();
+        using SKData? output = surface.Snapshot().Encode(SKEncodedImageFormat.Jpeg, 90);
         return output.ToArray();
     }
 

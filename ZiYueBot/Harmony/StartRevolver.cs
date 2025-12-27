@@ -94,7 +94,7 @@ public class StartRevolver : HarmonyCommand
                 new MySqlCommand(
                     $"INSERT INTO revolver (userid, first_invoke, last_invoke) VALUE ({userId}, now(), now())",
                     connection);
-            insert.ExecuteNonQuery();
+            await insert.ExecuteNonQueryAsync();
         }
         catch (Exception)
         {
@@ -105,6 +105,6 @@ public class StartRevolver : HarmonyCommand
             new MySqlCommand(
                 $"UPDATE revolver SET last_invoke = now(), {column} = {column} + 1 WHERE userid = {userId}",
                 connection);
-        update.ExecuteNonQuery();
+        await update.ExecuteNonQueryAsync();
     }
 }
