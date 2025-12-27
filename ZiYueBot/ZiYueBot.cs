@@ -33,9 +33,9 @@ public class ZiYueBot
     {
 #if !DEBUG
         QqEvent = new ClientWebSocket();
-        QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event/"), CancellationToken.None).Wait();
+        QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event"), CancellationToken.None).Wait();
         QqApi = new ClientWebSocket();
-        QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None).Wait();
+        QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api"), CancellationToken.None).Wait();
         Logger.Info("QQ - 连接成功！");
 #endif
 
@@ -198,9 +198,9 @@ public class ZiYueBot
                                                     CREATE TABLE draw
                                                     (
                                                         userid        bigint default 0 primary key,
-                                                        current_month date   null,
-                                                        limitation    int    null,
-                                                        consumed      int    null
+                                                        current_month date                    null,
+                                                        limitation    int                     null,
+                                                        consumed      int                     null
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();
@@ -216,9 +216,9 @@ public class ZiYueBot
                                                     (
                                                         userid       bigint      not null,
                                                         command      varchar(50) not null,
-                                                        first_invoke datetime    null,
-                                                        last_invoke  datetime    null,
-                                                        invoke_count int         null,
+                                                        first_invoke datetime        null,
+                                                        last_invoke  datetime        null,
+                                                        invoke_count int             null,
                                                         PRIMARY KEY (userid, command)
                                                     ) CHARSET = utf8mb4;
 
@@ -237,16 +237,16 @@ public class ZiYueBot
                                                     CREATE TABLE revolver
                                                     (
                                                         userid               bigint   not null primary key,
-                                                        first_invoke         datetime null,
-                                                        last_invoke          datetime null,
-                                                        start_count          int      default 0,
-                                                        shooting_self_count  int      default 0,
-                                                        shooting_other_count int      default 0,
-                                                        shooting_self_death  int      default 0,
-                                                        shooting_other_death int      default 0,
-                                                        rotating_count       int      default 0,
-                                                        restart_count        int      default 0,
-                                                        being_shot           int      default 0
+                                                        first_invoke         datetime                 null,
+                                                        last_invoke          datetime                 null,
+                                                        start_count          int                 default 0,
+                                                        shooting_self_count  int                 default 0,
+                                                        shooting_other_count int                 default 0,
+                                                        shooting_self_death  int                 default 0,
+                                                        shooting_other_death int                 default 0,
+                                                        rotating_count       int                 default 0,
+                                                        restart_count        int                 default 0,
+                                                        being_shot           int                 default 0
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();
@@ -267,6 +267,30 @@ public class ZiYueBot
                                                         content  text                      null,
                                                         reviewed tinyint(1)           default 0
                                                     ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
+
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE stargazers
+                                                    (
+                                                        userid    bigint               default 0,
+                                                        star_at   datetime                  null,
+                                                        bottle_id int                  default 0,
+                                                        removed   tinyint(1)           default 0,
+                                                        PRIMARY KEY (userid, bottle_id)
+                                                    ) CHARSET = utf8mb4;
+                                                    
+                                                    CREATE INDEX stargazers_bottle_id_index
+                                                        ON stargazers (bottle_id, removed);
+                                                    
+                                                    CREATE INDEX stargazers_userid_index
+                                                        ON stargazers (userid, removed);
                                                     """, database);
             command.ExecuteNonQuery();
         }

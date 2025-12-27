@@ -1,4 +1,5 @@
-﻿using ZiYueBot.General;
+﻿using MySql.Data.MySqlClient;
+using ZiYueBot.General;
 using ZiYueBot.Harmony;
 
 namespace ZiYueBot.Core;
@@ -17,34 +18,6 @@ public static class Commands
     private static void RegisterHarmonyCommand(HarmonyCommand command)
     {
         HarmonyCommands[command.Id] = command;
-    }
-
-    /// <summary>
-    /// 注册鸿蒙命令，并将其与指定的命令名绑定。该方式不会将鸿蒙命令与 ID 绑定。
-    /// </summary>
-    [Obsolete]
-    private static void RegisterHarmonyCommand(HarmonyCommand command, params string[] names)
-    {
-        foreach (string name in names)
-        {
-            HarmonyCommands[name] = command;
-        }
-    }
-
-    /// <summary>
-    /// 根据鸿蒙命令的类型获取命令。该函数假设命令一定存在，否则抛出异常。
-    /// </summary>
-    public static T GetHarmonyCommand<T>() where T : HarmonyCommand
-    {
-        foreach (HarmonyCommand command in HarmonyCommands.Values)
-        {
-            if (command is T t)
-            {
-                return t;
-            }
-        }
-
-        throw new KeyNotFoundException("鸿蒙命令未找到！");
     }
 
     /// <summary>
@@ -69,46 +42,61 @@ public static class Commands
     }
 
     /// <summary>
-    /// 注册一般命令，并将其与指定的命令名绑定。该方式不会将一般命令与 ID 绑定。
-    /// </summary>
-    [Obsolete]
-    private static void RegisterGeneralCommand(GeneralCommand command, params string[] names)
-    {
-        foreach (string name in names)
-        {
-            GeneralCommands[name] = command;
-        }
-    }
-
-    /// <summary>
-    /// 根据一般命令类型获取命令。当未找到命令 / 所绑定的命令不支持指定平台时，返回 null。
-    /// </summary>
-    public static T? GetGeneralCommand<T>(Platform platform) where T : GeneralCommand
-    {
-        foreach (GeneralCommand command in GeneralCommands.Values)
-        {
-            if (command is not T t) continue;
-            if (t.SupportedPlatform.Contains(platform))
-            {
-                return t;
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
     /// 根据命令名和一般命令类型获取命令。当命令名未注册 / 或所绑定的命令不是指定类型 / 所绑定的命令不支持指定平台时，返回 null。
     /// </summary>
     public static T? GetGeneralCommand<T>(Platform platform, string name) where T : GeneralCommand
     {
-        if (GeneralCommands.GetValueOrDefault(name) is not T t) return default;
-        if (t.SupportedPlatform.Contains(platform))
+        if (GeneralCommands.GetValueOrDefault(name) is not T t) return null;
+        return t.SupportedPlatform.Contains(platform) ? t : null;
+    }
+
+    /// <summary>
+    /// 检查用户是否被禁止调用特定命令，或被禁止调用子悦机器。
+    /// </summary>
+    /// <param name="message">当返回值为真时，返回的禁止调用的原因</param>
+    /// <returns>本次调用是否允许</returns>
+    public static bool CheckBlacklist(ulong userId, string command, out string message)
+    {
+        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
         {
-            return t;
+            using MySqlCommand sqlCommand = new MySqlCommand(
+                $"SELECT * FROM blacklists WHERE userid = {userId} AND command = 'all'",
+                connection);
+            using MySqlDataReader reader = sqlCommand.ExecuteReader();
+            if (reader.Read())
+            {
+                message = $"""
+                           您已被禁止使用子悦机器！
+                           时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                           原因：{reader.GetString("reason")}
+                           用户协议：https://docs.ziyuebot.cn/tos.html
+                           """;
+                return true;
+            }
         }
 
-        return null;
+        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+        {
+            using MySqlCommand sqlCommand = new MySqlCommand(
+                "SELECT * FROM blacklists WHERE userid = @userid AND command = @command",
+                connection);
+            sqlCommand.Parameters.AddWithValue("@userid", userId);
+            sqlCommand.Parameters.AddWithValue("@command", command);
+            using MySqlDataReader reader = sqlCommand.ExecuteReader();
+            if (reader.Read())
+            {
+                message = $"""
+                           您已被禁止使用该命令！
+                           时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                           原因：{reader.GetString("reason")}
+                           用户协议：https://docs.ziyuebot.cn/tos.html
+                           """;
+                return true;
+            }
+        }
+
+        message = "";
+        return false;
     }
 
     /// <summary>
