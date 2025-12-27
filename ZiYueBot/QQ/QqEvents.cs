@@ -146,10 +146,10 @@ public static class QqEvents
                         if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
                         {
                             await Parser.SendMessage(eventType, source, """
-                                                                           今天是子悦的生日，赞助者命令“绘画”对所有人开放。
-                                                                           喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
-                                                                           https://afdian.com/a/ziyuecommentary2020
-                                                                           """);
+                                                                        今天是子悦的生日，赞助者命令“绘画”对所有人开放。
+                                                                        喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
+                                                                        https://afdian.com/a/ziyuecommentary2020
+                                                                        """);
                         }
                         else
                         {
@@ -185,7 +185,7 @@ public static class QqEvents
                                 case "SUCCEEDED":
                                 {
                                     await WebUtils.DownloadFile(
-                                        task["results"]![0]!["url"]!.GetValue<string>(),
+                                        task["choices"]![0]!["message"]!["content"]![0]!["image"]!.GetValue<string>(),
                                         "temp/result.png");
                                     await Parser.SendMessage(eventType, source,
                                         $"\u2402file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}\u2403");
