@@ -38,5 +38,5 @@ _另见：[黑名单](/technical/blacklists.md)_
 
 目前包含第三方服务的命令有：[对话](/general/chat)、[绘画](/general/draw)。
 
-1. DeepSeek: [用户协议](https://cdn.deepseek.com/policies/zh-CN/deepseek-terms-of-use.html)
+1. 千问: [服务协议](https://terms.alicdn.com/legal-agreement/terms/c_end_product_protocol/20231011201348415/20231011201348415.html)、[隐私政策](https://terms.alicdn.com/legal-agreement/terms/privacy_policy_full/20231011201849846/20231011201849846.html)
 2. 阿里云百炼：[服务协议](https://terms.alicdn.com/legal-agreement/terms/common_platform_service/20230728213935489/20230728213935489.html)
