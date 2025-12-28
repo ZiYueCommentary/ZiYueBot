@@ -15,9 +15,4 @@ public abstract class GeneralCommand : Command
     {
         throw new NotSupportedException();
     }
-
-    public virtual string YunhuInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        throw new NotSupportedException();
-    }
 }

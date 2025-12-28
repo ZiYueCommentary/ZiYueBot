@@ -42,7 +42,7 @@ export default defineConfig({
         // https://vitepress.dev/reference/default-theme-config
         nav: [
             {text: '用户协议', link: '/tos'},
-            {text: '使用文档', link: '/usage'},
+            {text: '使用教程', link: '/usage'},
             {text: '技术文档', link: '/technical', activeMatch: '/technical'},
             {
                 text: 'v0.1.2',
@@ -65,6 +65,7 @@ export default defineConfig({
                         items: [
                             {text: '黑名单', link: '/technical/blacklists'},
                             {text: '愚人云瓶', link: '/technical/aprilbottles'},
+                            {text: '云瓶审核', link: '/technical/sensorship'},
                             {text: '更新日志', link: '/technical/changelogs'}
                         ]
                     }

@@ -8,7 +8,7 @@
 
 每次调用时，分别有 25% 的概率选择以下语录库，并随机抽取语录。
 
-目前，子悦机器内拥有 [子悦](https://space.bilibili.com/383046501)、[EasyT_T（义贼哥）](https://space.bilibili.com/626767336)、[Asriel（山羊）](https://space.bilibili.com/417000557/) 和水豚哥的语录。
+目前，子悦机器内拥有 [子悦](https://space.bilibili.com/383046501)、[EasyT_T（义贼）](https://space.bilibili.com/626767336)、[Asriel（山羊）](https://space.bilibili.com/417000557/) 和水豚哥的语录。
 
 ::: details 子悦
 * 玩原神玩的
@@ -27,7 +27,7 @@
 * 我是你跌
 :::
 
-::: details EasyT_T（义贼哥）
+::: details EasyT_T（义贼）
 * 不如 Rust
 * 让 MSDN 为此解释吧
 * 恩情课文
