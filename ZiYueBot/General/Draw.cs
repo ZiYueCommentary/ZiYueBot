@@ -32,7 +32,7 @@ public class Draw : GeneralCommand
         using HttpClient client = new HttpClient();
         using HttpRequestMessage request =
             new HttpRequestMessage(HttpMethod.Post,
-                "https://dashscope.aliyuncs.com/api/v1/services/aigc/image-generation/generation");
+                "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis");
         request.Headers.Add("X-DashScope-Async", "enable");
         request.Headers.Add("Accept", "application/json");
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
@@ -40,20 +40,11 @@ public class Draw : GeneralCommand
                                                         {
                                                             "model": "wan2.6-t2i",
                                                             "input": {
-                                                                "messages": [
-                                                                   {
-                                                                       "role": "user",
-                                                                       "content": [
-                                                                           {
-                                                                               "text": "%prompt%"
-                                                                           }
-                                                                       ]
-                                                                   }
-                                                               ]
+                                                                "prompt": "%prompt%"
                                                             },
                                                             "parameters": {
                                                                 "negative_prompt": "",
-                                                                "size": "1280*1280",
+                                                                "size": "1328*1328",
                                                                 "n": 1
                                                             }
                                                         }
