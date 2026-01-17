@@ -123,6 +123,7 @@ public static class Commands
         RegisterGeneralCommand(new PickDriftbottle());
         RegisterGeneralCommand(new RemoveDriftbottle());
         RegisterGeneralCommand(new ListDriftbottle());
+        RegisterGeneralCommand(new AddStargazer());
         RegisterGeneralCommand(new ThrowStraitbottle());
         RegisterGeneralCommand(new PickStraitbottle());
         RegisterGeneralCommand(new ListStraitbottle());

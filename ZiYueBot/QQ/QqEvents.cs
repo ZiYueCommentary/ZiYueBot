@@ -46,8 +46,11 @@ public static class QqEvents
                         Match match = Stargazers.StargazerRegex().Match(messageContent.FirstLine());
                         if (match.Success)
                         {
-                            Parser.SendMessage(EventType.GroupMessage, message["group_id"]!.GetValue<ulong>(),
-                                Stargazers.AddStargazer(userId, Parser.FetchUsername(userId.ToString()), int.Parse(match.Groups[1].Value)));
+                            string stargazer = Stargazers.AddStargazer(userId, Parser.FetchUsername(userId.ToString()),
+                                int.Parse(match.Groups[1].Value), true);
+                            if (!string.IsNullOrEmpty(stargazer))
+                                Parser.SendMessage(EventType.GroupMessage, message["group_id"]!.GetValue<ulong>(),
+                                    stargazer);
                         }
                     }
 

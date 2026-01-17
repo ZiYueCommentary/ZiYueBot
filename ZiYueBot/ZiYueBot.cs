@@ -283,6 +283,22 @@ public class ZiYueBot
         catch (MySqlException)
         {
         }
+
+        try
+        {
+            MySqlCommand command = new MySqlCommand("""
+                                                    CREATE TABLE badges
+                                                    (
+                                                        userid     bigint   default 0 primary key,
+                                                        badge_name tinytext                  null,
+                                                        granted_at datetime                  null
+                                                    ) CHARSET = utf8mb4;
+                                                    """, database);
+            command.ExecuteNonQuery();
+        }
+        catch (MySqlException)
+        {
+        }
     }
 
     public MySqlConnection ConnectDatabase()

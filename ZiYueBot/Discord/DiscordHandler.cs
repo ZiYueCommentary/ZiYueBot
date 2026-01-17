@@ -23,7 +23,8 @@ public static class DiscordHandler
         ZiYueBot.Instance.Discord.ReactionAdded += OnReactionAdded;
     }
 
-    private static async Task OnReactionAdded(Cacheable<IUserMessage, ulong> user, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
+    private static async Task OnReactionAdded(Cacheable<IUserMessage, ulong> user,
+        Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
     {
         try
         {
@@ -33,8 +34,9 @@ public static class DiscordHandler
                 Match match = Stargazers.StargazerRegex().Match(message.Content.FirstLine());
                 if (match.Success && reaction.Emote.Name is "👍" or "⭐")
                 {
-                    await message.Channel.SendMessageAsync(Stargazers.AddStargazer(reaction.UserId,
-                        reaction.User.Value.Mention, int.Parse(match.Groups[1].Value)));
+                    string result = Stargazers.AddStargazer(reaction.UserId,
+                        reaction.User.Value.Mention, int.Parse(match.Groups[1].Value), true);
+                    if (!string.IsNullOrEmpty(result)) await message.Channel.SendMessageAsync(result);
                 }
             }
         }
@@ -198,7 +200,8 @@ public static class DiscordHandler
                         break;
                     }
 
-                    if (validation is Draw.InvokeValidation.SponsorExpired or Draw.InvokeValidation.NotSponsor or Draw.InvokeValidation.HitDrawLimit)
+                    if (validation is Draw.InvokeValidation.SponsorExpired or Draw.InvokeValidation.NotSponsor
+                        or Draw.InvokeValidation.HitDrawLimit)
                     {
                         if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
                         {
@@ -404,7 +407,9 @@ public static class DiscordHandler
                         try
                         {
                             DateTime prev = DateTime.Now;
-                            JsonNode node = chat.PostQuestion(false, command.User.GlobalName, (string)content.Value)["choices"]![0]!["message"]!;
+                            JsonNode node =
+                                chat.PostQuestion(false, command.User.GlobalName, (string)content.Value)["choices"]![0]!
+                                    ["message"]!;
                             DateTime last = DateTime.Now;
 
                             StringBuilder builder = new StringBuilder();

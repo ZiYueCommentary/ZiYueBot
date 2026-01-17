@@ -108,6 +108,25 @@ public class Stat : GeneralCommand
             }
         }
 
+        // 荣誉勋章
+        string? badges = null;
+        using (MySqlCommand query = new MySqlCommand(
+                   $"SELECT * FROM badges WHERE userid = {userId}",
+                   ZiYueBot.Instance.ConnectDatabase()))
+        {
+            using MySqlDataReader reader = query.ExecuteReader();
+            if (reader.Read())
+            {
+                badges = "您拥有的荣誉勋章：";
+                do
+                {
+                    badges += $"{reader.GetString("badge_name")}、";
+                } while (reader.Read());
+
+                badges = badges[..^1];
+            }
+        }
+
         // 黑名单
         string? blacklists = null;
         using (MySqlCommand query = new MySqlCommand(
@@ -135,6 +154,7 @@ public class Stat : GeneralCommand
                 {driftbottlesStat ?? "云瓶统计失败，请联系子悦。"}
                 {driftbottlesIncrementalStat ?? "云瓶增长统计失败，请联系子悦。"}
                 {revolverStat ?? "您没有调用过俄罗斯轮盘命令。"}
+                {badges ?? "您没有荣誉勋章。"}
                 {blacklists ?? "您没有被列入黑名单的命令。"}
                 
                 完整版统计数据另见：https://www.ziyuebot.cn/stat.html?id={userId}
