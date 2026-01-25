@@ -19,6 +19,4 @@ public struct Config
     public string DatabaseUser { get; set; }
     public string DatabasePassword { get; set; }
     public string DeepSeekKey { get; set; }
-    public int YunhuPort { get; set; }
-    public string YunhuToken { get; set; }
 }
