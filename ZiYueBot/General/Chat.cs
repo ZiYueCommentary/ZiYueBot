@@ -59,7 +59,7 @@ public class Chat : GeneralCommand
                     }
                   ],
                   "enable_search": true,
-                  "model": "qwen-flash"
+                  "model": "qwen3-max-2026-01-23"
                 }
                 """.Replace("%system_prompt%", SystemPrompt)
                 .Replace("%april%", DateTime.Today.Month == 4 && DateTime.Today.Day == 1 ? "用贴吧风格回答之后的问题，要尽量刻薄。" : "")
