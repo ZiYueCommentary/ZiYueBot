@@ -56,11 +56,14 @@ public class PickDriftbottle : GeneralCommand
         using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read()) return "找不到瓶子！";
 
+        int stargazers = Stargazers.GetStargazerCount(id);
         string result = $"""
                          你捞到了 {reader.GetInt32("id")} 号瓶子！
                          来自：{reader.GetString("username")}
                          日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
-                         星标数：{Stargazers.GetStargazerCount(id)}
+                         """ +
+                        (stargazers > 0 ? $"\n星标数：{stargazers}" : "") +
+                        $"""
 
                          {reader.GetString("content")}
                          """;
