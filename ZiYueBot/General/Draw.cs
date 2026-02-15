@@ -32,8 +32,7 @@ public class Draw : GeneralCommand
         using HttpClient client = new HttpClient();
         using HttpRequestMessage request =
             new HttpRequestMessage(HttpMethod.Post,
-                "https://dashscope.aliyuncs.com/api/v1/services/aigc/image-generation/generation");
-        request.Headers.Add("X-DashScope-Async", "enable");
+                "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
         request.Headers.Add("Accept", "application/json");
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
         using StringContent content = new StringContent("""
@@ -41,15 +40,15 @@ public class Draw : GeneralCommand
                                                             "model": "qwen-image-max",
                                                             "input": {
                                                                 "messages": [
-                                                                   {
-                                                                       "role": "user",
-                                                                       "content": [
-                                                                           {
-                                                                               "text": "%prompt%"
-                                                                           }
-                                                                       ]
-                                                                   }
-                                                               ]
+                                                                    {
+                                                                        "role": "user",
+                                                                        "content": [
+                                                                            {
+                                                                                "text": "%prompt%"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
                                                             },
                                                             "parameters": {
                                                                 "negative_prompt": "",
@@ -66,7 +65,7 @@ public class Draw : GeneralCommand
         string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         if (res == "") throw new TimeoutException();
         JsonNode output = JsonNode.Parse(res)!["output"]!;
-        Logger.Info($"新绘画任务：{output["task_id"]!.GetValue<string>()}");
+        // Logger.Info($"新绘画任务：{output["task_id"]!.GetValue<string>()}");
         return output;
     }
 

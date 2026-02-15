@@ -24,16 +24,19 @@ public class ListDriftbottle : GeneralCommand
     private string Invoke(string userName, ulong userId)
     {
         using MySqlCommand bottleCountCommand =
-            new MySqlCommand($"SELECT COUNT(*) AS bottles FROM driftbottles WHERE userid = {userId} AND pickable = true",
+            new MySqlCommand(
+                $"SELECT COUNT(*) AS bottles FROM driftbottles WHERE userid = {userId} AND pickable = true",
                 ZiYueBot.Instance.ConnectDatabase());
         using MySqlDataReader bottleCountReader = bottleCountCommand.ExecuteReader();
         bottleCountReader.Read();
         int bottleCount = bottleCountReader.GetInt32("bottles");
         if (bottleCount == 0) return "没有属于你的瓶子！";
         using MySqlCommand bottlesCommand = new MySqlCommand(
-            bottleCount <= 50
-                ? $"SELECT * FROM driftbottles WHERE userid = {userId} AND pickable = true"
-                : $"SELECT * FROM driftbottles WHERE userid = {userId} AND pickable = true ORDER BY views DESC LIMIT 50",
+            $"""
+             SELECT d.id,d.userid,d.username,d.created,d.content,d.pickable,d.views,IFNULL(s.star_count, 0) AS star_count FROM driftbottles AS d
+                      LEFT JOIN (SELECT bottle_id, COUNT(*) AS star_count FROM stargazers WHERE removed = 0 GROUP BY bottle_id) AS s 
+                          ON s.bottle_id = d.id WHERE d.userid = {userId} AND pickable = TRUE
+             """ + (bottleCount > 50 ? " ORDER BY views DESC LIMIT 50;" : " ORDER BY d.id;"),
             ZiYueBot.Instance.ConnectDatabase()
         );
         using MySqlDataReader bottlesReader = bottlesCommand.ExecuteReader();
@@ -42,7 +45,7 @@ public class ListDriftbottle : GeneralCommand
         while (bottlesReader.Read())
         {
             result +=
-                $"- 编号：{bottlesReader.GetInt32("id")}，创建时间：{bottlesReader.GetDateTime("created"):yyyy-MM-dd}，浏览量：{bottlesReader.GetInt32("views")}\n";
+                $"- 编号：{bottlesReader.GetInt32("id")}，创建时间：{bottlesReader.GetDateTime("created"):yyyy-MM-dd}，浏览量：{bottlesReader.GetInt32("views")}，星标数：{bottlesReader.GetInt32("star_count")}\n";
             i++;
         }
 

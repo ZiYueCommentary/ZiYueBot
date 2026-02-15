@@ -63,10 +63,7 @@ public class PickDriftbottle : GeneralCommand
                          日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
                          """ +
                         (stargazers > 0 ? $"\n星标数：{stargazers}" : "") +
-                        $"""
-
-                         {reader.GetString("content")}
-                         """;
+                        $"\n\n{reader.GetString("content")}";
 
         using MySqlCommand addViews = new MySqlCommand(
             $"UPDATE driftbottles SET views = views + 1 WHERE id = {reader.GetInt32("id")}",

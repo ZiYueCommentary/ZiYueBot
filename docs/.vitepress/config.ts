@@ -143,6 +143,17 @@ export default defineConfig({
                                     {text: '海峡云瓶列表', link: '/general/straitbottle/list'}
                                 ]
                             },
+                            {
+                                text: '云瓶星标',
+                                link: '/general/stargazer/',
+                                collapsed: true,
+                                items: [
+                                    {text: '扔云瓶', link: '/general/driftbottle/throw'},
+                                    {text: '捞云瓶', link: '/general/driftbottle/pick'},
+                                    {text: '删除云瓶', link: '/general/driftbottle/remove'},
+                                    {text: '查看我的云瓶', link: '/general/driftbottle/list'}
+                                ]
+                            },
                         ]
                     },
                     {

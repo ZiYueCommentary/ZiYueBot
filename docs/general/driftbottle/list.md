@@ -2,7 +2,7 @@
 
 **查看我的云瓶 (List Driftbottle)** 是一个 [一般命令](/general/)，可以查看所有由你扔出的，且可被 [捞云瓶](/general/driftbottle/pick.md) 命令捞起的 [漂流云瓶](/general/driftbottle/)。
 
-该命令会列出所有创建者 ID 与调用者 ID 相同，且未被 [删除云瓶](/general/driftbottle/remove.md) 删除的瓶子。列出的信息包括：瓶子编号、创建时间，以及浏览量（瓶子被捞起的次数）。
+该命令会列出所有创建者 ID 与调用者 ID 相同，且未被 [删除云瓶](/general/driftbottle/remove.md) 删除的瓶子。列出的信息包括：瓶子编号、创建时间、浏览量，以及 [星标数](../stargazer/)。
 
 该命令不会显示云瓶的内容。若需要获取瓶子的更多信息，请联系子悦解说。
 

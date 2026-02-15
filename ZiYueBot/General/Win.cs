@@ -131,7 +131,7 @@ public class Win : GeneralCommand
 
         reader.Close();
         int rate = Random.Shared.Next(0, 100);
-        bool blowed = DateTime.Now.Hour == GetWindWindowHour() && _windWindow.Blowed == false;
+        bool blowed = DateTime.Now.Hour == GetWindWindowHour() && !_windWindow.Blowed;
         if (blowed)
         {
             rate = (int)Math.Ceiling(rate * 1.4);

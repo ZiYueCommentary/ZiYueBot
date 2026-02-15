@@ -26,11 +26,10 @@ public class Chat : GeneralCommand
     public override string Summary => "与通义千问对话";
 
     public override string Description => """
-                                          /chat [question] （测试中命令）
+                                          /chat [question]
                                           与通义千问对话。“question”是询问的问题。本命令的回复需要很长时间。
-                                          在 QQ 的回答相比于 Discord 会更短，并且不包括思考过程。
-                                          每次提问都算作一次新对话。不支持联网回答。
-                                          频率限制（暂时）：QQ 每次调用间隔 5 分钟；Discord 每次调用间隔 1 分钟；赞助者均为 1 分钟。
+                                          每次提问都算作一次新对话。
+                                          频率限制：QQ 每次调用间隔 5 分钟；Discord 每次调用间隔 1 分钟；赞助者均为 1 分钟。
                                           在线文档：https://docs.ziyuebot.cn/general/chat
                                           """;
 
@@ -80,7 +79,7 @@ public class Chat : GeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
 
         Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
+        _ = UpdateInvokeRecords(userId);
         return "";
     }
 
@@ -90,7 +89,7 @@ public class Chat : GeneralCommand
         if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（1 分钟 1 条）";
 
         Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
+        _ = UpdateInvokeRecords(userId);
         return "";
     }
 

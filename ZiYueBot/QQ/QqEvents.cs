@@ -59,23 +59,14 @@ public static class QqEvents
 
                 // 一般消息
                 if (message["message_type"] is null) continue;
-                switch (message["message_type"]!.ToString())
+                _ = message["message_type"]!.ToString() switch
                 {
-                    case "private":
-                        EventHandler(
-                            EventType.DirectMessage, message["message"]!, userId,
-                            message["sender"]!["nickname"]!.GetValue<string>(),
-                            message["user_id"]!.GetValue<ulong>()
-                        );
-                        break;
-                    case "group":
-                        EventHandler(
-                            EventType.GroupMessage, message["message"]!, userId,
-                            message["sender"]!["nickname"]!.GetValue<string>(),
-                            message["group_id"]!.GetValue<ulong>()
-                        );
-                        break;
-                }
+                    "private" => EventHandler(EventType.DirectMessage, message["message"]!, userId,
+                        message["sender"]!["nickname"]!.GetValue<string>(), message["user_id"]!.GetValue<ulong>()),
+                    "group" => EventHandler(EventType.GroupMessage, message["message"]!, userId,
+                        message["sender"]!["nickname"]!.GetValue<string>(), message["group_id"]!.GetValue<ulong>()),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
             catch (NullReferenceException)
             {
@@ -165,44 +156,44 @@ public static class QqEvents
                     try
                     {
                         JsonNode posted = draw.PostRequest(string.Join(' ', args[1..]));
-                        string taskId = posted["task_id"]!.GetValue<string>();
-                        for (;;)
-                        {
-                            Thread.Sleep(5000);
-
-                            using HttpClient client = new HttpClient();
-                            using HttpRequestMessage request =
-                                new HttpRequestMessage(HttpMethod.Get,
-                                    $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
-                            request.Headers.Add("Authorization",
-                                $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
-                            using HttpResponseMessage response =
-                                client.SendAsync(request).GetAwaiter().GetResult();
-                            response.EnsureSuccessStatusCode();
-                            string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                            if (res == "") throw new TimeoutException();
-                            JsonNode task = JsonNode.Parse(res)!["output"]!;
-                            string taskStatus = task["task_status"]!.GetValue<string>();
-                            switch (taskStatus)
-                            {
-                                case "SUCCEEDED":
-                                {
+                        // string taskId = posted["task_id"]!.GetValue<string>();
+                        // for (;;)
+                        // {
+                        //     Thread.Sleep(5000);
+                        //
+                        //     using HttpClient client = new HttpClient();
+                        //     using HttpRequestMessage request =
+                        //         new HttpRequestMessage(HttpMethod.Get,
+                        //             $"https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}");
+                        //     request.Headers.Add("Authorization",
+                        //         $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
+                        //     using HttpResponseMessage response =
+                        //         client.SendAsync(request).GetAwaiter().GetResult();
+                        //     response.EnsureSuccessStatusCode();
+                        //     string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        //     if (res == "") throw new TimeoutException();
+                            // JsonNode task = posted["output"]!;
+                            // string taskStatus = task["task_status"]!.GetValue<string>();
+                            // switch (taskStatus)
+                            // {
+                            //     case "SUCCEEDED":
+                            //     {
                                     await WebUtils.DownloadFile(
-                                        task["choices"]![0]!["message"]!["content"]![0]!["image"]!.GetValue<string>(),
+                                        posted["choices"]![0]!["message"]!["content"]![0]!["image"]!.GetValue<string>(),
                                         "temp/result.png");
                                     await Parser.SendMessage(eventType, source,
                                         $"\u2402file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}\u2403");
                                     File.Delete("temp/result.png");
-                                    return;
-                                }
-                                case "FAILED":
-                                {
-                                    await Parser.SendMessage(eventType, source,
-                                        $"任务执行失败：{task["message"]!.GetValue<string>()}");
-                                    return;
-                                }
-                            }
-                        }
+                            //         return;
+                            //     }
+                            //     case "FAILED":
+                            //     {
+                            //         await Parser.SendMessage(eventType, source,
+                            //             $"任务执行失败：{task["message"]!.GetValue<string>()}");
+                            //         return;
+                            //     }
+                            // }
+                        // }
                     }
                     catch (TimeoutException)
                     {
@@ -376,7 +367,7 @@ public static class QqEvents
                     {
                         await Parser.SendMessage(eventType, source,
                             general.QQInvoke(eventType, userName, userId, args));
-                        if (Random.Shared.Next(3) == 0)
+                        if (Random.Shared.Next(5) == 0)
                             await Parser.SendMessage(eventType, source, "云瓶星标已上线！对云瓶消息回应“点赞”图标即可星标~");
                     }
 
