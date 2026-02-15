@@ -6,7 +6,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public partial class ThrowDriftbottle : GeneralCommand
+public partial class ThrowDriftbottle : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("扔云瓶");
 
@@ -24,57 +24,54 @@ public partial class ThrowDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/throw
                                           """;
 
-    private string Invoke(string userName, ulong userId, string content)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
+        await context.SendMessage("暂不可用~");
+        return;
+
+        if (arg.IsEmpty())
+        {
+            await context.SendMessage("参数数量不足。使用“/help 扔云瓶”查看命令用法。");
+            return;
+        }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
+
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
             if (Random.Shared.Next(3) == 1) // 25% 概率瓶子飘回来
             {
-                return "你的瓶子飘回来了，没有扔出去！";
+                await context.SendMessage("你的瓶子飘回来了，没有扔出去！");
+                return;
             }
         }
 
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command =
+        if (TextMessageEntity.DiscordEmotionRegex().IsMatch(arg.ToString()))
+        {
+            await context.SendMessage("云瓶内容禁止包含表情！");
+            return;
+        }
+
+        await using MySqlCommand command =
             new MySqlCommand(
                 "INSERT INTO driftbottles_queue(userid, username, created, content) VALUE (@userid, @username, now(), @content)",
-                database);
-        command.Parameters.AddWithValue("@userid", userId);
-        command.Parameters.AddWithValue("@username", userName);
-        command.Parameters.AddWithValue("@content", content.DatabaseFriendly());
+                ZiYueBot.Instance.ConnectDatabase());
+        command.Parameters.AddWithValue("@userid", context.UserId);
+        command.Parameters.AddWithValue("@username", context.UserName);
+        command.Parameters.AddWithValue("@content", arg.DatabaseFriendly());
         command.ExecuteNonQuery();
-        return $"您的云瓶已提交待审，审核编号：{command.LastInsertedId}\r审核列表：https://www.ziyuebot.cn/queue.php?id={userId}";
+        await context.SendMessage($"您的云瓶已提交待审，审核编号：{command.LastInsertedId}\r审核列表：https://www.ziyuebot.cn/queue.php?id={context.UserId}");
     }
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        if (args.Length < 2) return "参数数量不足。使用“/help 扔云瓶”查看命令用法。";
-        string arguments = string.Join(' ', args[1..]);
-        if (arguments.Contains('\u2406')) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(userName, userId, arguments);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (EmotionRegex().IsMatch(args[1])) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(Message.MentionedUinAndName[userId], userId, args[1].SafeArgument());
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(1);
     }
-
-    [GeneratedRegex("<:.*:\\d+>")]
-    public static partial Regex EmotionRegex();
 }

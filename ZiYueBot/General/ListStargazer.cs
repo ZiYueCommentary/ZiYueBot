@@ -2,25 +2,16 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.General;
 
-public class ListStargazer : GeneralCommand
+public class ListStargazer : Command
 {
     public override string Id => "查看星标云瓶";
     public override string Name => "查看星标云瓶";
     public override string Summary => "查看星标云瓶";
     public override string Description => "";
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    // TODO
+    public override Task Invoke(IContext context, MessageChain arg)
     {
-        return base.QQInvoke(eventType, userName, userId, args);
+        throw new NotImplementedException();
     }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        return base.DiscordInvoke(eventType, userPing, userId, args);
-    }
-
-    // private string Invoke(string userName, ulong userId)
-    // {
-    //
-    // }
 }

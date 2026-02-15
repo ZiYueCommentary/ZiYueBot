@@ -1,11 +1,9 @@
 using log4net;
 using ZiYueBot.Core;
-using ZiYueBot.General;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class Beibao : HarmonyCommand
+public class Beibao : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("悲报");
 
@@ -22,18 +20,33 @@ public class Beibao : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/beibao
                                           """;
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        if (args.Length < 2) return "参数数量不足。使用“/help beibao”查看命令用法。";
-        if (!MessageUtils.IsSimpleMessage(string.Join(' ', args))) return "请输入纯文字参数。";
-        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        return "";
+        if (arg.IsEmpty())
+        {
+            await context.SendMessage("参数数量不足。使用“/help balogo”查看命令用法。");
+            return;
+        }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await context.SendMessage("机器生成中...");
+
+        await context.SendMessage([
+            new ImageMessageEntity(
+                $"base64://{Convert.ToBase64String(Xibao.Render(false, arg.ToString(context)))}",
+                "beibao.jpg")
+        ]);
     }
 
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(1);
     }

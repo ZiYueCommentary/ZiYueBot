@@ -1,11 +1,11 @@
 using log4net;
 using ZiYueBot.Core;
-using ZiYueBot.General;
-using ZiYueBot.Utils;
+using ZiYueBot.Discord;
+using ZiYueBot.QQ;
 
 namespace ZiYueBot.Harmony;
 
-public class Rotating : HarmonyCommand
+public class Rotating : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("俄罗斯轮盘转轮");
 
@@ -22,24 +22,35 @@ public class Rotating : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/revolver/rotating
                                           """;
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        if (eventType == EventType.DirectMessage) return "俄罗斯轮盘命令只能在群聊中使用！";
+        if (context.EventType == EventType.DirectMessage)
+        {
+            await context.SendMessage("俄罗斯轮盘命令只能在群聊中使用！");
+            return;
+        }
 
-        ulong group = ulong.Parse(args[0]);
-        if (!StartRevolver.Revolvers.TryGetValue(group, out RevolverRound? round)) return "游戏未开始，发送“开始俄罗斯轮盘”来开始";
-        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每 3 秒 1 条）";
+        ulong channelId;
+        if (context is DiscordContext discord) channelId = (ulong)discord.Socket.ChannelId!;
+        else channelId = ((QqContext)context).SourceUni;
 
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        
-        StartRevolver.UpdateRevolverRecords(userId, "rotating_count");
+        if (!RateLimit.TryPassRateLimit(this, channelId, TimeSpan.FromSeconds(3)))
+        {
+            await context.SendMessage("频率已达限制（整个群聊内 3 秒 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        if (!StartRevolver.Revolvers.TryGetValue(channelId, out RevolverRound? round))
+        {
+            await context.SendMessage("游戏未开始，发送“开始俄罗斯轮盘”来开始");
+            return;
+        }
+
+        _ = StartRevolver.UpdateRevolverRecords(context.UserId, "rotating_count");
         Interlocked.Increment(ref round.ChamberIndex);
-        if (round.ChamberIndex > RevolverRound.Chambers) StartRevolver.Revolvers.Remove(group, out _);
-        return $"已转轮，轮盘中还剩 {round.RestChambers()} 个膛室未击发。{(round.RestChambers() == 0 ? "本局俄罗斯轮盘结束。" : "")}";
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
-    {
-        return TimeSpan.FromSeconds(3);
+        if (round.ChamberIndex > RevolverRound.Chambers) StartRevolver.Revolvers.Remove(channelId, out _);
+        await context.SendMessage(
+            $"已转轮，轮盘中还剩 {round.RestChambers()} 个膛室未击发。{(round.RestChambers() == 0 ? "本局俄罗斯轮盘结束。" : "")}");
     }
 }

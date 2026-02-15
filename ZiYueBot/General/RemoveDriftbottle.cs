@@ -1,11 +1,10 @@
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class RemoveDriftbottle : GeneralCommand
+public class RemoveDriftbottle : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("删除云瓶");
 
@@ -21,63 +20,53 @@ public class RemoveDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/remove
                                           """;
 
-    private string Invoke(ulong userId, int id)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand select = new MySqlCommand(
+        if (arg.IsEmpty())
+        {
+            await context.SendMessage("参数数量不足。使用“/help 删除云瓶”查看命令用法。");
+            return;
+        }
+        int id;
+        try
+        {
+            id = int.Parse(arg.ToString());
+        }
+        catch (FormatException)
+        {
+            await context.SendMessage("请输入数字编号！");
+            return;
+        }
+        catch (OverflowException)
+        {
+            await context.SendMessage("编号过大！");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _=UpdateInvokeRecords(context.UserId);
+
+        await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        await using MySqlCommand select = new MySqlCommand(
             $"SELECT * FROM driftbottles WHERE pickable = true AND id = {id}",
             database);
-        using MySqlDataReader reader = select.ExecuteReader();
-        if (!reader.Read()) return "找不到瓶子！";
-        if (reader.GetUInt64("userid") != userId) return "该瓶子不是由你扔出的！";
-        reader.Close();
-        using MySqlCommand command = new MySqlCommand(
+        await using MySqlDataReader reader = select.ExecuteReader();
+        if (!reader.Read())
+        {
+            await context.SendMessage("找不到瓶子！");
+            return;
+        }
+
+        if (reader.GetUInt64("userid") != context.UserId)
+        {
+            await context.SendMessage("该瓶子不是由你扔出的！");
+            return;
+        }
+        await reader.CloseAsync();
+        await using MySqlCommand command = new MySqlCommand(
             $"UPDATE driftbottles SET pickable = false WHERE id = {id}",
             database);
         command.ExecuteNonQuery();
-        return $"{id} 号瓶子已删除！";
-    }
-
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        if (args.Length < 2) return "参数数量不足。使用“/help 删除云瓶”查看命令用法。";
-        int id = int.MinValue;
-        try
-        {
-            id = int.Parse(args[1]);
-        }
-        catch (FormatException)
-        {
-            return "请输入数字编号！";
-        }
-        catch (OverflowException)
-        {
-            return "编号过大！";
-        }
-
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        return Invoke(userId, id);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        int id = int.MinValue;
-        try
-        {
-            id = int.Parse(args[1]);
-        }
-        catch (FormatException)
-        {
-            return "请输入数字编号！";
-        }
-        catch (OverflowException)
-        {
-            return "编号过大！";
-        }
-
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        return Invoke(userId, id);
+        await context.SendMessage($"{id} 号瓶子已删除！");
     }
 }

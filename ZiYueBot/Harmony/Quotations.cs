@@ -3,7 +3,7 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
-public class Quotations : HarmonyCommand
+public class Quotations : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("毛主席语录");
     private static readonly List<string> Quotes = [];
@@ -45,11 +45,11 @@ public class Quotations : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/quotations
                                           """;
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        Logger.Info($"调用者：{userName} ({userId})");
-        UpdateInvokeRecords(userId);
-        
-        return Quotes[Random.Shared.Next(0, Quotes.Count - 1)];
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await context.SendMessage(Quotes[Random.Shared.Next(0, Quotes.Count - 1)]);
     }
 }

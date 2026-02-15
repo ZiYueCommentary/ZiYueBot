@@ -2,8 +2,6 @@ using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 using ZiYueBot.Core;
-using ZiYueBot.General;
-using ZiYueBot.Harmony;
 
 namespace ZiYueBot.Discord;
 
@@ -41,15 +39,10 @@ public static class CommandHelper
 
     public static void AddCommandsAsChoices(SlashCommandOptionBuilder builder)
     {
-        foreach (HarmonyCommand harmony in Commands.HarmonyCommands.Values.ToHashSet())
+        foreach (Command command in Commands.RegisteredCommands.Values.ToHashSet()
+                     .Where(general => general.SupportedPlatform.Contains(Platform.Discord)))
         {
-            builder.AddChoice($"{harmony.Name} ({harmony.Id})", harmony.Id);
-        }
-
-        foreach (GeneralCommand general in Commands.GeneralCommands.Values.ToHashSet().Where(general =>
-                     general.SupportedPlatform.Contains(Platform.Discord)))
-        {
-            builder.AddChoice($"{general.Name}（{general.Id}）", general.Id);
+            builder.AddChoice($"{command.Name}（{command.Id}）", command.Id);
         }
     }
 

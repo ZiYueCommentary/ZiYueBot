@@ -39,9 +39,8 @@ public static partial class Stargazers
             using MySqlDataReader reader = command.ExecuteReader();
             if (reader.Read() && !reader.GetBoolean("removed"))
             {
-                if (fromReaction && !RateLimit.TryPassRateLimit(
-                        Commands.GetGeneralCommand<AddStargazer>(Platform.Discord, "添加星标")!,
-                        EventType.DirectMessage, userId)) return "";
+                if (fromReaction && !RateLimit.TryPassRateLimit(Commands.GetCommand(Platform.Discord, "添加星标")!, userId,
+                        TimeSpan.FromMinutes(1))) return "";
 
                 return $"{userName}：您已星标过 {bottleId} 号云瓶";
             }
