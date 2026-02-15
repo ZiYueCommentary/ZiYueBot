@@ -6,7 +6,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class ThrowStraitbottle : GeneralCommand
+public class ThrowStraitbottle : Command
 {
     public static readonly ILog Logger = LogManager.GetLogger("扔海峡云瓶");
 
@@ -24,49 +24,43 @@ public class ThrowStraitbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/straitbottle/throw
                                           """;
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        if (args.Length < 2) return "参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。";
-        string arguments = string.Join(' ', args[1..]);
-        if (arguments.Contains('\u2406')) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
+        await context.SendMessage("暂不可用~");
+        return;
+        if (arg.IsEmpty())
+        {
+            await context.SendMessage("参数数量不足。使用“/help 扔海峡云瓶”查看命令用法。");
+            return;
+        }
 
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command =
-            new MySqlCommand(
-                "INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, false)",
-                database);
-        command.Parameters.AddWithValue("@userid", userId);
-        command.Parameters.AddWithValue("@username", userName);
-        command.Parameters.AddWithValue("@content", arguments.DatabaseFriendly());
-        command.ExecuteNonQuery();
-        return "你的海峡云瓶扔出去了！";
-    }
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
 
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (ThrowDriftbottle.EmotionRegex().IsMatch(args[1])) return "云瓶内容禁止包含表情！";
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
+        if (TextMessageEntity.DiscordEmotionRegex().IsMatch(arg.ToString()))
+        {
+            await context.SendMessage("云瓶内容禁止包含表情！");
+            return;
+        }
 
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command =
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await using MySqlCommand command =
             new MySqlCommand(
                 "INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, true)",
-                database);
-        command.Parameters.AddWithValue("@userid", userId);
-        command.Parameters.AddWithValue("@username", Message.MentionedUinAndName[userId]);
-        command.Parameters.AddWithValue("@content", args[1].SafeArgument().DatabaseFriendly());
+                ZiYueBot.Instance.ConnectDatabase());
+        command.Parameters.AddWithValue("@userid", context.UserId);
+        command.Parameters.AddWithValue("@username", context.UserName);
+        command.Parameters.AddWithValue("@content", arg.DatabaseFriendly());
         command.ExecuteNonQuery();
-        return "你的海峡云瓶扔出去了！";
+        await context.SendMessage("你的海峡云瓶扔出去了！");
     }
 
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(1);
     }

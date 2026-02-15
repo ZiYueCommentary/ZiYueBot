@@ -19,4 +19,5 @@ public struct Config
     public string DatabaseUser { get; set; }
     public string DatabasePassword { get; set; }
     public string DeepSeekKey { get; set; }
+    public string NapcatToken { get; set; }
 }

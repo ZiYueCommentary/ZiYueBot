@@ -5,7 +5,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class PickDriftbottle : GeneralCommand
+public class PickDriftbottle : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("捞云瓶");
 
@@ -23,38 +23,74 @@ public class PickDriftbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/pick
                                           """;
 
-    private string Invoke(int id)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        int id = int.MinValue;
+        if (!arg.IsEmpty())
+        {
+            try
+            {
+                id = int.Parse(arg.ToString());
+            }
+            catch (FormatException)
+            {
+                await context.SendMessage("请输入数字编号！");
+                return;
+            }
+            catch (OverflowException)
+            {
+                await context.SendMessage("编号过大！");
+                return;
+            }
+        }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
             if (Random.Shared.Next(2) == 1) // 50% 概率捞到愚人云瓶
             {
-                using MySqlCommand aprilCommand = new MySqlCommand(
-                    "SELECT * FROM aprilbottles ORDER BY RAND() LIMIT 1",
-                    database);
-                using MySqlDataReader aprilReader = aprilCommand.ExecuteReader();
-                if (!aprilReader.Read()) return "找不到愚人云瓶！";
+                await using MySqlCommand aprilCommand = new MySqlCommand(
+                    "SELECT * FROM aprilbottles ORDER BY RAND() LIMIT 1", database);
+                await using MySqlDataReader aprilReader = aprilCommand.ExecuteReader();
+                if (!aprilReader.Read())
+                {
+                    await context.SendMessage("找不到愚人云瓶！");
+                    return;
+                }
 
-                return $"""
-                        你捞到了 -{aprilReader.GetInt32("id")} 号瓶子！
-                        来自：{aprilReader.GetString("username")}
-                        日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
+                await context.SendMessage($"""
+                                           你捞到了 -{aprilReader.GetInt32("id")} 号瓶子！
+                                           来自：{aprilReader.GetString("username")}
+                                           日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
 
-                        {aprilReader.GetString("content")}
-                        """;
+                                           {aprilReader.GetString("content")}
+                                           """);
+                return;
             }
         }
 
         if (id == 0) id = 625; // 说的道理~
 
-        using MySqlCommand command = new MySqlCommand(
+        await using MySqlCommand command = new MySqlCommand(
             id == int.MinValue
                 ? "SELECT * FROM driftbottles WHERE pickable = true ORDER BY RAND() LIMIT 1"
                 : $"SELECT * FROM driftbottles WHERE pickable = true AND id = {id}",
             database);
-        using MySqlDataReader reader = command.ExecuteReader();
-        if (!reader.Read()) return "找不到瓶子！";
+        await using MySqlDataReader reader = command.ExecuteReader();
+        if (!reader.Read())
+        {
+            await context.SendMessage("找不到瓶子！");
+            return;
+        }
 
         int stargazers = Stargazers.GetStargazerCount(id);
         string result = $"""
@@ -65,69 +101,18 @@ public class PickDriftbottle : GeneralCommand
                         (stargazers > 0 ? $"\n星标数：{stargazers}" : "") +
                         $"\n\n{reader.GetString("content")}";
 
-        using MySqlCommand addViews = new MySqlCommand(
+        await using MySqlCommand addViews = new MySqlCommand(
             $"UPDATE driftbottles SET views = views + 1 WHERE id = {reader.GetInt32("id")}",
             database);
-        reader.Close();
+        await reader.CloseAsync();
         addViews.ExecuteNonQuery();
 
-        return result;
+        await context.SendMessage(MessageChain.FromDatabase(result));
     }
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override TimeSpan GetRateLimit(IContext context)
     {
-        int id = int.MinValue;
-        if (args.Length > 1)
-        {
-            try
-            {
-                id = int.Parse(args[1]);
-            }
-            catch (FormatException)
-            {
-                return "请输入数字编号！";
-            }
-            catch (OverflowException)
-            {
-                return "编号过大！";
-            }
-        }
-
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(id);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        int id = int.MinValue;
-        try
-        {
-            id = int.Parse(args[0]);
-        }
-        catch (FormatException)
-        {
-            return "请输入数字编号！";
-        }
-        catch (OverflowException)
-        {
-            return "编号过大！";
-        }
-
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 0 条）";
-
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-
-        return Invoke(id);
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
-    {
-        if (platform == Platform.Discord || eventType == EventType.DirectMessage) return TimeSpan.Zero;
+        if (context.Platform == Platform.Discord || context.EventType == EventType.DirectMessage) return TimeSpan.Zero;
         return TimeSpan.FromMinutes(1);
     }
 }

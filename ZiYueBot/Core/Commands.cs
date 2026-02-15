@@ -9,94 +9,60 @@ namespace ZiYueBot.Core;
 /// </summary>
 public static class Commands
 {
-    public static readonly Dictionary<string, HarmonyCommand> HarmonyCommands = [];
-    public static readonly Dictionary<string, GeneralCommand> GeneralCommands = [];
+    public static readonly Dictionary<string, Command> RegisteredCommands = [];
 
-    /// <summary>
-    /// 注册鸿蒙命令，并将该命令与 ID 绑定。
-    /// </summary>
-    private static void RegisterHarmonyCommand(HarmonyCommand command)
+    public static void RegisterCommand(Command command)
     {
-        HarmonyCommands[command.Id] = command;
+        RegisteredCommands[command.Id] = command;
+    }
+
+    public static Command? GetCommand(Platform platform, string name)
+    {
+        if (!RegisteredCommands.ContainsKey(name)) return null;
+        return RegisteredCommands[name].SupportedPlatform.Contains(platform) ? RegisteredCommands[name] : null;
     }
 
     /// <summary>
-    /// 根据命令名和鸿蒙命令类型获取命令。当命令名未注册，或所绑定的命令不是指定类型时，返回 null。
+    /// 检查用户是否被禁止调用特定命令，或被禁止调用子悦机器。如果被禁止，则让机器发送封禁消息。
     /// </summary>
-    public static T? GetHarmonyCommand<T>(string name) where T : HarmonyCommand
+    /// <returns>是否在黑名单内</returns>
+    public static async Task<bool> CheckBlacklist(IContext context, string command)
     {
-        if (HarmonyCommands.GetValueOrDefault(name) is T t)
+        await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
+        await using MySqlCommand sqlCommand = new MySqlCommand(
+            "SELECT * FROM blacklists WHERE userid = @userid AND command = @command",
+            connection);
+
+        sqlCommand.Parameters.AddWithValue("@userid", context.UserId);
+        sqlCommand.Parameters.AddWithValue("@command", "all");
+        await using (MySqlDataReader reader = sqlCommand.ExecuteReader())
         {
-            return t;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// 注册一般命令，并将该命令与 ID 绑定。
-    /// </summary>
-    private static void RegisterGeneralCommand(GeneralCommand command)
-    {
-        GeneralCommands[command.Id] = command;
-    }
-
-    /// <summary>
-    /// 根据命令名和一般命令类型获取命令。当命令名未注册 / 或所绑定的命令不是指定类型 / 所绑定的命令不支持指定平台时，返回 null。
-    /// </summary>
-    public static T? GetGeneralCommand<T>(Platform platform, string name) where T : GeneralCommand
-    {
-        if (GeneralCommands.GetValueOrDefault(name) is not T t) return null;
-        return t.SupportedPlatform.Contains(platform) ? t : null;
-    }
-
-    /// <summary>
-    /// 检查用户是否被禁止调用特定命令，或被禁止调用子悦机器。
-    /// </summary>
-    /// <param name="message">当返回值为真时，返回的禁止调用的原因</param>
-    /// <returns>本次调用是否允许</returns>
-    public static bool CheckBlacklist(ulong userId, string command, out string message)
-    {
-        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
-        {
-            using MySqlCommand sqlCommand = new MySqlCommand(
-                $"SELECT * FROM blacklists WHERE userid = {userId} AND command = 'all'",
-                connection);
-            using MySqlDataReader reader = sqlCommand.ExecuteReader();
             if (reader.Read())
             {
-                message = $"""
-                           您已被禁止使用子悦机器！
-                           时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
-                           原因：{reader.GetString("reason")}
-                           用户协议：https://docs.ziyuebot.cn/tos.html
-                           """;
+                await context.SendMessage($"""
+                                           您已被禁止使用子悦机器！
+                                           时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                                           原因：{reader.GetString("reason")}
+                                           用户协议：https://docs.ziyuebot.cn/tos.html
+                                           """);
                 return true;
             }
         }
 
-        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+        sqlCommand.Parameters.Clear();
+        sqlCommand.Parameters.AddWithValue("@userid", context.UserId);
+        sqlCommand.Parameters.AddWithValue("@command", command);
+        await using (MySqlDataReader reader = sqlCommand.ExecuteReader())
         {
-            using MySqlCommand sqlCommand = new MySqlCommand(
-                "SELECT * FROM blacklists WHERE userid = @userid AND command = @command",
-                connection);
-            sqlCommand.Parameters.AddWithValue("@userid", userId);
-            sqlCommand.Parameters.AddWithValue("@command", command);
-            using MySqlDataReader reader = sqlCommand.ExecuteReader();
-            if (reader.Read())
-            {
-                message = $"""
-                           您已被禁止使用该命令！
-                           时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
-                           原因：{reader.GetString("reason")}
-                           用户协议：https://docs.ziyuebot.cn/tos.html
-                           """;
-                return true;
-            }
+            if (!reader.Read()) return false;
+            await context.SendMessage($"""
+                                       您已被禁止使用该命令！
+                                       时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
+                                       原因：{reader.GetString("reason")}
+                                       用户协议：https://docs.ziyuebot.cn/tos.html
+                                       """);
+            return true;
         }
-
-        message = "";
-        return false;
     }
 
     /// <summary>
@@ -104,32 +70,33 @@ public static class Commands
     /// </summary>
     public static void Initialize()
     {
-        RegisterHarmonyCommand(new Jrrp());
-        RegisterHarmonyCommand(new Hitokoto());
-        RegisterHarmonyCommand(new Ask());
-        RegisterHarmonyCommand(new About());
-        RegisterHarmonyCommand(new BALogo());
-        RegisterHarmonyCommand(new Quotations());
-        RegisterHarmonyCommand(new Xibao());
-        RegisterHarmonyCommand(new Beibao());
-        RegisterHarmonyCommand(new StartRevolver());
-        RegisterHarmonyCommand(new Shooting());
-        RegisterHarmonyCommand(new Rotating());
-        RegisterHarmonyCommand(new RestartRevolver());
-
-        RegisterGeneralCommand(new Help());
-        RegisterGeneralCommand(new PicFace());
-        RegisterGeneralCommand(new ThrowDriftbottle());
-        RegisterGeneralCommand(new PickDriftbottle());
-        RegisterGeneralCommand(new RemoveDriftbottle());
-        RegisterGeneralCommand(new ListDriftbottle());
-        RegisterGeneralCommand(new AddStargazer());
-        RegisterGeneralCommand(new ThrowStraitbottle());
-        RegisterGeneralCommand(new PickStraitbottle());
-        RegisterGeneralCommand(new ListStraitbottle());
-        RegisterGeneralCommand(new Win());
-        RegisterGeneralCommand(new Chat());
-        RegisterGeneralCommand(new Draw());
-        RegisterGeneralCommand(new Stat());
+        // 鸿蒙命令
+        RegisterCommand(new Jrrp());
+        RegisterCommand(new Hitokoto());
+        RegisterCommand(new Ask());
+        RegisterCommand(new About());
+        RegisterCommand(new BaLogo());
+        RegisterCommand(new Quotations());
+        RegisterCommand(new Xibao());
+        RegisterCommand(new Beibao());
+        RegisterCommand(new StartRevolver());
+        RegisterCommand(new Shooting());
+        RegisterCommand(new Rotating());
+        RegisterCommand(new RestartRevolver());
+        // 一般命令
+        RegisterCommand(new Help());
+        RegisterCommand(new PicFace());
+        RegisterCommand(new ThrowDriftbottle());
+        RegisterCommand(new PickDriftbottle());
+        RegisterCommand(new RemoveDriftbottle());
+        RegisterCommand(new ListDriftbottle());
+        RegisterCommand(new AddStargazer());
+        RegisterCommand(new ThrowStraitbottle());
+        RegisterCommand(new PickStraitbottle());
+        RegisterCommand(new ListStraitbottle());
+        RegisterCommand(new Win());
+        RegisterCommand(new Chat());
+        RegisterCommand(new Draw());
+        RegisterCommand(new Stat());
     }
 }

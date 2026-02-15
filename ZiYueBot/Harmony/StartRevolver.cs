@@ -2,8 +2,8 @@ using System.Collections.Concurrent;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
-using ZiYueBot.General;
-using ZiYueBot.Utils;
+using ZiYueBot.Discord;
+using ZiYueBot.QQ;
 
 namespace ZiYueBot.Harmony;
 
@@ -41,7 +41,7 @@ public class RevolverRound
     }
 }
 
-public class StartRevolver : HarmonyCommand
+public class StartRevolver : Command
 {
     internal static readonly ConcurrentDictionary<ulong, RevolverRound> Revolvers = [];
     private static readonly ILog Logger = LogManager.GetLogger("开始俄罗斯轮盘");
@@ -59,30 +59,40 @@ public class StartRevolver : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/revolver/start
                                           """;
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        if (eventType == EventType.DirectMessage) return "俄罗斯轮盘命令只能在群聊中使用！";
-
-        ulong group = ulong.Parse(args[0]);
-        if (!RateLimit.TryPassRateLimit(this, eventType, group)) return "频率已达限制（整个群聊内 30 秒 1 条）";
-
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-
-        if (Revolvers.TryGetValue(group, out RevolverRound? round) &&
-            DateTime.Now - round.StartTime > TimeSpan.FromDays(1))
+        if (context.EventType == EventType.DirectMessage)
         {
-            Revolvers.Remove(group, out _);
+            await context.SendMessage("俄罗斯轮盘命令只能在群聊中使用！");
+            return;
         }
 
-        if (!Revolvers.TryAdd(group, new RevolverRound())) return "俄罗斯轮盘已开始";
+        ulong channelId;
+        if (context is DiscordContext discord) channelId = (ulong)discord.Socket.ChannelId!;
+        else channelId = ((QqContext)context).SourceUni;
 
-        UpdateRevolverRecords(userId, "start_count");
-        return "俄罗斯轮盘开始了，今天轮到谁倒霉呢";
-    }
+        if (!RateLimit.TryPassRateLimit(this, channelId, TimeSpan.FromSeconds(30)))
+        {
+            await context.SendMessage("频率已达限制（整个群聊内 30 秒 1 条）");
+            return;
+        }
 
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
-    {
-        return TimeSpan.FromSeconds(30);
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+
+        if (Revolvers.TryGetValue(channelId, out RevolverRound? round) &&
+            DateTime.Now - round.StartTime > TimeSpan.FromDays(1))
+        {
+            Revolvers.Remove(channelId, out _);
+        }
+
+        if (!Revolvers.TryAdd(channelId, new RevolverRound()))
+        {
+            await context.SendMessage("俄罗斯轮盘已开始");
+            return;
+        }
+
+        _ = UpdateRevolverRecords(channelId, "start_count");
+        await context.SendMessage("俄罗斯轮盘开始了，今天轮到谁倒霉呢");
     }
 
     public static async Task UpdateRevolverRecords(ulong userId, string column)

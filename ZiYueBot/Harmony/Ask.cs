@@ -1,12 +1,11 @@
 using log4net;
-using System.Text;
 using System.Text.Json;
 using ZiYueBot.Core;
 using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class Ask : HarmonyCommand
+public class Ask : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("评价");
     private static readonly List<string> Reviews = [];
@@ -68,33 +67,26 @@ public class Ask : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/ask
                                           """;
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
 
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)
         {
             (string, List<string>) aprilReview = AprilReviews[Random.Shared.Next(0, AprilReviews.Count)];
-            if (args.Length >= 2)
-            {
-                string arguments = string.Join(' ', args[1..]);
-                if (arguments != "")
-                    return
-                        $"{aprilReview.Item1}对 {arguments} 的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
-            }
-
-            return
-                $"{aprilReview.Item1}的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}";
+            if (arg.IsEmpty())
+                await context.SendMessage(
+                    $"{aprilReview.Item1}的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}");
+            else
+                await context.SendMessage($"{aprilReview.Item1}对 " + arg +
+                                          $" 的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}");
+            return;
         }
 
-        if (args.Length >= 2)
-        {
-            string arguments = string.Join(' ', args[1..]);
-            if (arguments != "")
-                return $"张教授对 {arguments} 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
-        }
-
-        return $"张教授的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}";
+        if (arg.IsEmpty())
+            await context.SendMessage($"张教授的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}");
+        else
+            await context.SendMessage("张教授对 " + arg + $" 的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}");
     }
 }

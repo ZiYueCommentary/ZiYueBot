@@ -18,7 +18,7 @@ public static class StringExtension
                 {
                     result += str.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = str.IndexOf('\u2403', i + 1);
-                    byte[] fileData = WebUtils.DownloadFile(str.Substring(i + 1, end - i - 1));
+                    byte[] fileData = WebUtils.DownloadFile(str.Substring(i + 1, end - i - 1)).Result;
                     using SKData? data = SKData.CreateCopy(fileData);
                     using SKCodec? codec = SKCodec.Create(data);
                     string type = codec.EncodedFormat switch
@@ -52,7 +52,7 @@ public static class StringExtension
                 {
                     result += str.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
                     int end = str.IndexOf('\u2405', i + 1);
-                    result += $" @{Message.MentionedUinAndName[ulong.Parse(str.Substring(i + 1, end - i - 1))]} ";
+                    // result += $" @{Message.MentionedUinAndName[ulong.Parse(str.Substring(i + 1, end - i - 1))]} ";
                     if (i == 0) result = result[1..];
                     i = pos = end;
                     simpleMessage = false;
@@ -67,7 +67,7 @@ public static class StringExtension
                     }
 
                     int end = str.IndexOf('>', i + 1);
-                    result += $" @{Message.MentionedUinAndName[ulong.Parse(str.Substring(i + 2, end - i - 2))]} ";
+                    // result += $" @{Message.MentionedUinAndName[ulong.Parse(str.Substring(i + 2, end - i - 2))]} ";
                     if (i == 0) result = result[1..];
                     i = pos = end;
                     simpleMessage = false;

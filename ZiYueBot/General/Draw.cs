@@ -7,7 +7,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class Draw : GeneralCommand
+public class Draw : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("绘画");
 
@@ -27,7 +27,63 @@ public class Draw : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/draw
                                           """;
 
-    public JsonNode PostRequest(string prompt)
+    public override async Task Invoke(IContext context, MessageChain arg)
+    {
+        if (arg.IsEmpty())
+        {
+            await context.SendMessage("参数数量不足。使用“/help draw”查看命令用法。");
+            return;
+        }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
+
+        if (!await ValidateInvoke(context))
+        {
+            if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
+            {
+                await context.SendMessage("""
+                                          今天是子悦的生日，赞助者命令“绘画”对所有人开放。
+                                          喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
+                                          https://afdian.com/a/ziyuecommentary2020
+                                          """);
+            }
+            else return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        try
+        {
+            JsonNode posted = PostRequest(arg.ToString(context));
+            await WebUtils.DownloadFile(
+                posted["choices"]![0]!["message"]!["content"]![0]!["image"]!.GetValue<string>(),
+                "temp/result.png");
+            await context.SendMessage([
+                new ImageMessageEntity($"file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}", "draw.png")
+            ]);
+            File.Delete("temp/result.png");
+        }
+        catch (TimeoutException)
+        {
+            await context.SendMessage("服务连接超时。");
+        }
+        catch (HttpRequestException)
+        {
+            await context.SendMessage("第三方拒绝：涉嫌知识产权风险。");
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e.Message, e);
+            await context.SendMessage("命令内部错误。");
+        }
+    }
+
+    private static JsonNode PostRequest(string prompt)
     {
         using HttpClient client = new HttpClient();
         using HttpRequestMessage request =
@@ -35,6 +91,7 @@ public class Draw : GeneralCommand
                 "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
         request.Headers.Add("Accept", "application/json");
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
+        // 下面这个 json 太复杂了，写成 C# 代码乱得要死，就这样吧。
         using StringContent content = new StringContent("""
                                                         {
                                                             "model": "qwen-image-max",
@@ -65,75 +122,51 @@ public class Draw : GeneralCommand
         string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         if (res == "") throw new TimeoutException();
         JsonNode output = JsonNode.Parse(res)!["output"]!;
-        // Logger.Info($"新绘画任务：{output["task_id"]!.GetValue<string>()}");
         return output;
     }
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    private static async Task<bool> ValidateInvoke(IContext context)
     {
-        throw new NotSupportedException();
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        throw new NotSupportedException();
-    }
-
-    // 这可能会是未来子悦机器的命令基本框架
-    public InvokeValidation TryInvoke(EventType eventType, string userName, ulong userId, string[] args,
-        out string output)
-    {
-        if (args.Length < 2)
+        await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
         {
-            output = "参数数量不足。使用“/help draw”查看命令用法。";
-            return InvokeValidation.NotEnoughParameters;
-        }
-
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId))
-        {
-            output = "频率已达限制（每分钟 1 条）";
-            return InvokeValidation.RateLimited;
-        }
-
-        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
-        {
-            using MySqlCommand command = new MySqlCommand(
-                $"SELECT * FROM sponsors WHERE userid = {userId} LIMIT 1",
+            await using MySqlCommand command = new MySqlCommand(
+                $"SELECT * FROM sponsors WHERE userid = {context.UserId} LIMIT 1",
                 connection);
-            using MySqlDataReader reader = command.ExecuteReader();
+            await using MySqlDataReader reader = command.ExecuteReader();
             if (!reader.Read())
             {
-                output = """
-                         您不是子悦机器的赞助者！
-                         本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                         https://afdian.com/a/ziyuecommentary2020
-                         """;
-                return InvokeValidation.NotSponsor;
+                await context.SendMessage("""
+                                          您不是子悦机器的赞助者！
+                                          本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                                          https://afdian.com/a/ziyuecommentary2020
+                                          """);
+                return false;
             }
 
             if (DateTime.Today > reader.GetDateTime("expiry"))
             {
-                output = $"""
-                          您的赞助已过期（{reader.GetDateTime("expiry"):yyyy年MM月dd日}）
-                          子悦机器每次赞助的有效期为 365 天。
-                          本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                          https://afdian.com/a/ziyuecommentary2020
-                          """;
-                return InvokeValidation.SponsorExpired;
+                await context.SendMessage($"""
+                                           您的赞助已过期（{reader.GetDateTime("expiry"):yyyy年MM月dd日}）
+                                           子悦机器每次赞助的有效期为 365 天。
+                                           本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                                           https://afdian.com/a/ziyuecommentary2020
+                                           """);
+                return false;
             }
         }
 
-        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+        await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
         {
-            using MySqlCommand command = new MySqlCommand($"SELECT * FROM draw WHERE userid = {userId} ", connection);
-            using MySqlDataReader reader = command.ExecuteReader();
+            await using MySqlCommand command =
+                new MySqlCommand($"SELECT * FROM draw WHERE userid = {context.UserId} ", connection);
+            await using MySqlDataReader reader = command.ExecuteReader();
             if (!reader.Read() || reader.GetDateTime("current_month").ToYearMonth() != DateTime.Today.ToYearMonth())
             {
-                using MySqlConnection updateConnection = ZiYueBot.Instance.ConnectDatabase();
-                using MySqlCommand updateCommand =
+                await using MySqlConnection updateConnection = ZiYueBot.Instance.ConnectDatabase();
+                await using MySqlCommand updateCommand =
                     new MySqlCommand(
                         $"""
-                         INSERT INTO draw (userid, current_month, limitation, consumed) VALUES ({userId}, '{DateTime.Today.ToYearMonth():yyyy-M-d}', 50, 0) 
+                         INSERT INTO draw (userid, current_month, limitation, consumed) VALUES ({context.UserId}, '{DateTime.Today.ToYearMonth():yyyy-M-d}', 50, 0) 
                          ON DUPLICATE KEY UPDATE current_month = '{DateTime.Today.ToYearMonth():yyyy-M-d}', limitation = 50, consumed = 0
                          """,
                         updateConnection);
@@ -141,41 +174,36 @@ public class Draw : GeneralCommand
             }
         }
 
-        using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+        if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
         {
-            using MySqlCommand command = new MySqlCommand($"SELECT * FROM draw WHERE userid = {userId} ", connection);
-            using MySqlDataReader reader = command.ExecuteReader();
+            await context.SendMessage("机器绘画中...");
+            return true;
+        }
+
+        await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
+        {
+            await using MySqlCommand command =
+                new MySqlCommand($"SELECT * FROM draw WHERE userid = {context.UserId} ", connection);
+            await using MySqlDataReader reader = command.ExecuteReader();
             reader.Read();
             if (reader.GetInt32("consumed") >= reader.GetInt32("limitation"))
             {
-                output = "您本月的调用额度已耗尽。";
-                return InvokeValidation.HitDrawLimit;
+                await context.SendMessage("您本月的调用额度已耗尽。");
+                return false;
             }
 
-            using MySqlConnection updateConnection = ZiYueBot.Instance.ConnectDatabase();
-            using MySqlCommand updateCommand =
-                new MySqlCommand($"UPDATE draw SET consumed = consumed + 1 WHERE userid = {userId}",
+            await using MySqlConnection updateConnection = ZiYueBot.Instance.ConnectDatabase();
+            await using MySqlCommand updateCommand =
+                new MySqlCommand($"UPDATE draw SET consumed = consumed + 1 WHERE userid = {context.UserId}",
                     updateConnection);
             updateCommand.ExecuteNonQuery();
 
-            Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-            UpdateInvokeRecords(userId);
-            output = $"{reader.GetInt32("consumed") + 1}/{reader.GetInt32("limitation")}";
-            return InvokeValidation.Succeed;
+            await context.SendMessage($"机器绘画中（本月 {reader.GetInt32("consumed") + 1}/{reader.GetInt32("limitation")} 次）");
+            return true;
         }
     }
 
-    public enum InvokeValidation
-    {
-        NotEnoughParameters,
-        RateLimited,
-        NotSponsor,
-        SponsorExpired,
-        HitDrawLimit,
-        Succeed
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(1);
     }

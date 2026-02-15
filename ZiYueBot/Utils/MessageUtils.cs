@@ -1,7 +1,10 @@
+using ZiYueBot.Core;
+
 namespace ZiYueBot.Utils;
 
 public static class MessageUtils
 {
+    // TODO 懒得查了，先不改写了
     public static bool IsSimpleMessage(string flatten)
     {
         return !(flatten.Contains('\u2402') || flatten.Contains('\u2404') || flatten.Contains('\u2406') ||
@@ -9,9 +12,8 @@ public static class MessageUtils
                  (flatten.Contains("<@") && flatten.Contains('>')));
     }
 
-    public static string FlattenArguments(string[] args)
+    public static string DatabaseFriendly(this MessageChain arg)
     {
-        return args.Aggregate("",
-            (current, arg) => current + arg.Replace("\n", "\\n").Replace("\r", "\\r") + ",")[..^1];
+        return String.Empty;
     }
 }

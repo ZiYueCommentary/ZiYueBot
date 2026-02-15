@@ -1,12 +1,11 @@
 using log4net;
 using SkiaSharp;
 using ZiYueBot.Core;
-using ZiYueBot.General;
 using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class Xibao : HarmonyCommand
+public class Xibao : Command
 {
     private static readonly SKFont Font = new SKFont(SKTypeface.FromFile("resources/HarmonyOS.ttf"), 100);
     private static readonly SKBitmap ImageXibao = SKBitmap.Decode("resources/xibao.jpg");
@@ -25,6 +24,36 @@ public class Xibao : HarmonyCommand
                                           频率限制：每次调用间隔 1 分钟。
                                           在线文档：https://docs.ziyuebot.cn/harmony/xibao
                                           """;
+
+    public override async Task Invoke(IContext context, MessageChain arg)
+    {
+        if (arg.IsEmpty())
+        {
+            await context.SendMessage("参数数量不足。使用 “/help xibao” 查看命令用法。");
+            return;
+        }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        if (!arg.IsLiteralString())
+        {
+            await context.SendMessage("请输入纯文字参数。");
+            return;
+        }
+
+        await context.SendMessage("机器生成中...");
+
+        await context.SendMessage([
+            new ImageMessageEntity($"base64://{Convert.ToBase64String(Render(true, arg.ToString(context)))}", "xibao.jpg")
+        ]);
+    }
 
     public static byte[] Render(bool isXibao, string text)
     {
@@ -82,19 +111,7 @@ public class Xibao : HarmonyCommand
         }
     }
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
-    {
-        if (args.Length < 2) return "参数数量不足。使用 “/help xibao” 查看命令用法。";
-        if (!MessageUtils.IsSimpleMessage(string.Join(' ', args))) return "请输入纯文字参数。";
-        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-        
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        
-        return "";
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(1);
     }

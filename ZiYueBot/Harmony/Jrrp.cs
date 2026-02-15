@@ -5,10 +5,7 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
-/// <summary>
-/// 今日人品
-/// </summary>
-public class Jrrp : HarmonyCommand
+public class Jrrp : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("今日人品");
 
@@ -41,24 +38,24 @@ public class Jrrp : HarmonyCommand
         [100] = "买彩票可能会中大奖哦！"
     };
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        Logger.Info($"调用者：{userName} ({userId})");
-        UpdateInvokeRecords(userId);
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        _ =UpdateInvokeRecords(context.UserId);
 
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
-            return $"{userName} 的今日人品是 {Random.Shared.Next(Int32.MinValue, 0)}。子悦机器不予评价。";
+            await context.SendMessage($"{context.UserName} 的今日人品是 {Random.Shared.Next(int.MinValue, 0)}。子悦机器不予评价。");
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.Append(userId).Append(DateTime.Today.ToBinary()).Append(42);
+        builder.Append(context.UserId).Append(DateTime.Today.ToBinary()).Append(42);
         byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
         int luck = Math.Abs(BitConverter.ToInt32(bytes, 0)) % 101;
         string comment = Jackpots.TryGetValue(luck, out string? value)
             ? value
             : Levels.Last(level => level.Key <= luck).Value;
 
-        return $"{userName} 的今日人品是 {luck}。{comment}";
+        await context.SendMessage($"{context.UserName} 的今日人品是 {luck}。{comment}");
     }
 }
