@@ -1,9 +1,10 @@
 ﻿using log4net;
 using ZiYueBot.Core;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class Hitokoto : HarmonyCommand
+public class Hitokoto : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("一言");
 
@@ -19,18 +20,17 @@ public class Hitokoto : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/hitokoto
                                           """;
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        Logger.Info($"调用者：{userName} ({userId})");
-        UpdateInvokeRecords(userId);
-        
-        using HttpClient client = new HttpClient();
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        _ = UpdateInvokeRecords(context.UserId);
+
         try
         {
-            HttpResponseMessage response = client.GetAsync("https://v1.hitokoto.cn/?c=f&encode=text").Result;
+            HttpResponseMessage response = WebUtils.Client.GetAsync("https://v1.hitokoto.cn/?c=f&encode=text").Result;
             if (response.IsSuccessStatusCode)
             {
-                return response.Content.ReadAsStringAsync().Result;
+                await context.SendMessage(await response.Content.ReadAsStringAsync());
             }
         }
         catch (HttpRequestException e)
@@ -38,6 +38,6 @@ public class Hitokoto : HarmonyCommand
             Logger.Error(e.Message, e);
         }
 
-        return "一言获取失败。";
+        await context.SendMessage("一言获取失败。");
     }
 }

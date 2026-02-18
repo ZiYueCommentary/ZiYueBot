@@ -1,12 +1,10 @@
 using log4net;
 using SkiaSharp;
 using ZiYueBot.Core;
-using ZiYueBot.General;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class BALogo : HarmonyCommand
+public class BaLogo : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("碧蓝档案标题");
     private static readonly double OffsetX = 250 / Math.Tan(double.DegreesToRadians(60));
@@ -27,7 +25,65 @@ public class BALogo : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/balogo
                                           """;
 
-    public byte[] Render(string left, string right)
+    public override async Task Invoke(IContext context, MessageChain arg)
+    {
+        if (!arg.IsLiteralString())
+        {
+            await context.SendMessage("请输入纯文字参数。");
+            return;
+        }
+
+        string[] args = Parse(arg.ToString(context));
+
+        if (args.Length < 2)
+        {
+            await context.SendMessage("参数数量不足。使用“/help balogo”查看命令用法。");
+            return;
+        }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg}");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await context.SendMessage([
+            new ImageMessageEntity($"base64://{Convert.ToBase64String(Render(args[0], args[1]))}", "balogo.jpg")
+        ]);
+    }
+
+    private static string[] Parse(string raw)
+    {
+        if (raw.Length == 0) return [""];
+        IList<string> args = [];
+        int pos = 0;
+        for (int i = pos; i < raw.Length; i++)
+        {
+            switch (raw[i])
+            {
+                case '"':
+                {
+                    int nextQuote = raw.IndexOf('"', i + 1);
+                    if (nextQuote == -1) nextQuote = raw.Length - 1;
+                    args.Add(raw.Substring(i + 1, nextQuote - i - 1));
+                    i = pos = nextQuote + 2;
+                    continue;
+                }
+                case ' ':
+                    args.Add(raw[pos..i]);
+                    pos = i + 1;
+                    break;
+            }
+        }
+
+        if (pos < raw.Length) args.Add(raw[pos..]);
+        return [.. args];
+    }
+
+    private static byte[] Render(string left, string right)
     {
         float leftWidth = Font.MeasureText(left);
         float rightWidth = Font.MeasureText(right);
@@ -53,18 +109,7 @@ public class BALogo : HarmonyCommand
         return output.ToArray();
     }
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
-    {
-        if (args.Length < 3) return "参数数量不足。使用“/help balogo”查看命令用法。";
-        if (!MessageUtils.IsSimpleMessage(args[0]) || !MessageUtils.IsSimpleMessage(args[1])) return "请输入纯文字参数。";
-        if (!RateLimit.TryPassRateLimit(this, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
-        return "";
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(1);
     }

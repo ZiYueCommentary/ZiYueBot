@@ -4,7 +4,7 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.General;
 
-public class ListStraitbottle : GeneralCommand
+public class ListStraitbottle : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("海峡云瓶列表");
 
@@ -21,57 +21,35 @@ public class ListStraitbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
                                           """;
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（10 分钟 1 条）");
+            return;
+        }
 
-        Logger.Info($"调用者：{userName} ({userId})");
-        UpdateInvokeRecords(userId);
-        
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command = new MySqlCommand(
-            "SELECT * FROM straitbottles WHERE picked = false",
-            database);
-        using MySqlDataReader reader = command.ExecuteReader();
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        await using MySqlCommand command =
+            new MySqlCommand("SELECT * FROM straitbottles WHERE picked = false", database);
+        await using MySqlDataReader reader = command.ExecuteReader();
         int i = 0;
         int pickable = 0;
         int self = 0;
         while (reader.Read())
         {
-            if (reader.GetUInt64("userid") == userId) self++;
-            if (reader.GetBoolean("fromDiscord")) pickable++;
+            if (reader.GetUInt64("userid") == context.UserId) self++;
+            if (reader.GetBoolean("fromDiscord") ^ context.Platform == Platform.Discord) pickable++;
             i++;
         }
 
-        return $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 QQ 捞起，{self} 支由你扔出";
+        await context.SendMessage($"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 QQ 捞起，{self} 支由你扔出");
     }
 
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（10 分钟 1 条）";
-
-        Logger.Info($"调用者：{userPing} ({userId})");
-        UpdateInvokeRecords(userId);
-        
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command = new MySqlCommand(
-            "SELECT * FROM straitbottles WHERE picked = false",
-            database);
-        using MySqlDataReader reader = command.ExecuteReader();
-        int i = 0;
-        int pickable = 0;
-        int self = 0;
-        while (reader.Read())
-        {
-            if (reader.GetUInt64("userid") == userId) self++;
-            if (!reader.GetBoolean("fromDiscord")) pickable++;
-            i++;
-        }
-
-        return $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 Discord 捞起，{self} 支由你扔出";
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(10);
     }

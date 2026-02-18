@@ -26,16 +26,18 @@ public class ZiYueBot
 
     private ZiYueBot()
     {
-        QqEvent = new ClientWebSocket();
-        QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event"), CancellationToken.None).Wait();
-        QqApi = new ClientWebSocket();
-        QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api"), CancellationToken.None).Wait();
-        Logger.Info("QQ - 连接成功！");
-
         using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
         {
             Config = JsonSerializer.Deserialize<Config>(stream);
         }
+
+        QqEvent = new ClientWebSocket();
+        QqEvent.Options.SetRequestHeader("Authorization", "Bearer " + Config.NapcatToken);
+        QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event"), CancellationToken.None).Wait();
+        QqApi = new ClientWebSocket();
+        QqApi.Options.SetRequestHeader("Authorization", "Bearer " + Config.NapcatToken);
+        QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api"), CancellationToken.None).Wait();
+        Logger.Info("QQ - 连接成功！");
 
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
@@ -277,22 +279,6 @@ public class ZiYueBot
 
                                                     CREATE INDEX stargazers_userid_index
                                                         ON stargazers (userid, removed);
-                                                    """, database);
-            command.ExecuteNonQuery();
-        }
-        catch (MySqlException)
-        {
-        }
-
-        try
-        {
-            MySqlCommand command = new MySqlCommand("""
-                                                    CREATE TABLE badges
-                                                    (
-                                                        userid     bigint   default 0 primary key,
-                                                        badge_name tinytext                  null,
-                                                        granted_at datetime                  null
-                                                    ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();
         }

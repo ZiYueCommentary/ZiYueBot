@@ -1,11 +1,9 @@
 ﻿using log4net;
 using ZiYueBot.Core;
-using ZiYueBot.Harmony;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class Help : GeneralCommand
+public class Help : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("帮助");
 
@@ -23,41 +21,24 @@ public class Help : GeneralCommand
 
     public override Platform[] SupportedPlatform => [Platform.Discord, Platform.QQ];
 
-    private string Invoke(Platform platform, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        Logger.Info($"平台：${platform}，调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        UpdateInvokeRecords(userId);
+        Logger.Info(
+            $"平台：${context.Platform}，调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
 
-        if (args.Length >= 2 && args[1] != "")
+        if (!arg.IsEmpty())
         {
-            HarmonyCommand? harmony = Commands.GetHarmonyCommand<HarmonyCommand>(args[1]);
-            if (harmony is not null)
-            {
-                return harmony.Description;
-            }
-
-            GeneralCommand? general = Commands.GetGeneralCommand<GeneralCommand>(platform, args[1]);
-            return general is not null ? general.Description : $"命令未找到：{args[1]}";
+            Command? command = Commands.GetCommand(context.Platform, arg.ToString(context));
+            await context.SendMessage(command is not null ? command.Description : $"命令未找到：{arg.ToString(context)}");
+            return;
         }
 
-        string help = Commands.HarmonyCommands.Values.ToHashSet().Aggregate("子悦机器可用命令：\n",
-            (current, command) => current + $"\t/{command.Id}\t{command.Name}\n");
-
-        help = Commands.GeneralCommands.Values.ToHashSet()
-            .Where(command => command.SupportedPlatform.Contains(platform)).Aggregate(help,
+        string help = Commands.RegisteredCommands.Values.ToHashSet()
+            .Where(command => command.SupportedPlatform.Contains(context.Platform)).Aggregate("子悦机器可用命令：\n",
                 (current, command) => current + $"\t/{command.Id}\t{command.Name}\n");
 
         help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：https://docs.ziyuebot.cn/";
-        return help;
-    }
-
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
-    {
-        return Invoke(Platform.QQ, userName, userId, args);
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        return Invoke(Platform.Discord, userPing, userId, args);
+        await context.SendMessage(help);
     }
 }

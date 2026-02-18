@@ -3,11 +3,10 @@ using System.Text.Json.Nodes;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public class Chat : GeneralCommand
+public class Chat : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("对话");
     private static readonly string SystemPrompt;
@@ -33,71 +32,99 @@ public class Chat : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/chat
                                           """;
 
-    public JsonNode PostQuestion(bool qq, string userName, string question)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        using HttpClient client = new HttpClient();
-        using HttpRequestMessage request =
-            new HttpRequestMessage(HttpMethod.Post,
-                "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
-        request.Headers.Add("Accept", "application/json");
-        request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
-        using StringContent content = new StringContent("""
+        if (arg.IsEmpty())
+        {
+            await context.SendMessage("参数数量不足。使用“/help chat”查看命令用法。");
+            return;
+        }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            if (context.Platform == Platform.Discord) await context.SendMessage("频率已达限制（每分钟 1 条）");
+            else await context.SendMessage("频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await context.SendMessage("机器思考中...");
+
+        try
+        {
+            DateTime prev = DateTime.Now;
+            using HttpClient client = new HttpClient();
+            using HttpRequestMessage request =
+                new HttpRequestMessage(HttpMethod.Post,
+                    "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
+            request.Headers.Add("Accept", "application/json");
+            request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
+            JsonObject jsonContent = new JsonObject
+            {
+                ["messages"] = new JsonArray
                 {
-                  "messages": [
+                    new JsonObject
                     {
-                      "content": "%system_prompt% %april%",
-                      "role": "system"
+                        ["content"] = SystemPrompt + (DateTime.Today.Month == 4 && DateTime.Today.Day == 1
+                            ? "用贴吧风格回答之后的问题，要尽量刻薄。"
+                            : ""),
+                        ["role"] = "system"
                     },
+                    new JsonObject
                     {
-                      "content": "我叫“%user%”，一名%platform%用户。",
-                      "role": "user"
+                        ["content"] = $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。",
+                        ["role"] = "user"
                     },
+                    new JsonObject
                     {
-                      "content": "%question%",
-                      "role": "user"
+                        ["content"] = arg.ToString(context),
+                        ["role"] = "user"
                     }
-                  ],
-                  "enable_search": true,
-                  "model": "qwen3-max-2026-01-23"
-                }
-                """.Replace("%system_prompt%", SystemPrompt)
-                .Replace("%april%", DateTime.Today.Month == 4 && DateTime.Today.Day == 1 ? "用贴吧风格回答之后的问题，要尽量刻薄。" : "")
-                .Replace("%user%", userName)
-                .Replace("%platform%", qq ? "QQ": "Discord")
-                .Replace("%question%", question.JsonFriendly())
-            /*.Replace("%token%", (qq ? 1024 : 4096).ToString())*/, Encoding.UTF8, "application/json");
-        request.Content = content;
-        using HttpResponseMessage response = client.SendAsync(request).GetAwaiter().GetResult();
-        response.EnsureSuccessStatusCode();
-        string res = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-        return res == "" ? throw new TimeoutException() : JsonNode.Parse(res)!;
+                },
+                ["enable_search"] = true,
+                ["model"] = "qwen3-max-2026-01-23"
+            };
+            using StringContent content = new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
+            request.Content = content;
+            using HttpResponseMessage response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            JsonNode? result = await JsonNode.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+            DateTime last = DateTime.Now;
+            StringBuilder builder = new StringBuilder();
+            builder.Append($"`已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
+            builder.Append(result!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
+            if (builder.Length > 1900)
+            {
+                builder.Remove(1900, builder.Length - 1900);
+                builder.Append("\n**内容过长，以下内容已被截断。**");
+            }
+
+            await context.SendMessage(builder.ToString());
+        }
+        catch (TimeoutException)
+        {
+            await context.SendMessage("服务连接超时。");
+        }
+        catch (TaskCanceledException)
+        {
+            await context.SendMessage("回答超时。");
+        }
+        catch (Exception)
+        {
+            await context.SendMessage("命令内部错误。");
+        }
     }
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override TimeSpan GetRateLimit(IContext context)
     {
-        if (args.Length < 2) return "参数数量不足。使用“/help chat”查看命令用法。";
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（5 分钟 1 条；赞助者每分钟 1 条）";
+        if (context.Platform == Platform.Discord) return TimeSpan.FromMinutes(1);
 
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        _ = UpdateInvokeRecords(userId);
-        return "";
-    }
-
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (args.Length < 1) return "参数数量不足。使用“/help chat”查看命令用法。";
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（1 分钟 1 条）";
-
-        Logger.Info($"调用者：{userPing} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        _ = UpdateInvokeRecords(userId);
-        return "";
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType, ulong userId)
-    {
         using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(
-            $"SELECT * FROM sponsors WHERE userid = {userId} LIMIT 1",
+            $"SELECT * FROM sponsors WHERE userid = {context.UserId} LIMIT 1",
             connection);
         using MySqlDataReader reader = command.ExecuteReader();
         if (reader.Read() && DateTime.Today <= reader.GetDateTime("expiry"))
@@ -105,6 +132,6 @@ public class Chat : GeneralCommand
             return TimeSpan.FromMinutes(1);
         }
 
-        return platform == Platform.Discord ? TimeSpan.FromMinutes(1) : TimeSpan.FromMinutes(5);
+        return TimeSpan.FromMinutes(5);
     }
 }

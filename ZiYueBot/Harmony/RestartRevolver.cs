@@ -1,11 +1,12 @@
 using log4net;
 using ZiYueBot.Core;
-using ZiYueBot.General;
+using ZiYueBot.Discord;
+using ZiYueBot.QQ;
 using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
-public class RestartRevolver : HarmonyCommand
+public class RestartRevolver : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("重置俄罗斯轮盘");
 
@@ -22,23 +23,33 @@ public class RestartRevolver : HarmonyCommand
                                           在线文档：https://docs.ziyuebot.cn/harmony/revolver/restart
                                           """;
 
-    public override string Invoke(EventType eventType, string userName, ulong userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        if (eventType == EventType.DirectMessage) return "俄罗斯轮盘命令只能在群聊中使用！";
+        if (context.EventType == EventType.DirectMessage)
+        {
+            await context.SendMessage("俄罗斯轮盘命令只能在群聊中使用！");
+            return;
+        }
 
-        ulong group = ulong.Parse(args[0]);
-        if (!RateLimit.TryPassRateLimit(this, eventType, group)) return "频率已达限制（整个群聊内 10 秒 1 条）";
+        ulong channelId;
+        if (context is DiscordContext discord) channelId = (ulong)discord.Socket.ChannelId!;
+        else channelId = ((QqContext)context).SourceUni;
 
-        Logger.Info($"调用者：{userName} ({userId})，参数：{MessageUtils.FlattenArguments(args)}");
-        if (!StartRevolver.Revolvers.TryGetValue(group, out RevolverRound? value)) return "游戏未开始，发送“开始俄罗斯轮盘”来开始";
+        if (!RateLimit.TryPassRateLimit(this, channelId, TimeSpan.FromSeconds(10)))
+        {
+            await context.SendMessage("频率已达限制（整个群聊内 10 秒 1 条）");
+            return;
+        }
 
-        StartRevolver.UpdateRevolverRecords(userId, "restart_count");
-        Interlocked.Exchange(ref value.ChamberIndex, Random.Shared.Next(1, RevolverRound.Chambers - 1));
-        return "轮盘已重新旋转";
-    }
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        if (!StartRevolver.Revolvers.TryGetValue(channelId, out RevolverRound? round))
+        {
+            await context.SendMessage("游戏未开始，发送“开始俄罗斯轮盘”来开始");
+            return;
+        }
 
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
-    {
-        return TimeSpan.FromSeconds(10);
+        _ = StartRevolver.UpdateRevolverRecords(context.UserId, "restart_count");
+        Interlocked.Exchange(ref round.ChamberIndex, Random.Shared.Next(1, RevolverRound.Chambers - 1));
+        await context.SendMessage("轮盘已重新旋转");
     }
 }

@@ -4,7 +4,7 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.General;
 
-public class PickStraitbottle : GeneralCommand
+public class PickStraitbottle : Command
 {
     public static readonly ILog Logger = LogManager.GetLogger("捞海峡云瓶");
 
@@ -21,19 +21,27 @@ public class PickStraitbottle : GeneralCommand
                                           在线文档：https://docs.ziyuebot.cn/general/straitbottle/pick
                                           """;
 
-    public override string QQInvoke(EventType eventType, string userName, uint userId, string[] args)
+    public override async Task Invoke(IContext context, MessageChain arg)
     {
-        if (!RateLimit.TryPassRateLimit(this, Platform.QQ, eventType, userId)) return "频率已达限制（每分钟 1 条）";
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
 
-        Logger.Info($"调用者：{userName} ({userId})");
-        UpdateInvokeRecords(userId);
-        
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command = new MySqlCommand(
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        _ = UpdateInvokeRecords(context.UserId);
+
+        await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
+        await using MySqlCommand command = new MySqlCommand(
             "SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = true ORDER BY RAND() LIMIT 1",
             database);
-        using MySqlDataReader reader = command.ExecuteReader();
-        if (!reader.Read()) return "找不到瓶子！";
+        await using MySqlDataReader reader = command.ExecuteReader();
+        if (!reader.Read())
+        {
+            await context.SendMessage("找不到瓶子！");
+            return;
+        }
 
         string result = $"""
                          你捞到了 {reader.GetString("username")} 的瓶子！
@@ -42,44 +50,15 @@ public class PickStraitbottle : GeneralCommand
                          {reader.GetString("content")}
                          """;
 
-        using MySqlCommand addViews =
+        await using MySqlCommand addViews =
             new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
-        reader.Close();
+        await reader.CloseAsync();
         addViews.ExecuteNonQuery();
 
-        return result;
+        await context.SendMessage(MessageChain.FromDatabase(result));
     }
 
-    public override string DiscordInvoke(EventType eventType, string userPing, ulong userId, string[] args)
-    {
-        if (!RateLimit.TryPassRateLimit(this, Platform.Discord, eventType, userId)) return "频率已达限制（每分钟 1 条）";
-
-        Logger.Info($"调用者：{userPing} ({userId})");
-        UpdateInvokeRecords(userId);
-        
-        using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
-        using MySqlCommand command = new MySqlCommand(
-            "SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = false ORDER BY RAND() LIMIT 1",
-            database);
-        using MySqlDataReader reader = command.ExecuteReader();
-        if (!reader.Read()) return "找不到瓶子！";
-
-        string result = $"""
-                         你捞到了 {reader.GetString("username")} 的瓶子！
-                         日期：{reader.GetDateTime("created"):yyyy年MM月dd日}
-
-                         {reader.GetString("content")}
-                         """;
-
-        using MySqlCommand addViews =
-            new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
-        reader.Close();
-        addViews.ExecuteNonQuery();
-
-        return result;
-    }
-
-    public override TimeSpan GetRateLimit(Platform? platform, EventType eventType)
+    public override TimeSpan GetRateLimit(IContext context)
     {
         return TimeSpan.FromMinutes(1);
     }
