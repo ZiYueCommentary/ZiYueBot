@@ -35,15 +35,15 @@ public class MessageChain : List<IMessageEntity>
     {
         IEnumerable<string> raw = this.Select(message =>
         {
-            switch (message.Type)
+            switch (message)
             {
-                case MessageEntityType.Text:
-                    return ((TextMessageEntity)message).Text;
-                case MessageEntityType.Image:
-                    return ((ImageMessageEntity)message).FileName;
-                case MessageEntityType.Ping:
-                    if (context is null) return " {id=" + ((PingMessageEntity)message).UserId + "} ";
-                    return context.FetchUserName(((PingMessageEntity)message).UserId).GetAwaiter().GetResult();
+                case TextMessageEntity text:
+                    return text.Text;
+                case ImageMessageEntity image:
+                    return "{image=" + image.FileName + "}";
+                case PingMessageEntity ping:
+                    if (context is null) return "{ping=" + ping.UserId + "}";
+                    return context.FetchUserName(ping.UserId).GetAwaiter().GetResult();
                 default:
                     throw new InvalidDataException("unknown message entity type");
             }
@@ -57,41 +57,38 @@ public class MessageChain : List<IMessageEntity>
     /// </summary>
     public static MessageChain FromDatabase(string message)
     {
-        if (message.Contains('\u2408') || message.Contains('\uE000'))
+        if (!message.Contains('\u2408') && !message.Contains('\uE000')) return [new TextMessageEntity(message)];
+
+        MessageChain chain = [];
+        int pos = 0;
+        for (int i = 0; i < message.Length; i++)
         {
-            MessageChain chain = [];
-            int pos = 0;
-            for (int i = 0; i < message.Length; i++)
+            switch (message[i])
             {
-                switch (message[i])
+                case '\u2408': // 本地图片
                 {
-                    case '\u2408': // 本地图片
-                    {
-                        chain.Add(new TextMessageEntity(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1))));
-                        int end = message.IndexOf('\u2409', i + 1);
-                        chain.Add(ImageMessageEntity.FromPath(message.Substring(i + 1, end - i - 1)));
-                        i = pos = end;
-                        continue;
-                    }
-                    case '\uE000': // 远程图片
-                    {
-                        chain.Add(new TextMessageEntity(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1))));
-                        int end = message.IndexOf('\uE001', i + 1);
-                        string path = message.Substring(i + 1, end - i - 1);
-                        string filename = path[path.LastIndexOf('/')..];
-                        chain.Add(new ImageMessageEntity(path, filename));
-                        i = pos = end;
-                        continue;
-                    }
+                    chain.Add(new TextMessageEntity(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1))));
+                    int end = message.IndexOf('\u2409', i + 1);
+                    chain.Add(ImageMessageEntity.FromPath(message.Substring(i + 1, end - i - 1)));
+                    i = pos = end;
+                    continue;
+                }
+                case '\uE000': // 远程图片
+                {
+                    chain.Add(new TextMessageEntity(message.Substring(pos, i - pos - (pos == 0 ? 0 : 1))));
+                    int end = message.IndexOf('\uE001', i + 1);
+                    string path = message.Substring(i + 1, end - i - 1);
+                    string filename = path[path.LastIndexOf('/')..];
+                    chain.Add(new ImageMessageEntity(path, filename));
+                    i = pos = end;
+                    continue;
                 }
             }
-
-            if (pos < message.Length - 1)
-                chain.Add(new TextMessageEntity(message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..]));
-            return chain;
         }
 
-        return [new TextMessageEntity(message)];
+        if (pos < message.Length - 1)
+            chain.Add(new TextMessageEntity(message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..]));
+        return chain;
     }
 }
 
@@ -128,27 +125,6 @@ public partial record TextMessageEntity(string Text) : IMessageEntity
 public record ImageMessageEntity(string Path, string FileName) : IMessageEntity
 {
     public MessageEntityType Type => MessageEntityType.Image;
-
-    /// <summary>
-    /// 获取 Discord 用于发送图片的 Stream。
-    /// </summary>
-    public async Task<Stream> GetStreamAsync()
-    {
-        if (Path.StartsWith("base64://"))
-        {
-            string base64Data = Path["base64://".Length..];
-            byte[] buffer = Convert.FromBase64String(base64Data);
-            return new MemoryStream(buffer);
-        }
-
-        Uri uri = new Uri(Path);
-        return uri.Scheme.ToLower() switch
-        {
-            "file" => File.OpenRead(uri.LocalPath),
-            "http" or "https" => await new HttpClient().GetStreamAsync(uri),
-            _ => throw new NotSupportedException($"Scheme '{uri.Scheme}' is not supported")
-        };
-    }
 
     public static ImageMessageEntity FromPath(string path)
     {

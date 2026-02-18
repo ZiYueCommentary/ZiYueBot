@@ -1,5 +1,6 @@
 ﻿using log4net;
 using ZiYueBot.Core;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
@@ -24,10 +25,9 @@ public class Hitokoto : Command
         Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ = UpdateInvokeRecords(context.UserId);
 
-        using HttpClient client = new HttpClient();
         try
         {
-            HttpResponseMessage response = client.GetAsync("https://v1.hitokoto.cn/?c=f&encode=text").Result;
+            HttpResponseMessage response = WebUtils.Client.GetAsync("https://v1.hitokoto.cn/?c=f&encode=text").Result;
             if (response.IsSuccessStatusCode)
             {
                 await context.SendMessage(await response.Content.ReadAsStringAsync());

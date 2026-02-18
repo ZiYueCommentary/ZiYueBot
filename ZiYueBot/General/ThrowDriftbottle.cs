@@ -26,9 +26,6 @@ public partial class ThrowDriftbottle : Command
 
     public override async Task Invoke(IContext context, MessageChain arg)
     {
-        await context.SendMessage("暂不可用~");
-        return;
-
         if (arg.IsEmpty())
         {
             await context.SendMessage("参数数量不足。使用“/help 扔云瓶”查看命令用法。");
@@ -65,7 +62,7 @@ public partial class ThrowDriftbottle : Command
                 ZiYueBot.Instance.ConnectDatabase());
         command.Parameters.AddWithValue("@userid", context.UserId);
         command.Parameters.AddWithValue("@username", context.UserName);
-        command.Parameters.AddWithValue("@content", arg.DatabaseFriendly());
+        command.Parameters.AddWithValue("@content", arg.DatabaseFriendly(context));
         command.ExecuteNonQuery();
         await context.SendMessage($"您的云瓶已提交待审，审核编号：{command.LastInsertedId}\r审核列表：https://www.ziyuebot.cn/queue.php?id={context.UserId}");
     }

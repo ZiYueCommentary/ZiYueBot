@@ -3,7 +3,6 @@ using System.Text.Json.Nodes;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 

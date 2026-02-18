@@ -1,6 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 using ZiYueBot.Core;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.Discord;
 

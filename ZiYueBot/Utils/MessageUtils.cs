@@ -1,3 +1,4 @@
+using System.Text;
 using ZiYueBot.Core;
 
 namespace ZiYueBot.Utils;
@@ -12,8 +13,25 @@ public static class MessageUtils
                  (flatten.Contains("<@") && flatten.Contains('>')));
     }
 
-    public static string DatabaseFriendly(this MessageChain arg)
+    public static string DatabaseFriendly(this MessageChain arg, IContext context)
     {
-        return String.Empty;
+        StringBuilder builder = new StringBuilder();
+        foreach (IMessageEntity entity in arg)
+        {
+            switch (entity)
+            {
+                case TextMessageEntity text:
+                    builder.Append(text.Text);
+                    break;
+                case PingMessageEntity ping:
+                    builder.Append($"@{context.FetchUserName(ping.UserId)}");
+                    break;
+                case ImageMessageEntity image:
+                    builder.Append($"\uE000{WebUtils.UploadToS3(image)}\uE001");
+                    break;
+            }
+        }
+
+        return builder.ToString();
     }
 }

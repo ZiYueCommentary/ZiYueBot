@@ -20,4 +20,9 @@ public struct Config
     public string DatabasePassword { get; set; }
     public string DeepSeekKey { get; set; }
     public string NapcatToken { get; set; }
+    public string AssetsEndpoint { get; set; }
+    public string AssetsUploadRegion { get; set; }
+    public string AssetsUploadBucket { get; set; }
+    public string AssetsUploadSecretId { get; set; }
+    public string AssetsUploadSecretKey { get; set; }
 }
