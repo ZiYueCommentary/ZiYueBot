@@ -42,7 +42,7 @@ public class QqContext(EventType eventType, string userName, ulong userId, uint 
         });
         await SendApiRequest(new JsonObject
         {
-            ["action"] = "send_group_msg",
+            ["action"] = EventType == EventType.DirectMessage ? "send_private_msg" : "send_group_msg",
             ["params"] = new JsonObject
             {
                 [EventType == EventType.DirectMessage ? "user_id" : "group_id"] = SourceUni,

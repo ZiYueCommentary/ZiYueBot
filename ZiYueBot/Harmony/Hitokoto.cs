@@ -31,6 +31,7 @@ public class Hitokoto : Command
             if (response.IsSuccessStatusCode)
             {
                 await context.SendMessage(await response.Content.ReadAsStringAsync());
+                return;
             }
         }
         catch (HttpRequestException e)

@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="部署北京" type="DotNetPublishAndUpload" factoryName="Publish to custom server">
-    <riderPublish configuration="Release" platform="Any CPU" server_id="b08133e9-830b-423e-ae23-38e943bd9a76" serverName="北京" target_framework="net9.0" uuid_high="3552748699458748974" uuid_low="-8156141900341574780" />
-    <method v="2">
-      <option name="Build Solution" enabled="true" />
-    </method>
-  </configuration>
-</component>
