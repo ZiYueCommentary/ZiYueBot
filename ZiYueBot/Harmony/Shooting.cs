@@ -70,7 +70,7 @@ public class Shooting : Command
 
             _ = StartRevolver.UpdateRevolverRecords(context.UserId,
                 ping.UserId == context.UserId ? "shooting_self_death" : "shooting_other_death");
-            await context.SendMessage($"砰！枪声响起，{context.FetchUserName(ping.UserId)} 倒下了");
+            await context.SendMessage($"砰！枪声响起，{await context.FetchUserName(ping.UserId)} 倒下了");
             return;
         }
 

@@ -95,7 +95,7 @@ public class Chat : Command
             DateTime last = DateTime.Now;
             StringBuilder builder = new StringBuilder();
             builder.Append($"`已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
-            builder.Append(result!["content"]!.GetValue<string>());
+            builder.Append(result!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
             if (builder.Length > 1900)
             {
                 builder.Remove(1900, builder.Length - 1900);
