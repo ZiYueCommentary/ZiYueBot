@@ -27,6 +27,7 @@ public class RemoveDriftbottle : Command
             await context.SendMessage("参数数量不足。使用“/help 删除云瓶”查看命令用法。");
             return;
         }
+
         int id;
         try
         {
@@ -44,7 +45,7 @@ public class RemoveDriftbottle : Command
         }
 
         Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
-        _=UpdateInvokeRecords(context.UserId);
+        _ = UpdateInvokeRecords(context.UserId);
 
         await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         await using MySqlCommand select = new MySqlCommand(
@@ -57,16 +58,19 @@ public class RemoveDriftbottle : Command
             return;
         }
 
-        if (reader.GetUInt64("userid") != context.UserId)
+        bool privileged = (Privileged.GetPrivilege(context.UserId) & (long)Privilege.RemoveDriftbottle) == 1;
+
+        if (reader.GetUInt64("userid") != context.UserId && !privileged)
         {
             await context.SendMessage("该瓶子不是由你扔出的！");
             return;
         }
+
         await reader.CloseAsync();
         await using MySqlCommand command = new MySqlCommand(
             $"UPDATE driftbottles SET pickable = false WHERE id = {id}",
             database);
         command.ExecuteNonQuery();
-        await context.SendMessage($"{id} 号瓶子已删除！");
+        await context.SendMessage((privileged ? "[提权] " : "") + $"{id} 号瓶子已删除！");
     }
 }

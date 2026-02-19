@@ -1,5 +1,6 @@
 ﻿using COSXML;
 using COSXML.Auth;
+using COSXML.Model;
 using COSXML.Model.Object;
 using log4net;
 using SkiaSharp;
@@ -14,7 +15,7 @@ public static class WebUtils
 {
     private static readonly ILog Logger = LogManager.GetLogger("网络");
     public static readonly HttpClient Client = new HttpClient();
-    private static readonly CosXml Cos = new CosXmlServer(
+    private static readonly CosXmlServer Cos = new CosXmlServer(
         new CosXmlConfig.Builder().SetRegion(ZiYueBot.Instance.Config.AssetsUploadRegion).Build(),
         new DefaultQCloudCredentialProvider(ZiYueBot.Instance.Config.AssetsUploadSecretId,
             ZiYueBot.Instance.Config.AssetsUploadSecretKey, 600));
@@ -84,7 +85,7 @@ public static class WebUtils
         };
 
         string key = $"images/{DateTime.Today:yyyy-MM}/{Guid.NewGuid()}.{type}";
-
+        Logger.Info($"对象存储文件上传：{key}");
         PutObjectRequest request = new PutObjectRequest(ZiYueBot.Instance.Config.AssetsUploadBucket, key, data.AsStream());
         Cos.PutObject(request);
         return $"{ZiYueBot.Instance.Config.AssetsEndpoint}/{key}";

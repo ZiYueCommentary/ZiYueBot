@@ -53,38 +53,4 @@ public static class CommandHelper
         builder.WithDescription(command.Summary);
         return builder;
     }
-
-    public static async Task SendComplexMessage(SocketSlashCommand command, string message)
-    {
-        if (message.Contains('\u2408'))
-        {
-            string reply = "";
-            List<string> images = [];
-            int pos = 0;
-            for (int i = 0; i < message.Length; i++)
-            {
-                switch (message[i])
-                {
-                    case '\u2408':
-                    {
-                        reply += message.Substring(pos, i - pos - (pos == 0 ? 0 : 1));
-                        int end = message.IndexOf('\u2409', i + 1);
-                        images.Add(message.Substring(i + 1, end - i - 1));
-                        i = pos = end;
-                        continue;
-                    }
-                }
-            }
-
-            if (pos < message.Length - 1) reply += message[(pos + (message[pos + 1] == ' ' ? 2 : 1))..];
-
-            await command.RespondWithFilesAsync(
-                images.ConvertAll(path => new FileAttachment(path, path)),
-                reply);
-        }
-        else
-        {
-            await command.RespondAsync(message);
-        }
-    }
 }

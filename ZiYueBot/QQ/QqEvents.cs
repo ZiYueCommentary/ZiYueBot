@@ -125,7 +125,7 @@ public static class QqEvents
             }
 
             chain.RemoveAt(0);
-            if (line.Text.Contains(' '))
+            if (line.Text.Contains(' ') && line.Text.IndexOf(' ') != line.Text.Length - 1)
                 chain.Insert(0, new TextMessageEntity(line.Text[(line.Text.IndexOf(' ') + 1)..]));
             if (chain.IsEmpty() && forwardMessage is not null) chain = forwardMessage;
 
