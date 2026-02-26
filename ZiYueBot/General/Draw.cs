@@ -129,6 +129,10 @@ public class Draw : Command
     {
         await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
         {
+            //检查免费特权
+            bool hasFreePass = (Privileged.GetPrivilege(context.UserId) & (long)Privilege.FreeDrawFeature) == 1;
+            if (hasFreePass)
+                return true;
             await using MySqlCommand command = new MySqlCommand(
                 $"SELECT * FROM sponsors WHERE userid = {context.UserId} LIMIT 1",
                 connection);

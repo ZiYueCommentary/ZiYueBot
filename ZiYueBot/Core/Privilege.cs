@@ -10,7 +10,8 @@ public enum Privilege : long
     RemoveDriftbottle = 0b1,
     BypassRateLimit = 0b10, // unused
     BypassDrawLimitation = 0b100,
-    BypassDriftbottleQueue = 0b1000 // unused
+    BypassDriftbottleQueue = 0b1000, // unused
+    FreeDrawFeature = 0b10000
 }
 
 public static class Privileged
