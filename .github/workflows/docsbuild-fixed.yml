@@ -1,9 +1,9 @@
-﻿name: VuePress Build Test
+﻿name: VuePress Build Test (fixed)
 
 on:
   push:
-    branches: [main, master]  # include both common default branch names
-  workflow_dispatch:    # support manual triggering
+    branches: [main, master]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -12,7 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # fetch full history for page update times
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -23,8 +23,8 @@ jobs:
 
       - name: Install Dependencies
         working-directory: docs
-        run: npm ci  # use package-lock.json for reproducible installs
+        run: npm ci
 
       - name: Build VitePress site
         working-directory: docs
-        run: npm run docs:build  # matches scripts in docs/package.json
+        run: npm run docs:build
