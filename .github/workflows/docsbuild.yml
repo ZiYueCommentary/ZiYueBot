@@ -1,0 +1,26 @@
+﻿name: Vuepress Build Test
+
+on:
+  push:
+    branches: [master]  # 触发分支，根据你的仓库实际情况修改
+  workflow_dispatch:    # 支持手动触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 拉取完整提交历史，用于生成页面更新时间
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: cd docs;npm ci  # 使用 package-lock.json 确保依赖版本一致
+
+      - name: Build VuePress site
+        run: cd docs;npm run docs:build  # 确保与 package.json 中的脚本名称一致
