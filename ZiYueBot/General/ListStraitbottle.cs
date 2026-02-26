@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -36,9 +37,9 @@ public class ListStraitbottle : Command
         await using MySqlCommand command =
             new MySqlCommand("SELECT * FROM straitbottles WHERE picked = false", database);
         await using MySqlDataReader reader = command.ExecuteReader();
-        int i = 0;
-        int pickable = 0;
-        int self = 0;
+        int i = 0,
+            pickable = 0,
+            self = 0;
         while (reader.Read())
         {
             if (reader.GetUInt64("userid") == context.UserId) self++;
@@ -46,7 +47,10 @@ public class ListStraitbottle : Command
             i++;
         }
 
-        await context.SendMessage($"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 QQ 捞起，{self} 支由你扔出");
+        if (context.Platform == Platform.QQ)
+            await context.SendMessage($"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 QQ 捞起，{self} 支由你扔出");
+        else 
+            await context.SendMessage($"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 Discord 捞起，{self} 支由你扔出");
     }
 
     public override TimeSpan GetRateLimit(IContext context)

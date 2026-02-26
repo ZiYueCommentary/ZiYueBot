@@ -34,7 +34,7 @@ public class Draw : Command
             await context.SendMessage("参数数量不足。使用“/help draw”查看命令用法。");
             return;
         }
-
+        
         if (!this.TryPassRateLimit(context))
         {
             await context.SendMessage("频率已达限制（每分钟 1 条）");
@@ -186,7 +186,10 @@ public class Draw : Command
                 new MySqlCommand($"SELECT * FROM draw WHERE userid = {context.UserId} ", connection);
             await using MySqlDataReader reader = command.ExecuteReader();
             reader.Read();
-            if (reader.GetInt32("consumed") >= reader.GetInt32("limitation"))
+            //判断是否无视额度
+            bool bypassed = (Privileged.GetPrivilege(context.UserId) & (long)Privilege.BypassDrawLimitation) == 1;
+            
+            if (reader.GetInt32("consumed") >= reader.GetInt32("limitation") && !bypassed)
             {
                 await context.SendMessage("您本月的调用额度已耗尽。");
                 return false;
