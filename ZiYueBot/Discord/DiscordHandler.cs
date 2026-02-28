@@ -1,10 +1,7 @@
-﻿using System.Text;
-using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
 using log4net;
-using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 using ZiYueBot.General;
 using ZiYueBot.Harmony;
@@ -178,7 +175,13 @@ public static class DiscordHandler
 
             if (await Commands.CheckBlacklist(context, command.CommandName)) return;
 
-            MessageChain arg = [..command.Data.Options.Select(option => new TextMessageEntity(option.Value.ToString()!))];
+            IReadOnlyCollection<SocketSlashCommandDataOption> options = command.Data.Options;
+            MessageChain arg = [];
+
+            foreach (SocketSlashCommandDataOption option in options)
+            {
+                DiscordUtils.ParseRawMessage(option.Value.ToString().AsSpan(), arg);
+            }
 
             await Commands.GetCommand(Platform.Discord, command.CommandName)!.Invoke(context, arg);
         }
