@@ -94,7 +94,7 @@ public class Draw : Command
         // 下面这个 json 太复杂了，写成 C# 代码乱得要死，就这样吧。
         using StringContent content = new StringContent("""
                                                         {
-                                                            "model": "qwen-image-max",
+                                                            "model": "qwen-image-plus-2026-01-09",
                                                             "input": {
                                                                 "messages": [
                                                                     {

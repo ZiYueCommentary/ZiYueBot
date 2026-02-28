@@ -46,7 +46,8 @@ public class ListStraitbottle : Command
             i++;
         }
 
-        await context.SendMessage($"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 QQ 捞起，{self} 支由你扔出");
+        await context.SendMessage(
+            $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 {(context.Platform == Platform.Discord ? "Discord" : "QQ")} 捞起，{self} 支由你扔出");
     }
 
     public override TimeSpan GetRateLimit(IContext context)

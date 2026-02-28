@@ -49,7 +49,7 @@ public class ThrowStraitbottle : Command
 
         await using MySqlCommand command =
             new MySqlCommand(
-                "INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, true)",
+                $"INSERT INTO straitbottles(userid, username, created, content, fromDiscord) VALUE (@userid, @username, now(), @content, {context.Platform == Platform.Discord})",
                 ZiYueBot.Instance.ConnectDatabase());
         command.Parameters.AddWithValue("@userid", context.UserId);
         command.Parameters.AddWithValue("@username", context.UserName);

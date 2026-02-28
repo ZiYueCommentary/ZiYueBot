@@ -34,7 +34,7 @@ public class PickStraitbottle : Command
 
         await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         await using MySqlCommand command = new MySqlCommand(
-            "SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = true ORDER BY RAND() LIMIT 1",
+            $"SELECT * FROM straitbottles WHERE picked = false AND fromDiscord = {context.Platform == Platform.QQ} ORDER BY RAND() LIMIT 1",
             database);
         await using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read())
