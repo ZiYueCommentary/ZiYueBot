@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
 using log4net;
@@ -180,7 +180,16 @@ public static class DiscordHandler
 
             foreach (SocketSlashCommandDataOption option in options)
             {
-                CommandHelper.ParseRawMessage(option.Value.ToString().AsSpan(), arg);
+                switch (option.Type)
+                {
+                    case ApplicationCommandOptionType.User:
+                        arg.Add(new PingMessageEntity(((IUser)option.Value).Id));
+                        break;
+
+                    default:
+                        CommandHelper.ParseRawMessage(option.Value.ToString().AsSpan(), arg);
+                        break;
+                }
             }
 
             await Commands.GetCommand(Platform.Discord, command.CommandName)!.Invoke(context, arg);
