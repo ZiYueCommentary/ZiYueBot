@@ -1,9 +1,11 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using ZiYueBot.Core;
+using ZiYueBot.Discord;
 
 namespace ZiYueBot.Utils;
 
-public static class MessageUtils
+public static partial class MessageUtils
 {
     // TODO 懒得查了，先不改写了
     public static bool IsSimpleMessage(string flatten)
@@ -21,7 +23,7 @@ public static class MessageUtils
             switch (entity)
             {
                 case TextMessageEntity text:
-                    builder.Append(text.Text);
+                    builder.Append(FormatDiscordPing(context, text.Text));
                     break;
                 case PingMessageEntity ping:
                     builder.Append($"@{context.FetchUserName(ping.UserId)}");
@@ -34,4 +36,21 @@ public static class MessageUtils
 
         return builder.ToString();
     }
+
+    public static string FormatDiscordPing(IContext context, ReadOnlySpan<char> text)
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.Append(text);
+        foreach (ValueMatch match in DiscordPingRegex().EnumerateMatches(text))
+        {
+            ulong userId = ulong.Parse(text.Slice(match.Index + 2, match.Length - 3));
+            string userName = context.FetchUserName(userId).GetAwaiter().GetResult();
+            builder.Replace($"<@{userId}>", $"@{userName}");
+        }
+
+        return builder.ToString();
+    }
+
+    [GeneratedRegex("<@(\\d+)*>")]
+    public static partial Regex DiscordPingRegex();
 }

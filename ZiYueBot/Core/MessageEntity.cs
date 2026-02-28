@@ -43,7 +43,7 @@ public class MessageChain : List<IMessageEntity>
                     return "{image=" + image.FileName + "}";
                 case PingMessageEntity ping:
                     if (context is null) return "{ping=" + ping.UserId + "}";
-                    return context.FetchUserName(ping.UserId).GetAwaiter().GetResult();
+                    return $"@{context.FetchUserName(ping.UserId).GetAwaiter().GetResult()}";
                 default:
                     throw new InvalidDataException("unknown message entity type");
             }

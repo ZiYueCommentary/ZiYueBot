@@ -185,9 +185,8 @@ public static class DiscordHandler
                     case ApplicationCommandOptionType.User:
                         arg.Add(new PingMessageEntity(((IUser)option.Value).Id));
                         break;
-
                     default:
-                        CommandHelper.ParseRawMessage(option.Value.ToString().AsSpan(), arg);
+                        arg.Add(new TextMessageEntity(option.Value.ToString()!));
                         break;
                 }
             }
