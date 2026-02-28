@@ -180,7 +180,7 @@ public static class DiscordHandler
 
             foreach (SocketSlashCommandDataOption option in options)
             {
-                DiscordUtils.ParseRawMessage(option.Value.ToString().AsSpan(), arg);
+                CommandHelper.ParseRawMessage(option.Value.ToString().AsSpan(), arg);
             }
 
             await Commands.GetCommand(Platform.Discord, command.CommandName)!.Invoke(context, arg);
