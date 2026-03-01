@@ -87,7 +87,8 @@ public class ZiYueBot
                                                         created       datetime                  null,
                                                         content       text                      null,
                                                         fromDiscord   boolean                   null,
-                                                        picked        boolean          default false
+                                                        picked        boolean          default false,
+                                                        picked_time   datetime                  null
                                                     ) CHARSET = utf8mb4;
                                                     """, database);
             command.ExecuteNonQuery();

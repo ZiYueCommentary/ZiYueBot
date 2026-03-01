@@ -51,7 +51,7 @@ public class PickStraitbottle : Command
                          """;
 
         await using MySqlCommand addViews =
-            new MySqlCommand($"UPDATE straitbottles SET picked = true WHERE id = {reader.GetInt32("id")}", database);
+            new MySqlCommand($"UPDATE straitbottles SET picked = true, picked_time = now() WHERE id = {reader.GetInt32("id")}", database);
         await reader.CloseAsync();
         addViews.ExecuteNonQuery();
 

@@ -127,6 +127,12 @@ public class Draw : Command
 
     private static async Task<bool> ValidateInvoke(IContext context)
     {
+        if (Privileged.HasPrivilege(context.UserId, Privilege.BypassDrawLimitation))
+        {
+            await context.SendMessage("[提权] 机器绘画中...");
+            return true;
+        }
+
         await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
         {
             await using MySqlCommand command = new MySqlCommand(

@@ -58,7 +58,7 @@ public class RemoveDriftbottle : Command
             return;
         }
 
-        bool privileged = (Privileged.GetPrivilege(context.UserId) & (long)Privilege.RemoveDriftbottle) == 1;
+        bool privileged = Privileged.HasPrivilege(context.UserId, Privilege.RemoveDriftbottle);
 
         if (reader.GetUInt64("userid") != context.UserId && !privileged)
         {

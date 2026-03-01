@@ -23,7 +23,7 @@ public static partial class MessageUtils
             switch (entity)
             {
                 case TextMessageEntity text:
-                    builder.Append(FormatDiscordPing(context, text.Text));
+                    builder.Append(text.Text.FormatDiscordPing(context));
                     break;
                 case PingMessageEntity ping:
                     builder.Append($"@{context.FetchUserName(ping.UserId)}");
@@ -37,14 +37,16 @@ public static partial class MessageUtils
         return builder.ToString();
     }
 
-    public static string FormatDiscordPing(IContext context, ReadOnlySpan<char> text)
+    public static string FormatDiscordPing(this string text, IContext? context)
     {
         StringBuilder builder = new StringBuilder();
         builder.Append(text);
         foreach (ValueMatch match in DiscordPingRegex().EnumerateMatches(text))
         {
-            ulong userId = ulong.Parse(text.Slice(match.Index + 2, match.Length - 3));
-            string userName = context.FetchUserName(userId).GetAwaiter().GetResult();
+            ulong userId = ulong.Parse(text.AsSpan().Slice(match.Index + 2, match.Length - 3));
+            string userName = context is null
+                ? "{ping=" + userId + "}"
+                : context.FetchUserName(userId).GetAwaiter().GetResult();
             builder.Replace($"<@{userId}>", $"@{userName}");
         }
 

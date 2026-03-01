@@ -35,7 +35,7 @@ public class RestartRevolver : Command
         if (context is DiscordContext discord) channelId = (ulong)discord.Socket.ChannelId!;
         else channelId = ((QqContext)context).SourceUni;
 
-        if (!RateLimit.TryPassRateLimit(this, channelId, TimeSpan.FromSeconds(10)))
+        if (!RateLimit.TryPassRateLimit(Id, channelId, TimeSpan.FromSeconds(10)))
         {
             await context.SendMessage("频率已达限制（整个群聊内 10 秒 1 条）");
             return;

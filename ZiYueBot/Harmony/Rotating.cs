@@ -34,7 +34,7 @@ public class Rotating : Command
         if (context is DiscordContext discord) channelId = (ulong)discord.Socket.ChannelId!;
         else channelId = ((QqContext)context).SourceUni;
 
-        if (!RateLimit.TryPassRateLimit(this, channelId, TimeSpan.FromSeconds(3)))
+        if (!RateLimit.TryPassRateLimit(Id, channelId, TimeSpan.FromSeconds(3)))
         {
             await context.SendMessage("频率已达限制（整个群聊内 3 秒 1 条）");
             return;

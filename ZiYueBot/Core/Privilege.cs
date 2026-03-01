@@ -8,9 +8,9 @@ namespace ZiYueBot.Core;
 public enum Privilege : long
 {
     RemoveDriftbottle = 0b1,
-    BypassRateLimit = 0b10, // unused
-    BypassDrawLimitation = 0b100, // unused
-    BypassDriftbottleQueue = 0b1000 // unused
+    BypassRateLimit = 0b10,
+    BypassDrawLimitation = 0b100,
+    BypassDriftbottleQueue = 0b1000
 }
 
 public static class Privileged
@@ -21,5 +21,11 @@ public static class Privileged
             ZiYueBot.Instance.ConnectDatabase());
         using MySqlDataReader reader = command.ExecuteReader();
         return reader.Read() ? reader.GetInt64("flags") : 0;
+    }
+
+    public static bool HasPrivilege(ulong userId, params Privilege[] privileges)
+    {
+        long privileged = GetPrivilege(userId);
+        return privileges.All(privilege => (privileged & (long)privilege) != 0);
     }
 }

@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -56,15 +55,26 @@ public partial class ThrowDriftbottle : Command
             return;
         }
 
+        bool privileged = Privileged.HasPrivilege(context.UserId, Privilege.BypassDriftbottleQueue);
+
         await using MySqlCommand command =
             new MySqlCommand(
-                "INSERT INTO driftbottles_queue(userid, username, created, content) VALUE (@userid, @username, now(), @content)",
+                $"""
+                 INSERT INTO {(privileged ? "driftbottles" : " driftbottles_queue")}(userid, username, created, content) 
+                 VALUE (@userid, @username, now(), @content)
+                 """,
                 ZiYueBot.Instance.ConnectDatabase());
         command.Parameters.AddWithValue("@userid", context.UserId);
         command.Parameters.AddWithValue("@username", context.UserName);
         command.Parameters.AddWithValue("@content", arg.DatabaseFriendly(context));
         command.ExecuteNonQuery();
-        await context.SendMessage($"您的云瓶已提交待审，审核编号：{command.LastInsertedId}\r审核列表：https://www.ziyuebot.cn/queue.php?id={context.UserId}");
+        if (privileged)
+            await context.SendMessage($"[提权] 你的 {command.LastInsertedId} 号云瓶扔出去了！");
+        else
+            await context.SendMessage($"""
+                                       您的云瓶已提交待审，审核编号：{command.LastInsertedId}
+                                       审核列表：https://www.ziyuebot.cn/queue.php?id={context.UserId}
+                                       """);
     }
 
     public override TimeSpan GetRateLimit(IContext context)

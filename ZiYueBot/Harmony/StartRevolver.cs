@@ -71,7 +71,7 @@ public class StartRevolver : Command
         if (context is DiscordContext discord) channelId = (ulong)discord.Socket.ChannelId!;
         else channelId = ((QqContext)context).SourceUni;
 
-        if (!RateLimit.TryPassRateLimit(this, channelId, TimeSpan.FromSeconds(30)))
+        if (!RateLimit.TryPassRateLimit(Id, channelId, TimeSpan.FromSeconds(30)))
         {
             await context.SendMessage("频率已达限制（整个群聊内 30 秒 1 条）");
             return;
@@ -91,7 +91,7 @@ public class StartRevolver : Command
             return;
         }
 
-        _ = UpdateRevolverRecords(channelId, "start_count");
+        _ = UpdateRevolverRecords(context.UserId, "start_count");
         await context.SendMessage("俄罗斯轮盘开始了，今天轮到谁倒霉呢");
     }
 

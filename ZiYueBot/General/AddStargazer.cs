@@ -24,7 +24,6 @@ public class AddStargazer : Command
             return;
         }
 
-        // TODO 表情回复和普通调用的限制分开
         Stargazers.AddStargazer(context.UserId, context.UserName, int.Parse(arg.ToString(context)), false);
     }
 

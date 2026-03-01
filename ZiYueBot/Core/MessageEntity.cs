@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.Core;
 
@@ -38,7 +39,7 @@ public class MessageChain : List<IMessageEntity>
             switch (message)
             {
                 case TextMessageEntity text:
-                    return text.Text;
+                    return text.Text.FormatDiscordPing(context);
                 case ImageMessageEntity image:
                     return "{image=" + image.FileName + "}";
                 case PingMessageEntity ping:
