@@ -13,4 +13,4 @@ https://docs.ziyuebot.cn/
 
 ## 许可证
 
-子悦机器采用 GPL-3.0 许可证。
+子悦机器采用 AGPL-3.0 许可证。
