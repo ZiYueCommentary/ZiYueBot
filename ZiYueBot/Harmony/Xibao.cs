@@ -48,8 +48,6 @@ public class Xibao : Command
             return;
         }
 
-        await context.SendMessage("机器生成中...");
-
         await context.SendMessage([
             new ImageMessageEntity($"base64://{Convert.ToBase64String(Render(true, arg.ToString(context)))}", "xibao.jpg")
         ]);
