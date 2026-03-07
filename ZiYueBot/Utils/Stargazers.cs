@@ -58,6 +58,6 @@ public static partial class Stargazers
         }
     }
 
-    [GeneratedRegex("你捞到了 (\\d+)* 号瓶子！")]
+    [GeneratedRegex("^你捞到了 (\\d+)* 号瓶子！")]
     public static partial Regex StargazerRegex();
 }

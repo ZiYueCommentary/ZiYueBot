@@ -61,30 +61,40 @@ public class PickDriftbottle : Command
                 await using MySqlCommand aprilCommand = new MySqlCommand(
                     "SELECT * FROM aprilbottles ORDER BY RAND() LIMIT 1", database);
                 await using MySqlDataReader aprilReader = aprilCommand.ExecuteReader();
-                if (!aprilReader.Read())
+                if (aprilReader.Read())
                 {
-                    await context.SendMessage("找不到愚人云瓶！");
+                    await context.SendMessage($"""
+                                               你捞到了 -{aprilReader.GetInt32("id")} 号瓶子！
+                                               来自：{aprilReader.GetString("username")}
+                                               日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
+
+                                               {aprilReader.GetString("content")}
+                                               """);
                     return;
                 }
-
-                await context.SendMessage($"""
-                                           你捞到了 -{aprilReader.GetInt32("id")} 号瓶子！
-                                           来自：{aprilReader.GetString("username")}
-                                           日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
-
-                                           {aprilReader.GetString("content")}
-                                           """);
-                return;
             }
         }
 
         if (id == 0) id = 625; // 说的道理~
 
-        await using MySqlCommand command = new MySqlCommand(
-            id == int.MinValue
-                ? "SELECT * FROM driftbottles WHERE pickable = true ORDER BY RAND() LIMIT 1"
-                : $"SELECT * FROM driftbottles WHERE pickable = true AND id = {id}",
-            database);
+        string query;
+        if (id == int.MinValue)
+        {
+            await using MySqlCommand queryCount = new MySqlCommand("SELECT COUNT(*) FROM driftbottles", database);
+            await using MySqlDataReader readerCount = queryCount.ExecuteReader();
+            readerCount.Read();
+            int counts = readerCount.GetInt32(0);
+            int begin = Random.Shared.Next(1, Math.Max(1, counts - 10));
+            await readerCount.CloseAsync();
+            query =
+                $"SELECT * FROM driftbottles WHERE id >= {begin} AND id < {begin + 10} AND pickable = true ORDER BY RAND() LIMIT 1";
+        }
+        else
+        {
+            query = $"SELECT * FROM driftbottles WHERE pickable = true AND id = {id}";
+        }
+
+        await using MySqlCommand command = new MySqlCommand(query, database);
         await using MySqlDataReader reader = command.ExecuteReader();
         if (!reader.Read())
         {

@@ -39,19 +39,26 @@ public static class QqEvents
                     string emoji = message["likes"]![0]!["emoji_id"]!.ToString();
                     if (emoji is "128077" or "76" && message["is_add"]!.GetValue<bool>())
                     {
-                        QqContext pseudoContext = new QqContext(EventType.GroupMessage, "", userId,
-                            message["user_id"]!.GetValue<uint>());
-                        MessageChain chain =
-                            pseudoContext.FetchMessageContent(message["message_id"]!.GetValue<long>().ToString(),
-                                out ulong authorUserId);
+                        JsonNode response = await QqContext.SendApiRequest(new JsonObject
+                        {
+                            ["action"] = "get_msg",
+                            ["params"] = new JsonObject
+                            {
+                                ["message_id"] = message["message_id"]!.GetValue<long>().ToString()
+                            }
+                        });
+                        MessageChain chain = Parser.ParseMessage(response["data"]!["message"]!, out _);
+                        ulong authorUserId = response["data"]!["user_id"]!.GetValue<ulong>();
+                        QqContext context = new QqContext(EventType.GroupMessage, "", userId,
+                            response["data"]!["group_id"]!.GetValue<uint>());
                         if (authorUserId != 3793013714) continue;
                         Match match = Stargazers.StargazerRegex().Match(chain.ToString().FirstLine());
                         if (match.Success)
                         {
                             string stargazer = Stargazers.AddStargazer(userId,
-                                await pseudoContext.FetchUserName(userId),
+                                await context.FetchUserName(userId),
                                 int.Parse(match.Groups[1].Value), true);
-                            if (!string.IsNullOrEmpty(stargazer)) await pseudoContext.SendMessage(stargazer);
+                            if (!string.IsNullOrEmpty(stargazer)) await context.SendMessage(stargazer);
                         }
                     }
 

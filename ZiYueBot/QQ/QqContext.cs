@@ -75,7 +75,7 @@ public class QqContext(EventType eventType, string userName, ulong userId, uint 
         }
     }
 
-    public MessageChain FetchMessageContent(string messageId, out ulong authorUserId)
+    public static MessageChain FetchMessageContent(string messageId, out ulong authorUserId)
     {
         MessageChain message;
         try
@@ -101,7 +101,7 @@ public class QqContext(EventType eventType, string userName, ulong userId, uint 
         return message;
     }
 
-    private static async Task<JsonNode> SendApiRequest(JsonObject json)
+    internal static async Task<JsonNode> SendApiRequest(JsonObject json)
     {
         for (int i = 0; i < 3; i++)
         {

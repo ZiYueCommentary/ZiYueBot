@@ -18,7 +18,7 @@ public static class Parser
                 case "reply":
                 {
                     if (context is not null)
-                        forwardMessage = context.FetchMessageContent(segment["data"]!["id"]!.GetValue<string>(), out _);
+                        forwardMessage = QqContext.FetchMessageContent(segment["data"]!["id"]!.GetValue<string>(), out _);
                     break;
                 }
                 case "text":
