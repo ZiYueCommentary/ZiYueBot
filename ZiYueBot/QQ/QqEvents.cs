@@ -144,7 +144,16 @@ public static class QqEvents
                 return;
             }
 
-            await Commands.GetCommand(Platform.QQ, commandName)!.Invoke(context, chain);
+            try
+            {
+                await Commands.GetCommand(Platform.QQ, commandName)!.Invoke(context, chain);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.Message, ex);
+                Logger.Debug(node.ToJsonString());
+                await context.SendMessage("命令内部错误。");
+            }
         }
         catch (HttpRequestException)
         {

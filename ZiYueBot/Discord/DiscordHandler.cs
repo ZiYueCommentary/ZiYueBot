@@ -191,7 +191,15 @@ public static class DiscordHandler
                 }
             }
 
-            await Commands.GetCommand(Platform.Discord, command.CommandName)!.Invoke(context, arg);
+            try
+            {
+                await Commands.GetCommand(Platform.Discord, command.CommandName)!.Invoke(context, arg);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.Message, ex);
+                await context.SendMessage("命令内部错误。");
+            }
         }
         catch (Exception ex)
         {
