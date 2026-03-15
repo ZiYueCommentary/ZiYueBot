@@ -58,35 +58,43 @@ public class Chat : Command
             using HttpClient client = new HttpClient();
             using HttpRequestMessage request =
                 new HttpRequestMessage(HttpMethod.Post,
-                    "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
+                    "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
             JsonObject jsonContent = new JsonObject
             {
-                ["messages"] = new JsonArray
+                ["input"] = new JsonObject
                 {
-                    new JsonObject
+                    ["messages"] = new JsonArray
                     {
-                        ["content"] = SystemPrompt + (DateTime.Today.Month == 4 && DateTime.Today.Day == 1
-                            ? "用贴吧风格回答之后的问题，要尽量刻薄。"
-                            : ""),
-                        ["role"] = "system"
-                    },
-                    new JsonObject
-                    {
-                        ["content"] = $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。",
-                        ["role"] = "user"
-                    },
-                    new JsonObject
-                    {
-                        ["content"] = arg.ToString(context),
-                        ["role"] = "user"
+                        new JsonObject
+                        {
+                            ["content"] = SystemPrompt + (DateTime.Today.Month == 4 && DateTime.Today.Day == 1
+                                ? "用贴吧风格回答之后的问题，要尽量刻薄。"
+                                : ""),
+                            ["role"] = "system"
+                        },
+                        new JsonObject
+                        {
+                            ["content"] = $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。",
+                            ["role"] = "user"
+                        },
+                        new JsonObject
+                        {
+                            ["content"] = arg.ToString(context),
+                            ["role"] = "user"
+                        }
                     }
                 },
-                ["enable_search"] = true,
-                ["model"] = "qwen3-max-2026-01-23"
+                ["parameters"] = new JsonObject
+                {
+                    ["enable_search"] = true,
+                    ["enable_thinking"] = false
+                },
+                ["model"] = "qwen3.5-flash"
             };
-            using StringContent content = new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
+            using StringContent content =
+                new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
             request.Content = content;
             using HttpResponseMessage response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
@@ -95,7 +103,7 @@ public class Chat : Command
             DateTime last = DateTime.Now;
             StringBuilder builder = new StringBuilder();
             builder.Append($"`已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
-            builder.Append(result!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
+            builder.Append(result!["output"]!["choices"]![0]!["message"]!["content"]![0]!["text"]!.GetValue<string>());
             if (builder.Length > 1900)
             {
                 builder.Remove(1900, builder.Length - 1900);
@@ -112,8 +120,9 @@ public class Chat : Command
         {
             await context.SendMessage("回答超时。");
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.Debug(e.Message, e);
             await context.SendMessage("命令内部错误。");
         }
     }
