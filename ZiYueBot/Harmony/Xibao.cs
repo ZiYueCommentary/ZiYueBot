@@ -1,7 +1,6 @@
 using log4net;
 using SkiaSharp;
 using ZiYueBot.Core;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
@@ -64,13 +63,13 @@ public class Xibao : Command
         };
         SKBitmap image = isXibao ? ImageXibao : ImageBeibao;
         canvas.DrawBitmap(image, 0, 0, paint);
-        DrawCenteredText(canvas, text, 1024, 512, 384, Font, paint);
+        DrawCenteredText(canvas, text, 1024, 512, 384, Font, paint, isXibao ? 0xFFFFDE00 : 0xFFC6C6C6);
         using SKData? output = surface.Snapshot().Encode(SKEncodedImageFormat.Jpeg, 90);
         return output.ToArray();
     }
 
     private static void DrawCenteredText(SKCanvas canvas, string text, float width, float x, float y, SKFont font,
-        SKPaint paint)
+        SKPaint paint, uint strokeColor)
     {
         List<string> lines = [];
         while (!string.IsNullOrEmpty(text))
@@ -102,8 +101,16 @@ public class Xibao : Command
 
         float height = lines.Count * font.Spacing;
         float baselineY = y - height / 2 - font.Metrics.Ascent;
+
+        using SKPaint strokePaint = new SKPaint();
+        strokePaint.IsAntialias = true;
+        strokePaint.Color = new SKColor(strokeColor);
+        strokePaint.StrokeWidth = 10;
+        strokePaint.Style = SKPaintStyle.Stroke;
+
         foreach (string line in lines)
         {
+            canvas.DrawText(line, x, baselineY, SKTextAlign.Center, font, strokePaint);
             canvas.DrawText(line, x, baselineY, SKTextAlign.Center, font, paint);
             baselineY += font.Spacing;
         }
