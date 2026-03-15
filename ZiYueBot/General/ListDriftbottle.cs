@@ -49,7 +49,7 @@ public class ListDriftbottle : Command
         }
         await using MySqlCommand bottlesCommand = new MySqlCommand(
             $"""
-             SELECT d.id,d.userid,d.username,d.created,d.content,d.pickable,d.views,IFNULL(s.star_count, 0) AS star_count FROM driftbottles AS d
+             SELECT d.id,d.created,d.views,IFNULL(s.star_count, 0) AS star_count FROM driftbottles AS d
                       LEFT JOIN (SELECT bottle_id, COUNT(*) AS star_count FROM stargazers WHERE removed = 0 GROUP BY bottle_id) AS s 
                           ON s.bottle_id = d.id WHERE d.userid = {context.UserId} AND pickable = TRUE
              """ + (bottleCount > 50 ? " ORDER BY views DESC LIMIT 50;" : " ORDER BY d.id;"),
