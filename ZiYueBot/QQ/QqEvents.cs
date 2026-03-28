@@ -51,7 +51,7 @@ public static class QqEvents
                         ulong authorUserId = response["data"]!["user_id"]!.GetValue<ulong>();
                         QqContext context = new QqContext(EventType.GroupMessage, "", userId,
                             response["data"]!["group_id"]!.GetValue<uint>());
-                        if (authorUserId != 3793013714) continue;
+                        if (authorUserId != ZiYueBot.Instance.QqUserId) continue;
                         Match match = Stargazers.StargazerRegex().Match(chain.ToString().FirstLine());
                         if (match.Success)
                         {

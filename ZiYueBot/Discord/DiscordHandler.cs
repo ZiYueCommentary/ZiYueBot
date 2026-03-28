@@ -26,7 +26,7 @@ public static class DiscordHandler
         try
         {
             IMessage message = await channel.Value.GetMessageAsync(reaction.MessageId);
-            if (message.Author.Id == 1189195615083704422)
+            if (message.Author.Id == ZiYueBot.Instance.Discord.CurrentUser.Id)
             {
                 Match match = Stargazers.StargazerRegex().Match(message.Content.FirstLine());
                 if (match.Success && reaction.Emote.Name is "👍" or "⭐")

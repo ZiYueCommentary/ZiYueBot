@@ -41,7 +41,7 @@ public class MessageChain : List<IMessageEntity>
                 case TextMessageEntity text:
                     return text.Text.FormatDiscordPing(context);
                 case ImageMessageEntity image:
-                    return "{image=" + image.FileName + "}";
+                    return "{image=" + image.Path + "}";
                 case PingMessageEntity ping:
                     if (context is null) return "{ping=" + ping.UserId + "}";
                     return $"@{context.FetchUserName(ping.UserId).GetAwaiter().GetResult()}";

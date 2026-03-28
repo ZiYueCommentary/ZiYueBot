@@ -6,7 +6,9 @@ using ZiYueBot.QQ;
 using log4net;
 using System.Net;
 using System.Net.WebSockets;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Discord.Net.Rest;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
@@ -20,6 +22,7 @@ public class ZiYueBot
 
     public readonly ClientWebSocket QqEvent;
     public readonly ClientWebSocket QqApi;
+    public readonly uint QqUserId;
     public readonly DiscordSocketClient Discord;
 
     public readonly Config Config;
@@ -37,7 +40,14 @@ public class ZiYueBot
         QqApi = new ClientWebSocket();
         QqApi.Options.SetRequestHeader("Authorization", "Bearer " + Config.NapcatToken);
         QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api"), CancellationToken.None).Wait();
-        Logger.Info("QQ - 连接成功！");
+        QqApi.SendAsync(new ArraySegment<byte>("{\"action\": \"get_login_info\"}"u8.ToArray()),
+            WebSocketMessageType.Text, true, CancellationToken.None);
+        byte[] buffer = new byte[4096];
+        WebSocketReceiveResult result = QqApi.ReceiveAsync(new ArraySegment<byte>(buffer),
+            CancellationToken.None).GetAwaiter().GetResult();
+        JsonNode qqUserInfo = JsonNode.Parse(Encoding.UTF8.GetString(buffer, 0, result.Count))!;
+        QqUserId = qqUserInfo["data"]!["user_id"]!.GetValue<uint>();
+        Logger.Info($"QQ 连接成功：{qqUserInfo["data"]!["nickname"]!.GetValue<string>()} ({QqUserId})");
 
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
@@ -46,10 +56,11 @@ public class ZiYueBot
         });
         Discord.LoginAsync(TokenType.Bot, Config.DiscordToken).Wait();
         Discord.StartAsync().Wait();
-        Logger.Info("Discord - 登录成功！");
+        // Logger.Debug(Discord.CurrentUser.Id);
+        // Logger.Info($"Discord 登录成功：{Discord.CurrentUser.GlobalName} ({Discord.CurrentUser.Id})");
 
         InitializeDatabase();
-        Logger.Info("MySQL - 初始化完毕");
+        Logger.Info("MySQL 初始化完毕");
     }
 
     private void InitializeDatabase()
