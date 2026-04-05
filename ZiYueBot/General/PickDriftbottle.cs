@@ -68,7 +68,7 @@ public class PickDriftbottle : Command
                                                来自：{aprilReader.GetString("username")}
                                                日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
 
-                                               {aprilReader.GetString("content")}
+                                               {MessageChain.FromDatabase(aprilReader.GetString("content"))}
                                                """);
                     return;
                 }
