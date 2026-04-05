@@ -46,6 +46,7 @@ public class Jrrp : Command
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
         {
             await context.SendMessage($"{context.UserName} 的今日人品是 {Random.Shared.Next(int.MinValue, 0)}。子悦机器不予评价。");
+            return;
         }
 
         StringBuilder builder = new StringBuilder();
