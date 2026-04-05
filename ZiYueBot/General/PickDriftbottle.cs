@@ -63,13 +63,13 @@ public class PickDriftbottle : Command
                 await using MySqlDataReader aprilReader = aprilCommand.ExecuteReader();
                 if (aprilReader.Read())
                 {
-                    await context.SendMessage($"""
-                                               你捞到了 -{aprilReader.GetInt32("id")} 号瓶子！
-                                               来自：{aprilReader.GetString("username")}
-                                               日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
+                    await context.SendMessage(MessageChain.FromDatabase($"""
+                                                                         你捞到了 -{aprilReader.GetInt32("id")} 号瓶子！
+                                                                         来自：{aprilReader.GetString("username")}
+                                                                         日期：{aprilReader.GetDateTime("created"):yyyy年MM月dd日}
 
-                                               {MessageChain.FromDatabase(aprilReader.GetString("content"))}
-                                               """);
+                                                                         {aprilReader.GetString("content")}
+                                                                         """));
                     return;
                 }
             }
