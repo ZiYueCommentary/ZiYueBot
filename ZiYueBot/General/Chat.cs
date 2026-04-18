@@ -10,12 +10,21 @@ public class Chat : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("对话");
     private static readonly string SystemPrompt;
+    private static readonly string AprilSystemPrompt;
 
     static Chat()
     {
-        using FileStream stream = new FileStream("resources/system.md", FileMode.OpenOrCreate);
-        using StreamReader reader = new StreamReader(stream);
-        SystemPrompt = reader.ReadToEnd().Replace("\r", "\\r").Replace("\n", "\\n");
+        using (FileStream stream = new FileStream("resources/system.md", FileMode.OpenOrCreate))
+        {
+            using StreamReader reader = new StreamReader(stream);
+            SystemPrompt = reader.ReadToEnd();
+        }
+
+        using (FileStream stream = new FileStream("resources/april_system.md", FileMode.OpenOrCreate))
+        {
+            using StreamReader reader = new StreamReader(stream);
+            AprilSystemPrompt = reader.ReadToEnd();
+        }
     }
 
     public override string Id => "chat";
@@ -70,7 +79,7 @@ public class Chat : Command
                         new JsonObject
                         {
                             ["content"] = SystemPrompt + (DateTime.Today.Month == 4 && DateTime.Today.Day == 1
-                                ? "用贴吧风格回答之后的问题，要尽量刻薄。"
+                                ? AprilSystemPrompt
                                 : ""),
                             ["role"] = "system"
                         },
