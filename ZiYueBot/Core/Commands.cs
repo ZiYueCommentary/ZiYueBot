@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
+using System.Text.Json;
 using ZiYueBot.General;
 using ZiYueBot.Harmony;
 
@@ -10,6 +11,7 @@ namespace ZiYueBot.Core;
 public static class Commands
 {
     public static readonly Dictionary<string, Command> RegisteredCommands = [];
+    private static readonly Dictionary<string, string> AliasMap = [];
 
     public static void RegisterCommand(Command command)
     {
@@ -66,6 +68,27 @@ public static class Commands
     }
 
     /// <summary>
+    /// 检查给定的命令名是否是别名，如果是则返回真实命令名。
+    /// </summary>
+    /// <param name="commandName">要检查的命令名或别名</param>
+    /// <param name="prompt">输出的真实命令名</param>
+    /// <returns>如果找到对应的命令则返回true，否则返回false</returns>
+    public static bool CheckAlias(string commandName, out string prompt)
+    {
+        prompt = commandName;
+
+        if (RegisteredCommands.ContainsKey(commandName))
+        {
+            prompt = commandName;
+            return false;
+        }
+
+        if (!AliasMap.TryGetValue(commandName, out string? realCommand)) return false;
+        prompt = realCommand;
+        return true;
+    }
+
+    /// <summary>
     /// 注册命令。
     /// </summary>
     public static void Initialize()
@@ -98,5 +121,38 @@ public static class Commands
         RegisterCommand(new Chat());
         RegisterCommand(new Draw());
         RegisterCommand(new Stat());
+
+        LoadAliases();
+    }
+
+    /// <summary>
+    /// 从 resources/alias.json 文件加载命令别名。
+    /// </summary>
+    private static void LoadAliases()
+    {
+        string aliasFilePath = Path.Combine("resources", "alias.json");
+        if (!File.Exists(aliasFilePath))
+        {
+            return;
+        }
+
+        string jsonContent = File.ReadAllText(aliasFilePath);
+        Dictionary<string, string[]>? aliasData = JsonSerializer.Deserialize<Dictionary<string, string[]>>(jsonContent);
+
+        foreach ((string command, string[] aliases) in aliasData!)
+        {
+            if (!RegisteredCommands.ContainsKey(command))
+            {
+                continue;
+            }
+
+            foreach (string alias in aliases)
+            {
+                if (!string.IsNullOrWhiteSpace(alias))
+                {
+                    AliasMap.TryAdd(alias, command);
+                }
+            }
+        }
     }
 }

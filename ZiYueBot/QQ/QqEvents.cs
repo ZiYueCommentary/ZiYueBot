@@ -123,6 +123,10 @@ public static class QqEvents
 
             if (Commands.GetCommand(Platform.QQ, commandName) is null)
             {
+                if (Commands.CheckAlias(commandName, out string prompt))
+                {
+                    await context.SendMessage($"命令未找到，你是否在找 /{prompt}？");
+                }
                 if (commandName.StartsWith('/'))
                 {
                     await context.SendMessage("未知命令。请使用 /help 查看命令列表。");
