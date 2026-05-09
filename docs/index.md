@@ -16,6 +16,9 @@ hero:
     - theme: alt
       text: 用户协议
       link: /tos
+    - theme: alt
+      text: 基本常识
+      link: /elementary
 
 features:
   - title: 完全开源
