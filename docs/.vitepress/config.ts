@@ -41,6 +41,7 @@ export default defineConfig({
         logo: '/logo.png',
         // https://vitepress.dev/reference/default-theme-config
         nav: [
+            {text: '基本常识', link: '/elementary'},
             {text: '用户协议', link: '/tos'},
             {text: '使用教程', link: '/usage'},
             {text: '技术文档', link: '/technical', activeMatch: '/technical'}
