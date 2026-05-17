@@ -116,10 +116,24 @@ public static class QqEvents
                 return;
             }
 
+            bool explictInvoke = false; // 影响未找到命令时，是否输出找不到命令的提示
+
+            // 下面这一段是对 QQ 官方机器人调用方式的兼容。
+            // 因为 QQ 官方机器人的调用，必须以 @机器人 为开头，否则无效。
+            // 有一些人会用这种格式调用子悦机器，所以顺手兼容一下。
+            if (chain.Count > 1 && chain[0] is PingMessageEntity ping && ping.UserId == ZiYueBot.Instance.QqUserId &&
+                chain[1] is TextMessageEntity text)
+            {
+                chain.RemoveAt(0);
+                chain[0] = new TextMessageEntity(text.Text.TrimStart());
+                explictInvoke = true;
+            }
+
             if (chain[0] is not TextMessageEntity line) return;
 
             string commandName =
                 line.Text.Contains(' ') ? line.Text[..line.Text.IndexOf(' ')].TrimStart('/') : line.Text.TrimStart('/');
+            explictInvoke = commandName.StartsWith('/') || explictInvoke;
 
             if (Commands.GetCommand(Platform.QQ, commandName) is null)
             {
@@ -127,7 +141,8 @@ public static class QqEvents
                 {
                     await context.SendMessage($"命令未找到，你是否在找 /{prompt}？");
                 }
-                if (commandName.StartsWith('/'))
+
+                if (explictInvoke)
                 {
                     await context.SendMessage("未知命令。请使用 /help 查看命令列表。");
                 }
