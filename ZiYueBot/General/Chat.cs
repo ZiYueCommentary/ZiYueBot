@@ -100,7 +100,7 @@ public class Chat : Command
                     ["enable_search"] = true,
                     ["enable_thinking"] = false
                 },
-                ["model"] = "qwen3.5-flash"
+                ["model"] = "qwen3.6-flash"
             };
             using StringContent content =
                 new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");

@@ -60,13 +60,10 @@ public class Draw : Command
         try
         {
             JsonNode posted = PostRequest(arg.ToString(context));
-            await WebUtils.DownloadFile(
-                posted["choices"]![0]!["message"]!["content"]![0]!["image"]!.GetValue<string>(),
-                "temp/result.png");
             await context.SendMessage([
-                new ImageMessageEntity($"file:///{Path.GetFullPath("temp/result.png").Replace("\\", "/")}", "draw.png")
+                new ImageMessageEntity(posted["choices"]![0]!["message"]!["content"]![0]!["image"]!.GetValue<string>(),
+                    "draw.png")
             ]);
-            File.Delete("temp/result.png");
         }
         catch (TimeoutException)
         {
@@ -94,7 +91,7 @@ public class Draw : Command
         // 下面这个 json 太复杂了，写成 C# 代码乱得要死，就这样吧。
         using StringContent content = new StringContent("""
                                                         {
-                                                            "model": "qwen-image-plus-2026-01-09",
+                                                            "model": "qwen-image-2.0-pro-2026-04-22",
                                                             "input": {
                                                                 "messages": [
                                                                     {
@@ -141,11 +138,15 @@ public class Draw : Command
             await using MySqlDataReader reader = command.ExecuteReader();
             if (!reader.Read())
             {
-                await context.SendMessage("""
-                                          您不是子悦机器的赞助者！
-                                          本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                                          https://afdian.com/a/ziyuecommentary2020
-                                          """);
+                if (DateTime.Today.Month != 5 || DateTime.Today.Day != 3)
+                {
+                    await context.SendMessage("""
+                                              您不是子悦机器的赞助者！
+                                              本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                                              https://afdian.com/a/ziyuecommentary2020
+                                              """);
+                }
+
                 return false;
             }
 
