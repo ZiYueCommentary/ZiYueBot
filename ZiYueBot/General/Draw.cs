@@ -10,6 +10,14 @@ namespace ZiYueBot.General;
 public class Draw : Command
 {
     private static readonly ILog Logger = LogManager.GetLogger("绘画");
+    private static readonly string JudgeSystemPrompt;
+
+    static Draw()
+    {
+        using FileStream stream = new FileStream("resources/judge.md", FileMode.OpenOrCreate);
+        using StreamReader reader = new StreamReader(stream);
+        JudgeSystemPrompt = reader.ReadToEnd();
+    }
 
     public override string Id => "draw";
 
@@ -56,6 +64,8 @@ public class Draw : Command
 
         Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
         _ = UpdateInvokeRecords(context.UserId);
+
+        await context.SendMessage($"您的提示词评分为：{await JudgePrompt(arg.ToString(context))}/100");
 
         try
         {
@@ -120,6 +130,47 @@ public class Draw : Command
         if (res == "") throw new TimeoutException();
         JsonNode output = JsonNode.Parse(res)!["output"]!;
         return output;
+    }
+
+    private static async Task<int> JudgePrompt(string prompt)
+    {
+        using HttpClient client = new HttpClient();
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post,
+            "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
+        request.Headers.Add("Accept", "application/json");
+        request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
+        JsonObject jsonContent = new JsonObject
+        {
+            ["input"] = new JsonObject
+            {
+                ["messages"] = new JsonArray
+                {
+                    new JsonObject
+                    {
+                        ["content"] = JudgeSystemPrompt,
+                        ["role"] = "system"
+                    },
+                    new JsonObject
+                    {
+                        ["content"] = prompt,
+                        ["role"] = "user"
+                    }
+                }
+            },
+            ["parameters"] = new JsonObject
+            {
+                ["enable_search"] = false,
+                ["enable_thinking"] = false
+            },
+            ["model"] = "qwen3.7-flash"
+        };
+        using StringContent content =
+            new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
+        request.Content = content;
+        using HttpResponseMessage response = await client.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        JsonNode? result = await JsonNode.ParseAsync(await response.Content.ReadAsStreamAsync());
+        return int.Parse(result!["output"]!["choices"]![0]!["message"]!["content"]![0]!["text"]!.GetValue<string>());
     }
 
     private static async Task<bool> ValidateInvoke(IContext context)
