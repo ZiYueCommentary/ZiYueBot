@@ -34,10 +34,11 @@ public static class QqEvents
                 uint userId = message!["user_id"]!.GetValue<uint>();
 
                 // 检查云瓶星标
-                if (message["notice_type"]?.ToString() == "group_msg_emoji_like")
+                if (message["notice_type"]?.ToString() == "group_msg_emoji_like" &&
+                    message["sub_type"]!.GetValue<string>() == "add")
                 {
                     string emoji = message["likes"]![0]!["emoji_id"]!.ToString();
-                    if (emoji is "128077" or "76" && message["is_add"]!.GetValue<bool>())
+                    if (emoji is "128077" or "76")
                     {
                         JsonNode response = await QqContext.SendApiRequest(new JsonObject
                         {
@@ -106,6 +107,15 @@ public static class QqEvents
         try
         {
             MessageChain chain = Parser.ParseMessage(node, out MessageChain? forwardMessage, context);
+
+            // 以下为 SnowLuma 回复消息结构的特殊处理
+            if (forwardMessage is not null && chain.First() is PingMessageEntity && chain.Count > 2)
+            {
+                chain.RemoveAt(0);
+                chain.RemoveAt(0);
+            }
+            //
+
             if (chain.IsEmpty() || chain.ToString(context) == "/") return;
             if (node.AsArray()[0]!["type"]!.GetValue<string>() == "image" && PicFace.Users.Contains(context.UserId))
             {
@@ -116,7 +126,7 @@ public static class QqEvents
                 return;
             }
 
-            bool explictInvoke = false; // 影响未找到命令时，是否输出找不到命令的提示
+            bool explicitInvoke = false; // 影响未找到命令时，是否输出找不到命令的提示
 
             // 下面这一段是对 QQ 官方机器人调用方式的兼容。
             // 因为 QQ 官方机器人的调用，必须以 @机器人 为开头，否则无效。
@@ -126,14 +136,14 @@ public static class QqEvents
             {
                 chain.RemoveAt(0);
                 chain[0] = new TextMessageEntity(text.Text.TrimStart());
-                explictInvoke = true;
+                explicitInvoke = true;
             }
 
             if (chain[0] is not TextMessageEntity line) return;
 
             string commandName =
                 line.Text.Contains(' ') ? line.Text[..line.Text.IndexOf(' ')].TrimStart('/') : line.Text.TrimStart('/');
-            explictInvoke = commandName.StartsWith('/') || explictInvoke;
+            explicitInvoke = commandName.StartsWith('/') || explicitInvoke;
 
             if (Commands.GetCommand(Platform.QQ, commandName) is null)
             {
@@ -142,7 +152,7 @@ public static class QqEvents
                     await context.SendMessage($"命令未找到，你是否在找 /{prompt}？");
                 }
 
-                if (explictInvoke)
+                if (explicitInvoke)
                 {
                     await context.SendMessage("未知命令。请使用 /help 查看命令列表。");
                 }
@@ -176,14 +186,8 @@ public static class QqEvents
         }
         catch (HttpRequestException)
         {
-            await context.SendMessage("与服务器通讯失败。");
-            await ZiYueBot.Instance.QqEvent.CloseAsync(WebSocketCloseStatus.InternalServerError, string.Empty,
-                CancellationToken.None);
-            await ZiYueBot.Instance.QqEvent.ConnectAsync(new Uri("ws://127.0.0.1:3001/event"),
-                CancellationToken.None);
-            await ZiYueBot.Instance.QqApi.CloseAsync(WebSocketCloseStatus.InternalServerError, string.Empty,
-                CancellationToken.None);
-            await ZiYueBot.Instance.QqApi.ConnectAsync(new Uri("ws://127.0.0.1:3001/api/"), CancellationToken.None);
+            await context.SendMessage("与 QQ 通讯失败。");
+            ZiYueBot.Instance.ConnectQqWebSocket();
             Logger.Info("已重新建立与 QQ 的连接");
         }
         catch (Exception ex)

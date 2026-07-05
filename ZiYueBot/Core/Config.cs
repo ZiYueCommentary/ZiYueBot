@@ -8,10 +8,7 @@
 [Serializable]
 public struct Config
 {
-    //public string DiscordProxy { get; set; }
-    //public int ProxyPort { get; set; }
-    //public string ProxyUsername { get; set; }
-    //public string ProxyPassword { get; set; }
+    public string DiscordProxy { get; set; }
     public string DiscordToken { get; set; }
     public string DatabaseSource { get; set; }
     public int DatabasePort { get; set; }
@@ -19,7 +16,10 @@ public struct Config
     public string DatabaseUser { get; set; }
     public string DatabasePassword { get; set; }
     public string DeepSeekKey { get; set; }
-    public string NapcatToken { get; set; }
+    public string QqEventEndpoint { get; set; }
+    public string QqEventAuthenticate { get; set; }
+    public string QqApiEndpoint { get; set; }
+    public string QqApiAuthenticate { get; set; }
     public string AssetsEndpoint { get; set; }
     public string AssetsUploadRegion { get; set; }
     public string AssetsUploadBucket { get; set; }

@@ -40,6 +40,7 @@ public class QqContext(EventType eventType, string userName, ulong userId, uint 
                 _ => throw new InvalidDataException("未知消息实体类型")
             };
         });
+        Thread.Sleep(Random.Shared.Next(500, 1500));
         await SendApiRequest(new JsonObject
         {
             ["action"] = EventType == EventType.DirectMessage ? "send_private_msg" : "send_group_msg",
