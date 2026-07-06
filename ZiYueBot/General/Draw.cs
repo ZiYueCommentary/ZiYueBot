@@ -95,13 +95,13 @@ public class Draw : Command
         using HttpClient client = new HttpClient();
         using HttpRequestMessage request =
             new HttpRequestMessage(HttpMethod.Post,
-                "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
+                $"https://{ZiYueBot.Instance.Config.BailianApiEndpoint}/api/v1/services/aigc/multimodal-generation/generation");
         request.Headers.Add("Accept", "application/json");
-        request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}"); // placeholder
+        request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.BailianApiKey}"); // placeholder
         // 下面这个 json 太复杂了，写成 C# 代码乱得要死，就这样吧。
         using StringContent content = new StringContent("""
                                                         {
-                                                            "model": "qwen-image-2.0-pro-2026-04-22",
+                                                            "model": "z-image-turbo",
                                                             "input": {
                                                                 "messages": [
                                                                     {
@@ -116,7 +116,8 @@ public class Draw : Command
                                                             },
                                                             "parameters": {
                                                                 "negative_prompt": "",
-                                                                "size": "1328*1328",
+                                                                "size": "1536*1536",
+                                                                "prompt_extend": false,
                                                                 "n": 1
                                                             }
                                                         }
@@ -136,9 +137,9 @@ public class Draw : Command
     {
         using HttpClient client = new HttpClient();
         using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post,
-            "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
+            "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation");
         request.Headers.Add("Accept", "application/json");
-        request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
+        request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.BailianApiKey}");
         JsonObject jsonContent = new JsonObject
         {
             ["input"] = new JsonObject
@@ -162,7 +163,7 @@ public class Draw : Command
                 ["enable_search"] = false,
                 ["enable_thinking"] = false
             },
-            ["model"] = "qwen3.7-flash"
+            ["model"] = "deepseek-v4-flash"
         };
         using StringContent content =
             new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
@@ -170,7 +171,7 @@ public class Draw : Command
         using HttpResponseMessage response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
         JsonNode? result = await JsonNode.ParseAsync(await response.Content.ReadAsStreamAsync());
-        return int.Parse(result!["output"]!["choices"]![0]!["message"]!["content"]![0]!["text"]!.GetValue<string>());
+        return int.Parse(result!["output"]!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
     }
 
     private static async Task<bool> ValidateInvoke(IContext context)

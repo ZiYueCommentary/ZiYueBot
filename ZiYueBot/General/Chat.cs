@@ -67,9 +67,9 @@ public class Chat : Command
             using HttpClient client = new HttpClient();
             using HttpRequestMessage request =
                 new HttpRequestMessage(HttpMethod.Post,
-                    "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation");
+                    $"https://{ZiYueBot.Instance.Config.BailianApiEndpoint}/api/v1/services/aigc/text-generation/generation");
             request.Headers.Add("Accept", "application/json");
-            request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.DeepSeekKey}");
+            request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.BailianApiKey}");
             JsonObject jsonContent = new JsonObject
             {
                 ["input"] = new JsonObject
@@ -85,7 +85,8 @@ public class Chat : Command
                         },
                         new JsonObject
                         {
-                            ["content"] = $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。",
+                            ["content"] =
+                                $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。今天是 {DateTime.Today:yyyy年M月d日}。",
                             ["role"] = "user"
                         },
                         new JsonObject
@@ -100,7 +101,7 @@ public class Chat : Command
                     ["enable_search"] = true,
                     ["enable_thinking"] = false
                 },
-                ["model"] = "qwen3.6-flash"
+                ["model"] = "deepseek-v4-flash"
             };
             using StringContent content =
                 new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
@@ -112,7 +113,7 @@ public class Chat : Command
             DateTime last = DateTime.Now;
             StringBuilder builder = new StringBuilder();
             builder.Append($"`已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
-            builder.Append(result!["output"]!["choices"]![0]!["message"]!["content"]![0]!["text"]!.GetValue<string>());
+            builder.Append(result!["output"]!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
             if (builder.Length > 1900)
             {
                 builder.Remove(1900, builder.Length - 1900);
@@ -128,6 +129,11 @@ public class Chat : Command
         catch (TaskCanceledException)
         {
             await context.SendMessage("回答超时。");
+        }
+        catch (HttpRequestException e)
+        {
+            Logger.Error(e.Message, e);
+            await context.SendMessage("与第三方服务通讯出错，请联系子悦。");
         }
         catch (Exception e)
         {

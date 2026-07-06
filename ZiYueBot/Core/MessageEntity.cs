@@ -129,8 +129,10 @@ public record ImageMessageEntity(string Path, string FileName) : IMessageEntity
 
     public static ImageMessageEntity FromPath(string path)
     {
+        byte[] imageBytes = File.ReadAllBytes(path);
+        string base64String = Convert.ToBase64String(imageBytes);
         string filename = path[path.LastIndexOf('/')..];
-        return new ImageMessageEntity($"file://{System.IO.Path.GetFullPath(path).Replace("\\", "/")}", filename);
+        return new ImageMessageEntity($"base64://{base64String}", filename);
     }
 }
 

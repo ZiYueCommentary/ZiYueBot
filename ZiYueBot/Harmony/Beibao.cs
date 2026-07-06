@@ -24,7 +24,7 @@ public class Beibao : Command
     {
         if (arg.IsEmpty())
         {
-            await context.SendMessage("参数数量不足。使用“/help balogo”查看命令用法。");
+            await context.SendMessage("参数数量不足。使用“/help beibao”查看命令用法。");
             return;
         }
 

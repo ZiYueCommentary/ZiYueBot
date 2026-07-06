@@ -15,7 +15,8 @@ public struct Config
     public string DatabaseName { get; set; }
     public string DatabaseUser { get; set; }
     public string DatabasePassword { get; set; }
-    public string DeepSeekKey { get; set; }
+    public string BailianApiEndpoint { get; set; }
+    public string BailianApiKey { get; set; }
     public string QqEventEndpoint { get; set; }
     public string QqEventAuthenticate { get; set; }
     public string QqApiEndpoint { get; set; }
