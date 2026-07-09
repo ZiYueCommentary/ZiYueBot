@@ -12,6 +12,7 @@ namespace ZiYueBot.QQ;
 public static class QqEvents
 {
     internal static readonly ILog Logger = LogManager.GetLogger("QQ 消息解析");
+    private static readonly byte[] MessageBuffer = new byte[4096];
 
     public static async Task Initialize()
     {
@@ -19,14 +20,13 @@ public static class QqEvents
         {
             try
             {
-                byte[] buffer = new byte[4096];
                 StringBuilder builder = new StringBuilder();
                 WebSocketReceiveResult result;
                 do
                 {
-                    result = await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(buffer),
+                    result = await ZiYueBot.Instance.QqEvent.ReceiveAsync(new ArraySegment<byte>(MessageBuffer),
                         CancellationToken.None);
-                    string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    string chunk = Encoding.UTF8.GetString(MessageBuffer, 0, result.Count);
                     builder.Append(chunk);
                 } while (!result.EndOfMessage);
 

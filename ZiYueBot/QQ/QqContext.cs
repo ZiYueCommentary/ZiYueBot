@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -106,24 +107,31 @@ public class QqContext(EventType eventType, string userName, ulong userId, uint 
     {
         for (int i = 0; i < 3; i++)
         {
-            ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(
-                json.ToJsonString(new JsonSerializerOptions
-                    { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping })));
-            await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true,
-                CancellationToken.None);
-            byte[] buffer = new byte[4096];
-            StringBuilder builder = new StringBuilder();
-            WebSocketReceiveResult result;
-            do
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
+            try
             {
-                result = await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer),
+                ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(
+                    json.ToJsonString(new JsonSerializerOptions
+                        { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping })));
+                await ZiYueBot.Instance.QqApi.SendAsync(bytesToSend, WebSocketMessageType.Text, true,
                     CancellationToken.None);
-                string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                builder.Append(chunk);
-            } while (!result.EndOfMessage);
+                StringBuilder builder = new StringBuilder();
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await ZiYueBot.Instance.QqApi.ReceiveAsync(new ArraySegment<byte>(buffer),
+                        CancellationToken.None);
+                    string chunk = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    builder.Append(chunk);
+                } while (!result.EndOfMessage);
 
-            JsonNode? response = JsonNode.Parse(builder.ToString());
-            if (response is not null) return response;
+                JsonNode? response = JsonNode.Parse(builder.ToString());
+                if (response is not null) return response;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         QqEvents.Logger.Error($"API 请求失败：{json}");
