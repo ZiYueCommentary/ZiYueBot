@@ -33,7 +33,7 @@ public class BaLogo : Command
             return;
         }
 
-        string[] args = Parse(arg.ToString(context));
+        string[] args = context.Platform == Platform.QQ ? Parse(arg.ToString(context)) : [arg[0].ToString(context), arg[1].ToString(context)];
 
         if (args.Length < 2)
         {

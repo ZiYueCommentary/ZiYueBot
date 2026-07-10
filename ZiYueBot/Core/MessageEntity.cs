@@ -34,21 +34,7 @@ public class MessageChain : List<IMessageEntity>
 
     public string ToString(IContext? context)
     {
-        IEnumerable<string> raw = this.Select(message =>
-        {
-            switch (message)
-            {
-                case TextMessageEntity text:
-                    return text.Text.FormatDiscordPing(context);
-                case ImageMessageEntity image:
-                    return "{image=" + image.Path + "}";
-                case PingMessageEntity ping:
-                    if (context is null) return "{ping=" + ping.UserId + "}";
-                    return $"@{context.FetchUserName(ping.UserId).GetAwaiter().GetResult()}";
-                default:
-                    throw new InvalidDataException("unknown message entity type");
-            }
-        });
+        IEnumerable<string> raw = this.Select(message => message.ToString(context));
         return string.Join(null, raw);
     }
 
@@ -109,11 +95,18 @@ public enum MessageEntityType
 public interface IMessageEntity
 {
     public MessageEntityType Type { get; }
+
+    public string ToString(IContext? context);
 }
 
 public partial record TextMessageEntity(string Text) : IMessageEntity
 {
     public MessageEntityType Type => MessageEntityType.Text;
+
+    public string ToString(IContext? context)
+    {
+        return Text.FormatDiscordPing(context);
+    }
 
     [GeneratedRegex("<:.*:\\d+>")]
     public static partial Regex DiscordEmotionRegex();
@@ -127,6 +120,11 @@ public record ImageMessageEntity(string Path, string FileName) : IMessageEntity
 {
     public MessageEntityType Type => MessageEntityType.Image;
 
+    public string ToString(IContext? context)
+    {
+        return "{image=" + Path + "}";
+    }
+
     public static ImageMessageEntity FromPath(string path)
     {
         byte[] imageBytes = File.ReadAllBytes(path);
@@ -139,4 +137,10 @@ public record ImageMessageEntity(string Path, string FileName) : IMessageEntity
 public record PingMessageEntity(ulong UserId) : IMessageEntity
 {
     public MessageEntityType Type => MessageEntityType.Ping;
+
+    public string ToString(IContext? context)
+    {
+        if (context is null) return "{ping=" + UserId + "}";
+        return $"@{context.FetchUserName(UserId).GetAwaiter().GetResult()}";
+    }
 }
