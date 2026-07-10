@@ -79,8 +79,7 @@ public class ZiYueBot
         }
         catch (Exception e)
         {
-            // 垃圾 MySQL 不能对索引使用 IF NOT EXISTS
-            // Logger.Error("数据库初始化出错", e);
+            Logger.Error("数据库初始化出错", e);
         }
     }
 

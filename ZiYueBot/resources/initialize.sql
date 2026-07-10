@@ -95,9 +95,9 @@ CREATE TABLE IF NOT EXISTS invoke_records_general
     first_invoke datetime    null,
     last_invoke  datetime    null,
     invoke_count int         null,
-    PRIMARY KEY (userid, command)
+    PRIMARY KEY (userid, command),
+    INDEX index_userid (userid)
 ) CHARSET = utf8mb4;
-CREATE INDEX invoke_records_general_index_userid ON invoke_records_general (userid);
 
 # 俄罗斯轮盘
 CREATE TABLE IF NOT EXISTS revolver
@@ -134,10 +134,10 @@ CREATE TABLE IF NOT EXISTS stargazers
     star_at   datetime null,
     bottle_id int        default 0,
     removed   tinyint(1) default 0,
-    PRIMARY KEY (userid, bottle_id)
+    PRIMARY KEY (userid, bottle_id),
+    INDEX index_bottle_id (bottle_id, removed),
+    INDEX index_userid (userid, removed)
 ) CHARSET = utf8mb4;
-CREATE INDEX stargazers_bottle_id_index ON stargazers (bottle_id, removed);
-CREATE INDEX stargazers_userid_index ON stargazers (userid, removed);
 
 # 特权
 CREATE TABLE IF NOT EXISTS privileges
