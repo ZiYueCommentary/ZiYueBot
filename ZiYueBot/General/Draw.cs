@@ -62,6 +62,12 @@ public class Draw : Command
             else return;
         }
 
+        if (!arg.IsLiteralString())
+        {
+            await context.SendMessage("请输入纯文本参数。");
+            return;
+        }
+
         Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
         _ = UpdateInvokeRecords(context.UserId);
 
