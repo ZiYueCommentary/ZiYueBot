@@ -15,6 +15,7 @@ public struct Config
     public string DatabaseName { get; set; }
     public string DatabaseUser { get; set; }
     public string DatabasePassword { get; set; }
+    public string ChatAgentEndpoint { get; set; }
     public string BailianApiEndpoint { get; set; }
     public string BailianApiKey { get; set; }
     public string QqEventEndpoint { get; set; }

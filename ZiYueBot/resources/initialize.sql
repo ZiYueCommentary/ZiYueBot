@@ -71,6 +71,33 @@ CREATE TABLE IF NOT EXISTS blacklists
     PRIMARY KEY (userid, command)
 ) CHARSET = utf8mb4;
 
+# 记过
+CREATE TABLE IF NOT EXISTS penalty
+(
+    id         int auto_increment primary key,
+    userid     bigint  default 0,
+    channel_id bigint  default 0,
+    created_at datetime null,
+    created_by bigint   null,
+    community  boolean default true,
+    reason     text     null,
+    removed    boolean default false,
+    INDEX index_user (userid, removed)
+) CHARSET = utf8mb4;
+
+# 群管理记过
+CREATE TABLE IF NOT EXISTS penalty_public
+(
+    id         int auto_increment primary key,
+    userid     bigint  default 0,
+    channel_id bigint  default 0,
+    created_at datetime null,
+    created_by bigint   null,
+    reason     text     null,
+    removed    boolean default false,
+    INDEX index_user (userid, channel_id, removed)
+) CHARSET = utf8mb4;
+
 # 赞助者
 CREATE TABLE IF NOT EXISTS sponsors
 (

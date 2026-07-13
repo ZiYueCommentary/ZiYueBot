@@ -11,6 +11,10 @@ public class DiscordContext(EventType eventType, string userName, ulong userId, 
     public override EventType EventType { get; } = eventType;
     public override string UserName { get; } = userName;
     public override ulong UserId { get; } = userId;
+    public override bool HasChannelAdmin => EventType == EventType.GroupMessage &&
+                                     ZiYueBot.Instance.Discord.GetGuild(Socket.GuildId!.Value).GetUser(UserId)
+                                         .GuildPermissions.KickMembers;
+
     public SocketSlashCommand Socket { get; } = socket;
 
     /// 由于 Discord 默认回复调用消息，所以第一条需要采取回复，之后的消息必须以普通消息的形式发送。

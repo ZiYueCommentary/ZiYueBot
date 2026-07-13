@@ -2,7 +2,7 @@
 
 **添加星标 (Add stargazer)** 可以对云瓶进行星标操作，将其加入用户的星标列表。单个云瓶只能星标一次。
 
-除调用此命令外，还可以对云瓶消息回复 👍 或 <Badge type="warning" text="仅 Discord" /> ⭐ 表情来添加星标。
+除调用此命令外，还可以对云瓶消息回复 👍 或 ⭐ <Badge type="warning" text="仅 Discord" /> 表情来添加星标。
 
 ## 用法 {#usage}
 

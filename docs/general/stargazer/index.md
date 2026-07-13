@@ -5,6 +5,3 @@
 云瓶星标命令包括：
 
 - [添加星标](add)
-- [捞云瓶](/general/driftbottle/pick)
-- [删除云瓶](/general/driftbottle/remove)
-- [查看我的云瓶](/general/driftbottle/list)

@@ -57,7 +57,15 @@ export default defineConfig({
                             {text: '黑名单', link: '/technical/blacklists'},
                             {text: '愚人云瓶', link: '/technical/aprilbottles'},
                             {text: '云瓶审核', link: '/technical/sensorship'},
-                            {text: '命令别名', link: '/technical/alias'}
+                            {text: '命令别名', link: '/technical/alias'},
+                            {
+                                text: '管理命令', link: '/technical/management',
+                                collapsed: false,
+                                items: [
+                                    {text: '记过', link: '/technical/management/penalty'},
+                                    {text: '群记过', link: '/technical/management/public-penalty'}
+                                ]
+                            }
                         ]
                     }
                 ]
@@ -114,6 +122,7 @@ export default defineConfig({
                             {text: '对话', link: '/general/chat'},
                             {text: '绘画', link: '/general/draw'},
                             {text: '统计', link: '/general/stat'},
+                            {text: '查询记过', link: '/general/fetch-penalty'},
                             {
                                 text: '漂流云瓶',
                                 link: '/general/driftbottle/',
@@ -140,10 +149,7 @@ export default defineConfig({
                                 link: '/general/stargazer/',
                                 collapsed: true,
                                 items: [
-                                    {text: '扔云瓶', link: '/general/driftbottle/throw'},
-                                    {text: '捞云瓶', link: '/general/driftbottle/pick'},
-                                    {text: '删除云瓶', link: '/general/driftbottle/remove'},
-                                    {text: '查看我的云瓶', link: '/general/driftbottle/list'}
+                                    {text: '添加星标', link: '/general/stargazer/add'}
                                 ]
                             },
                         ]

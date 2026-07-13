@@ -15,6 +15,27 @@ public class QqContext(EventType eventType, string userName, ulong userId, uint 
     public override string UserName { get; } = userName;
     public override ulong UserId { get; } = userId;
 
+    public override bool HasChannelAdmin
+    {
+        get
+        {
+            if (EventType == EventType.DirectMessage) return false;
+            JsonNode response = SendApiRequest(
+                new JsonObject
+                {
+                    ["action"] = "get_group_member_info",
+                    ["params"] = new JsonObject
+                    {
+                        ["group_id"] = SourceUni,
+                        ["user_id"] = UserId,
+                        ["no_cache"] = true
+                    }
+                }).Result;
+            string role = response["data"]!["role"]!.GetValue<string>();
+            return role is "owner" or "admin";
+        }
+    }
+
     /// <summary>
     /// 消息来源。根据 EventType 而变化，可能为群聊 ID，或用户 ID。
     /// </summary>

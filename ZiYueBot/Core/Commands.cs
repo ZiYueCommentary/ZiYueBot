@@ -2,6 +2,7 @@ using MySql.Data.MySqlClient;
 using System.Text.Json;
 using ZiYueBot.General;
 using ZiYueBot.Harmony;
+using ZiYueBot.Management;
 
 namespace ZiYueBot.Core;
 
@@ -20,8 +21,11 @@ public static class Commands
 
     public static Command? GetCommand(Platform platform, string name)
     {
-        if (!RegisteredCommands.ContainsKey(name)) return null;
-        return RegisteredCommands[name].SupportedPlatform.Contains(platform) ? RegisteredCommands[name] : null;
+        if (!RegisteredCommands.TryGetValue(name, out Command? value)) return null;
+        Platform[] supportedPlatform = value.SupportedPlatform;
+        return supportedPlatform.Contains(platform) || supportedPlatform.Contains(Platform.Management)
+            ? RegisteredCommands[name]
+            : null;
     }
 
     /// <summary>
@@ -121,6 +125,10 @@ public static class Commands
         RegisterCommand(new Chat());
         RegisterCommand(new Draw());
         RegisterCommand(new Stat());
+        RegisterCommand(new FetchPenalty());
+        // 管理命令
+        RegisterCommand(new Penalty());
+        RegisterCommand(new PublicPenalty());
 
         LoadAliases();
     }
