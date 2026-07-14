@@ -1,3 +1,4 @@
+using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 using ZiYueBot.Discord;
@@ -7,6 +8,8 @@ namespace ZiYueBot.Management;
 
 public class Penalty : Command
 {
+    private static readonly ILog Logger = LogManager.GetLogger("记过");
+
     public override string Id => "记过";
     public override string Name => "记过";
     public override string Summary => "管理命令";
@@ -55,6 +58,9 @@ public class Penalty : Command
             await context.SendMessage("参数无效，请检查第一个参数。");
             return;
         }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
 
         ulong targetUserId = ping.UserId;
         ulong channelId = context.Platform == Platform.QQ

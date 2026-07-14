@@ -1,3 +1,4 @@
+using log4net;
 using MySql.Data.MySqlClient;
 using ZiYueBot.Core;
 using ZiYueBot.Discord;
@@ -7,6 +8,8 @@ namespace ZiYueBot.General;
 
 public class FetchPenalty : Command
 {
+    private static readonly ILog Logger = LogManager.GetLogger("查询记过");
+
     public override string Id => "查询记过";
     public override string Name => "查询记过";
     public override string Summary => "查询指定用户的记过数据";
@@ -25,6 +28,15 @@ public class FetchPenalty : Command
             await context.SendMessage("参数无效，使用“/help 查询记过”查看命令用法。");
             return;
         }
+
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（10 分钟 1 条）");
+            return;
+        }
+
+        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
 
         ulong userId = arg.Count > 0 ? ((PingMessageEntity)arg[0]).UserId : context.UserId;
         ulong channelId = context.Platform == Platform.QQ
