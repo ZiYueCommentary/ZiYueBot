@@ -142,22 +142,23 @@ public static class QqEvents
             if (chain[0] is not TextMessageEntity line) return;
 
             string commandName =
-                line.Text.Contains(' ') ? line.Text[..line.Text.IndexOf(' ')].TrimStart('/') : line.Text.TrimStart('/');
+                line.Text.Contains(' ') ? line.Text[..line.Text.IndexOf(' ')] : line.Text;
             explicitInvoke = commandName.StartsWith('/') || explicitInvoke;
+            commandName = commandName.TrimStart('/');
 
             if (Commands.GetCommand(Platform.QQ, commandName) is null)
             {
                 if (Commands.CheckAlias(commandName, out string prompt))
                 {
                     await context.SendMessage($"命令未找到，你是否在找 /{prompt}？");
+                    return;
                 }
 
                 if (explicitInvoke)
                 {
                     await context.SendMessage("未知命令。请使用 /help 查看命令列表。");
+                    return;
                 }
-
-                return;
             }
 
             chain.RemoveAt(0);
