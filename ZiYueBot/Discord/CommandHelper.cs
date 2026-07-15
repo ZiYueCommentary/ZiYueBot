@@ -39,8 +39,9 @@ public static class CommandHelper
 
     public static void AddCommandsAsChoices(SlashCommandOptionBuilder builder)
     {
-        foreach (Command command in Commands.RegisteredCommands.Values.ToHashSet()
-                     .Where(general => general.SupportedPlatform.Contains(Platform.Discord)))
+        foreach (Command command in Commands.RegisteredCommands.Values.ToHashSet().Where(general =>
+                     general.SupportedPlatform.Contains(Platform.Discord) ||
+                     general.SupportedPlatform.Contains(Platform.Management)))
         {
             builder.AddChoice($"{command.Name}（{command.Id}）", command.Id);
         }

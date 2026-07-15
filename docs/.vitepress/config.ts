@@ -59,7 +59,7 @@ export default defineConfig({
                             {text: '云瓶审核', link: '/technical/sensorship'},
                             {text: '命令别名', link: '/technical/alias'},
                             {
-                                text: '管理命令', link: '/technical/management',
+                                text: '管理命令', link: '/technical/management/',
                                 collapsed: false,
                                 items: [
                                     {text: '记过', link: '/technical/management/penalty'},
