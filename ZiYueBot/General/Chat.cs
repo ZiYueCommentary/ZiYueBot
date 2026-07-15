@@ -66,42 +66,20 @@ public class Chat : Command
             DateTime prev = DateTime.Now;
             using HttpClient client = new HttpClient();
             using HttpRequestMessage request =
-                new HttpRequestMessage(HttpMethod.Post,
-                    $"https://{ZiYueBot.Instance.Config.BailianApiEndpoint}/api/v1/services/aigc/text-generation/generation");
+                new HttpRequestMessage(HttpMethod.Post, ZiYueBot.Instance.Config.ChatAgentEndpoint);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.BailianApiKey}");
             JsonObject jsonContent = new JsonObject
             {
                 ["input"] = new JsonObject
                 {
-                    ["messages"] = new JsonArray
-                    {
-                        new JsonObject
-                        {
-                            ["content"] = SystemPrompt + (DateTime.Today.Month == 4 && DateTime.Today.Day == 1
-                                ? AprilSystemPrompt
-                                : ""),
-                            ["role"] = "system"
-                        },
-                        new JsonObject
-                        {
-                            ["content"] =
-                                $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。今天是 {DateTime.Today:yyyy年M月d日}。",
-                            ["role"] = "user"
-                        },
-                        new JsonObject
-                        {
-                            ["content"] = arg.ToString(context),
-                            ["role"] = "user"
-                        }
-                    }
+                    ["prompt"] = $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。{arg.ToString(context)}"
                 },
                 ["parameters"] = new JsonObject
                 {
                     ["enable_search"] = true,
                     ["enable_thinking"] = false
-                },
-                ["model"] = "deepseek-v4-flash"
+                }
             };
             using StringContent content =
                 new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
@@ -113,7 +91,7 @@ public class Chat : Command
             DateTime last = DateTime.Now;
             StringBuilder builder = new StringBuilder();
             builder.Append($"`已思考 {Convert.ToInt32(Math.Round((last - prev).TotalSeconds))} 秒`\n\n");
-            builder.Append(result!["output"]!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
+            builder.Append(result!["output"]!["text"]!.GetValue<string>());
             if (builder.Length > 1900)
             {
                 builder.Remove(1900, builder.Length - 1900);
