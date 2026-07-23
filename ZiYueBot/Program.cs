@@ -5,7 +5,7 @@ using log4net;
 
 internal static class Program
 {
-    private static ILog Logger { get; } = LogManager.GetLogger("入口点");
+    private static readonly ILog Logger = LogManager.GetLogger("入口点");
 
     private static void InitLogger()
     {

@@ -17,7 +17,7 @@ namespace ZiYueBot;
 
 public class ZiYueBot
 {
-    private static ILog Logger { get; } = LogManager.GetLogger("主程序");
+    private static readonly ILog Logger = LogManager.GetLogger("主程序");
     public static ZiYueBot Instance { get; private set; } = null!;
 
     public ClientWebSocket QqEvent { get; }
@@ -110,7 +110,7 @@ public class ZiYueBot
         }
     }
 
-    internal MySqlConnection ConnectDatabase()
+    public MySqlConnection ConnectDatabase()
     {
         MySqlConnection connection = new MySqlConnection(
             $"""
