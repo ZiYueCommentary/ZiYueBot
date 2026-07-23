@@ -72,12 +72,12 @@ public class ZiYueBot
         Memory<byte> buffer = new byte[4096];
         ValueWebSocketReceiveResult result = await QqApi.ReceiveAsync(buffer, CancellationToken.None);
 
-        JsonDocument qqUserInfoDocument = JsonDocument.Parse(buffer[..result.Count]);
+        using JsonDocument qqUserInfoDocument = JsonDocument.Parse(buffer[..result.Count]);
         JsonElement qqUserInfo = qqUserInfoDocument.RootElement;
 
         JsonElement data = qqUserInfo.GetProperty("data");
 
-        QqUserId = data.GetProperty("user_id").GetUInt16();
+        QqUserId = data.GetProperty("user_id").GetUInt32();
         string nickname = data.GetProperty("nickname").GetString() ?? string.Empty;
 
         Logger.Info($"QQ 连接成功：{nickname} ({QqUserId})");
