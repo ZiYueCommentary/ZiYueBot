@@ -30,12 +30,12 @@ public abstract class Command
     /// <summary>
     /// 获取该命令的调用频率限制。
     /// </summary>
-    public virtual TimeSpan GetRateLimit(IContext context)
+    public virtual TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.Zero;
     }
 
-    public abstract Task Invoke(IContext context, MessageChain arg);
+    public abstract Task Invoke(Context context, MessageChain arg);
 
     /// <summary>
     /// 更新数据库里的命令调用记录。这一函数只适用于仅记录调用次数的命令，复杂统计数据要单开数据库表。

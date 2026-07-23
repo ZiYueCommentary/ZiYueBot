@@ -32,7 +32,7 @@ public class MessageChain : List<IMessageEntity>
         }) is null;
     }
 
-    public string ToString(IContext? context)
+    public string ToString(Context? context)
     {
         IEnumerable<string> raw = this.Select(message => message.ToString(context));
         return string.Join(null, raw);
@@ -96,14 +96,14 @@ public interface IMessageEntity
 {
     public MessageEntityType Type { get; }
 
-    public string ToString(IContext? context);
+    public string ToString(Context? context);
 }
 
 public partial record TextMessageEntity(string Text) : IMessageEntity
 {
     public MessageEntityType Type => MessageEntityType.Text;
 
-    public string ToString(IContext? context)
+    public string ToString(Context? context)
     {
         return Text.FormatDiscordPing(context);
     }
@@ -120,7 +120,7 @@ public record ImageMessageEntity(string Path, string FileName) : IMessageEntity
 {
     public MessageEntityType Type => MessageEntityType.Image;
 
-    public string ToString(IContext? context)
+    public string ToString(Context? context)
     {
         return "{image=" + Path + "}";
     }
@@ -138,7 +138,7 @@ public record PingMessageEntity(ulong UserId) : IMessageEntity
 {
     public MessageEntityType Type => MessageEntityType.Ping;
 
-    public string ToString(IContext? context)
+    public string ToString(Context? context)
     {
         if (context is null) return "{ping=" + UserId + "}";
         return $"@{context.FetchUserName(UserId).GetAwaiter().GetResult()}";

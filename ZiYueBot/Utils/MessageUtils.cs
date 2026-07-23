@@ -7,7 +7,7 @@ namespace ZiYueBot.Utils;
 
 public static partial class MessageUtils
 {
-    public static string DatabaseFriendly(this MessageChain arg, IContext context)
+    public static string DatabaseFriendly(this MessageChain arg, Context context)
     {
         StringBuilder builder = new StringBuilder();
         foreach (IMessageEntity entity in arg)
@@ -29,7 +29,7 @@ public static partial class MessageUtils
         return builder.ToString();
     }
 
-    public static string FormatDiscordPing(this string text, IContext? context)
+    public static string FormatDiscordPing(this string text, Context? context)
     {
         StringBuilder builder = new StringBuilder();
         builder.Append(text);

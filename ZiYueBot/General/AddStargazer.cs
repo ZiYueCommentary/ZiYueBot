@@ -16,7 +16,7 @@ public class AddStargazer : Command
                                           在线文档：https://docs.ziyuebot.cn/general/stargazer/add
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (!this.TryPassRateLimit(context))
         {
@@ -27,7 +27,7 @@ public class AddStargazer : Command
         Stargazers.AddStargazer(context.UserId, context.UserName, int.Parse(arg.ToString(context)), false);
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.FromMinutes(1);
     }

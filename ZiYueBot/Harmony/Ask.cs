@@ -67,7 +67,7 @@ public class Ask : Command
                                           在线文档：https://docs.ziyuebot.cn/harmony/ask
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
         _ = UpdateInvokeRecords(context.UserId);

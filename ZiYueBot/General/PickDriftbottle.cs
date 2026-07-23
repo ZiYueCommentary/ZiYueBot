@@ -23,7 +23,7 @@ public class PickDriftbottle : Command
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/pick
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         int id = int.MinValue;
         if (!arg.IsEmpty())
@@ -120,7 +120,7 @@ public class PickDriftbottle : Command
         await context.SendMessage(MessageChain.FromDatabase(result));
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         if (context.Platform == Platform.Discord || context.EventType == EventType.DirectMessage) return TimeSpan.Zero;
         return TimeSpan.FromMinutes(1);

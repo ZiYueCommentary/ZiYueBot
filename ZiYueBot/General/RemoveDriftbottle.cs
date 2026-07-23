@@ -20,7 +20,7 @@ public class RemoveDriftbottle : Command
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/remove
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (arg.IsEmpty())
         {

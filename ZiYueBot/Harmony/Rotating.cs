@@ -22,7 +22,7 @@ public class Rotating : Command
                                           在线文档：https://docs.ziyuebot.cn/harmony/revolver/rotating
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (context.EventType == EventType.DirectMessage)
         {

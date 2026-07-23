@@ -11,7 +11,7 @@ public static class RateLimit
     /// 尝试通过频率限制检查。如果通过，该函数会自动记录最后一次调用为现在时间。
     /// </summary>
     /// <returns>是否成功通过</returns>
-    public static bool TryPassRateLimit(this Command command, IContext context)
+    public static bool TryPassRateLimit(this Command command, Context context)
     {
         return TryPassRateLimit(command.Id, context.UserId, command.GetRateLimit(context));
     }

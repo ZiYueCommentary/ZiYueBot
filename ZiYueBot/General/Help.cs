@@ -21,7 +21,7 @@ public class Help : Command
 
     public override Platform[] SupportedPlatform => [Platform.Discord, Platform.QQ];
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         Logger.Info(
             $"平台：${context.Platform}，调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");

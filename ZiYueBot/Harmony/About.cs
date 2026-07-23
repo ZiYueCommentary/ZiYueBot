@@ -19,7 +19,7 @@ public class About : Command
                                           在线文档：https://docs.ziyuebot.cn/harmony/about
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ = UpdateInvokeRecords(context.UserId);

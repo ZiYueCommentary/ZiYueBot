@@ -31,7 +31,7 @@ public static class Commands
     /// 检查用户是否被禁止调用特定命令，或被禁止调用子悦机器。如果被禁止，则让机器发送封禁消息。
     /// </summary>
     /// <returns>是否在黑名单内</returns>
-    public static async Task<bool> CheckBlacklist(IContext context, string command)
+    public static async Task<bool> CheckBlacklist(Context context, string command)
     {
         await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
         await using MySqlCommand sqlCommand = new MySqlCommand(

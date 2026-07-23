@@ -5,7 +5,7 @@ using ZiYueBot.Utils;
 
 namespace ZiYueBot.Discord;
 
-public class DiscordContext(EventType eventType, string userName, ulong userId, SocketSlashCommand socket) : IContext
+public class DiscordContext(EventType eventType, string userName, ulong userId, SocketSlashCommand socket) : Context
 {
     public override Platform Platform => Platform.Discord;
     public override EventType EventType { get; } = eventType;

@@ -25,7 +25,7 @@ public enum EventType
 /// <summary>
 /// 命令调用上下文。
 /// </summary>
-public abstract class IContext
+public abstract class Context
 {
     public abstract Platform Platform { get; }
     public abstract EventType EventType { get; }

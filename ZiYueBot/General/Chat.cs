@@ -41,7 +41,7 @@ public class Chat : Command
                                           在线文档：https://docs.ziyuebot.cn/general/chat
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (arg.IsEmpty())
         {
@@ -120,7 +120,7 @@ public class Chat : Command
         }
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         if (context.Platform == Platform.Discord) return TimeSpan.FromMinutes(1);
 

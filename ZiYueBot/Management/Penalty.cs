@@ -22,12 +22,12 @@ public class Penalty : Command
 
     public override Platform[] SupportedPlatform => [Platform.Management];
 
-    public override Task Invoke(IContext context, MessageChain arg)
+    public override Task Invoke(Context context, MessageChain arg)
     {
         return Invoke(context, arg);
     }
 
-    public async Task Invoke(IContext context, MessageChain arg, bool sudo = false)
+    public async Task Invoke(Context context, MessageChain arg, bool sudo = false)
     {
         if (!Privileged.HasPrivilege(context.UserId, Privilege.CreatePenalty))
         {

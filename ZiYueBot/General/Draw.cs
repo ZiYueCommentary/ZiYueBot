@@ -35,7 +35,7 @@ public class Draw : Command
                                           在线文档：https://docs.ziyuebot.cn/general/draw
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (arg.IsEmpty())
         {
@@ -180,7 +180,7 @@ public class Draw : Command
         return int.Parse(result!["output"]!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
     }
 
-    private static async Task<bool> ValidateInvoke(IContext context)
+    private static async Task<bool> ValidateInvoke(Context context)
     {
         if (Privileged.HasPrivilege(context.UserId, Privilege.BypassDrawLimitation))
         {
@@ -268,7 +268,7 @@ public class Draw : Command
         }
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.FromMinutes(1);
     }

@@ -23,7 +23,7 @@ public class Shooting : Command
                                           在线文档：https://docs.ziyuebot.cn/harmony/revolver/shooting
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (context.EventType == EventType.DirectMessage)
         {

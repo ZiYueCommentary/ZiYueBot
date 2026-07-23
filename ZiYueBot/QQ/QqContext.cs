@@ -8,7 +8,7 @@ using ZiYueBot.Core;
 
 namespace ZiYueBot.QQ;
 
-public class QqContext(EventType eventType, string userName, ulong userId, uint sourceUin) : IContext
+public class QqContext(EventType eventType, string userName, ulong userId, uint sourceUin) : Context
 {
     public override Platform Platform => Platform.QQ;
     public override EventType EventType { get; } = eventType;

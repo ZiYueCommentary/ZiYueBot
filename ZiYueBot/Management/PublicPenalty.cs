@@ -22,7 +22,7 @@ public class PublicPenalty : Command
 
     public override Platform[] SupportedPlatform => [Platform.Management];
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (arg.Count < 2)
         {

@@ -21,7 +21,7 @@ public class FetchPenalty : Command
                                           在线文档：https://docs.ziyuebot.cn/general/fetch-penalty
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (arg.Count > 0 && arg[0].Type != MessageEntityType.Ping)
         {
@@ -82,7 +82,7 @@ public class FetchPenalty : Command
                                    """);
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.FromMinutes(10);
     }

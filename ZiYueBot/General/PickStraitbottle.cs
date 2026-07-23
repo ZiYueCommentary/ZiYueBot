@@ -21,7 +21,7 @@ public class PickStraitbottle : Command
                                           在线文档：https://docs.ziyuebot.cn/general/straitbottle/pick
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (!this.TryPassRateLimit(context))
         {
@@ -58,7 +58,7 @@ public class PickStraitbottle : Command
         await context.SendMessage(MessageChain.FromDatabase(result));
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.FromMinutes(1);
     }

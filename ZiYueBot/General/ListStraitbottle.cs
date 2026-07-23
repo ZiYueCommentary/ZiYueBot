@@ -21,7 +21,7 @@ public class ListStraitbottle : Command
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (!this.TryPassRateLimit(context))
         {
@@ -50,7 +50,7 @@ public class ListStraitbottle : Command
             $"海峡中共有 {i} 支瓶子，其中 {pickable} 支可被 {(context.Platform == Platform.Discord ? "Discord" : "QQ")} 捞起，{self} 支由你扔出");
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.FromMinutes(10);
     }

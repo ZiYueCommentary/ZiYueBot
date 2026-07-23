@@ -23,7 +23,7 @@ public class Stat : Command
                                           在线文档：https://docs.ziyuebot.cn/general/stat
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (!this.TryPassRateLimit(context))
         {
@@ -150,7 +150,7 @@ public class Stat : Command
                                    """);
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
         using MySqlCommand command = new MySqlCommand(

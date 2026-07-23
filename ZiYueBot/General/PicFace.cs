@@ -22,7 +22,7 @@ public class PicFace : Command
 
     public override Platform[] SupportedPlatform => [Platform.QQ];
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ = UpdateInvokeRecords(context.UserId);

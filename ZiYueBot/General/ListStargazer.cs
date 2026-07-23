@@ -10,7 +10,7 @@ public class ListStargazer : Command
     public override string Description => "";
 
     // TODO
-    public override Task Invoke(IContext context, MessageChain arg)
+    public override Task Invoke(Context context, MessageChain arg)
     {
         throw new NotImplementedException();
     }

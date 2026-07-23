@@ -24,7 +24,7 @@ public class Xibao : Command
                                           在线文档：https://docs.ziyuebot.cn/harmony/xibao
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (arg.IsEmpty())
         {
@@ -116,7 +116,7 @@ public class Xibao : Command
         }
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.FromMinutes(1);
     }

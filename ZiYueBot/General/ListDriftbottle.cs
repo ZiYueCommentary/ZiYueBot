@@ -21,7 +21,7 @@ public class ListDriftbottle : Command
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/list
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (!this.TryPassRateLimit(context))
         {
@@ -67,7 +67,7 @@ public class ListDriftbottle : Command
         await context.SendMessage(result);
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return context.EventType == EventType.DirectMessage || context.Platform == Platform.Discord
             ? TimeSpan.FromMinutes(10)

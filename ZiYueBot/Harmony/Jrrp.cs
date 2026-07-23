@@ -38,7 +38,7 @@ public class Jrrp : Command
         [100] = "买彩票可能会中大奖哦！"
     };
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ =UpdateInvokeRecords(context.UserId);

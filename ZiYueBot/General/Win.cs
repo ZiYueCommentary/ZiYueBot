@@ -107,7 +107,7 @@ public class Win : Command
             : (_windWindow = new WindWindow()).WindHour;
     }
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (context.EventType == EventType.DirectMessage)
         {
@@ -125,7 +125,7 @@ public class Win : Command
         await TryCommonProsperity(context, guildId);
     }
 
-    private async Task GeneralWin(IContext context, ulong guildId)
+    private async Task GeneralWin(Context context, ulong guildId)
     {
         await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         await using MySqlCommand query = new MySqlCommand(
@@ -244,7 +244,7 @@ public class Win : Command
                                    """);
     }
 
-    private async Task TryCommonProsperity(IContext context, ulong guildId)
+    private async Task TryCommonProsperity(Context context, ulong guildId)
     {
         await using MySqlCommand score = new MySqlCommand(
             $"SELECT * FROM win WHERE userid = {context.UserId} AND channel = {guildId} LIMIT 1",
@@ -287,7 +287,7 @@ public class Win : Command
                                    """);
     }
 
-    public async Task SeekWinningCouple(IContext context, ulong guildId)
+    public async Task SeekWinningCouple(Context context, ulong guildId)
     {
         await using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
         await using MySqlCommand query = new MySqlCommand(

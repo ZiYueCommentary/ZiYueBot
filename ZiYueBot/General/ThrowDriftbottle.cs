@@ -23,7 +23,7 @@ public partial class ThrowDriftbottle : Command
                                           在线文档：https://docs.ziyuebot.cn/general/driftbottle/throw
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (arg.IsEmpty())
         {
@@ -77,7 +77,7 @@ public partial class ThrowDriftbottle : Command
                                        """);
     }
 
-    public override TimeSpan GetRateLimit(IContext context)
+    public override TimeSpan GetRateLimit(Context context)
     {
         return TimeSpan.FromMinutes(1);
     }

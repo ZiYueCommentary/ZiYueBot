@@ -59,7 +59,7 @@ public class StartRevolver : Command
                                           在线文档：https://docs.ziyuebot.cn/harmony/revolver/start
                                           """;
 
-    public override async Task Invoke(IContext context, MessageChain arg)
+    public override async Task Invoke(Context context, MessageChain arg)
     {
         if (context.EventType == EventType.DirectMessage)
         {
