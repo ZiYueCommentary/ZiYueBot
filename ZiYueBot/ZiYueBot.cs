@@ -18,25 +18,29 @@ namespace ZiYueBot;
 public class ZiYueBot
 {
     private static readonly ILog Logger = LogManager.GetLogger("主程序");
-    public static ZiYueBot Instance { get; private set; }
+    public static ZiYueBot Instance { get; private set; } = null!;
 
-    public readonly ClientWebSocket QqEvent;
-    public readonly ClientWebSocket QqApi;
+    public ClientWebSocket QqEvent { get; }
+    public ClientWebSocket QqApi { get; }
     public uint QqUserId { get; private set; }
-    public readonly DiscordSocketClient Discord;
+    public DiscordSocketClient Discord { get; }
 
     public readonly Config Config;
 
+    private Task? _eventTask;
+
     private ZiYueBot()
     {
-        using (FileStream stream = new FileStream("config.json", FileMode.OpenOrCreate, FileAccess.Read))
+        using (FileStream stream = File.OpenRead("config.json"))
         {
             Config = JsonSerializer.Deserialize<Config>(stream);
         }
 
         QqEvent = new ClientWebSocket();
+        QqEvent.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqEventAuthenticate);
+
         QqApi = new ClientWebSocket();
-        ConnectQqWebSocket();
+        QqApi.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqApiAuthenticate);
 
         Discord = new DiscordSocketClient(new DiscordSocketConfig
         {
@@ -44,37 +48,60 @@ public class ZiYueBot
             WebSocketProvider =
                 DefaultWebSocketProvider.Create(new WebProxy(Environment.GetEnvironmentVariable("HTTPS_PROXY")))
         });
-        Discord.LoginAsync(TokenType.Bot, Config.DiscordToken).Wait();
-        Discord.StartAsync().Wait();
-        // Logger.Info($"Discord 登录成功：{Discord.CurrentUser.GlobalName} ({Discord.CurrentUser.Id})");
-
-        InitializeDatabase();
     }
 
-    internal void ConnectQqWebSocket()
+    public static ZiYueBot Create()
     {
-        QqEvent.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqEventAuthenticate);
-        QqEvent.ConnectAsync(new Uri(Config.QqEventEndpoint), CancellationToken.None).Wait();
-        QqApi.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqApiAuthenticate);
-        QqApi.ConnectAsync(new Uri(Config.QqApiEndpoint), CancellationToken.None).Wait();
-        QqApi.SendAsync(new ArraySegment<byte>("{\"action\": \"get_login_info\"}"u8.ToArray()),
-            WebSocketMessageType.Text, true, CancellationToken.None);
-        byte[] buffer = new byte[4096];
-        WebSocketReceiveResult result = QqApi.ReceiveAsync(new ArraySegment<byte>(buffer),
-            CancellationToken.None).GetAwaiter().GetResult();
-        JsonNode qqUserInfo = JsonNode.Parse(Encoding.UTF8.GetString(buffer, 0, result.Count))!;
-        QqUserId = qqUserInfo["data"]!["user_id"]!.GetValue<uint>();
-        Logger.Info($"QQ 连接成功：{qqUserInfo["data"]!["nickname"]!.GetValue<string>()} ({QqUserId})");
+        Instance = new ZiYueBot();
+
+        DiscordHandler.Initialize();
+        Commands.Initialize();
+
+        return Instance;
     }
 
-    private void InitializeDatabase()
+    private async Task ConnectQqWebSocketAsync()
+    {
+        await Task.WhenAll(
+            QqEvent.ConnectAsync(new Uri(Config.QqEventEndpoint), CancellationToken.None),
+            QqApi.ConnectAsync(new Uri(Config.QqApiEndpoint), CancellationToken.None));
+
+        await QqApi.SendAsync("{\"action\": \"get_login_info\"}"u8.ToArray(),
+            WebSocketMessageType.Text, true, CancellationToken.None);
+
+        Memory<byte> buffer = new byte[4096];
+        ValueWebSocketReceiveResult result = await QqApi.ReceiveAsync(buffer, CancellationToken.None);
+
+        JsonDocument qqUserInfoDocument = JsonDocument.Parse(buffer[..result.Count]);
+        JsonElement qqUserInfo = qqUserInfoDocument.RootElement;
+
+        JsonElement data = qqUserInfo.GetProperty("data");
+
+        QqUserId = data.GetProperty("user_id").GetUInt16();
+        string nickname = data.GetProperty("nickname").GetString() ?? string.Empty;
+
+        Logger.Info($"QQ 连接成功：{nickname} ({QqUserId})");
+    }
+
+    private async Task ConnectDiscordAsync()
+    {
+        await Discord.LoginAsync(TokenType.Bot, Config.DiscordToken);
+        await Discord.StartAsync();
+
+        // Logger.Info($"Discord 登录成功：{Discord.CurrentUser.GlobalName} ({Discord.CurrentUser.Id})");
+    }
+
+    private async Task InitializeDatabaseAsync()
     {
         try
         {
-            using FileStream stream = new FileStream("resources/initialize.sql", FileMode.OpenOrCreate);
-            using StreamReader reader = new StreamReader(stream);
-            MySqlCommand command = new MySqlCommand(reader.ReadToEnd(), ConnectDatabase());
-            command.ExecuteNonQuery();
+            string cmdText = await File.ReadAllTextAsync("resources/initialize.sql");
+
+            await using MySqlConnection connection = ConnectDatabase();
+            await using MySqlCommand command = new MySqlCommand(cmdText, connection);
+
+            await command.ExecuteNonQueryAsync();
+
             Logger.Info("数据库初始化成功");
         }
         catch (Exception e)
@@ -101,16 +128,24 @@ public class ZiYueBot
         return connection;
     }
 
-    public static void Main()
+    public Task ReconnectQqWebSocketAsync()
     {
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-        log4net.Config.XmlConfigurator.Configure();
-        Directory.CreateDirectory("data");
-        Directory.CreateDirectory("temp");
-        Directory.CreateDirectory("data/images");
-        Commands.Initialize();
-        Instance = new ZiYueBot();
-        DiscordHandler.Initialize();
-        QqEvents.Initialize().Wait();
+        return ConnectQqWebSocketAsync();
+    }
+
+    public async Task StartAsync()
+    {
+        await InitializeDatabaseAsync();
+
+        await Task.WhenAll(
+            ConnectQqWebSocketAsync(),
+            ConnectDiscordAsync());
+
+        _eventTask = QqEvents.Initialize();
+    }
+
+    public Task WaitAsync()
+    {
+        return _eventTask ?? Task.CompletedTask;
     }
 }
