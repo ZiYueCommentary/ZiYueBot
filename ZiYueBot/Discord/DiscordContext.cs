@@ -39,14 +39,28 @@ public class DiscordContext(EventType eventType, string userName, ulong userId, 
                     _ => throw new InvalidDataException()
                 };
             });
+
+        string textContent = string.Concat(text);
+
         if (_firstInvoke)
         {
-            await Socket.RespondWithFilesAsync(images, string.Join(null, text));
+            FileAttachment[] imageArray = [..images];
+
+            if (imageArray.Length > 0)
+            {
+                await Socket.DeferAsync();
+                await Socket.FollowupWithFilesAsync(imageArray, textContent);
+            }
+            else
+            {
+                await Socket.RespondAsync(textContent);
+            }
+
             _firstInvoke = false;
             return;
         }
 
-        await Socket.Channel.SendFilesAsync(images, string.Join(null, text));
+        await Socket.Channel.SendFilesAsync(images, textContent);
     }
 
     public override async Task<string> FetchUserName(ulong userId)
