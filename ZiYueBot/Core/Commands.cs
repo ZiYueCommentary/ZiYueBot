@@ -24,8 +24,7 @@ public static class Commands
         if (!RegisteredCommands.TryGetValue(name, out Command? value)) return null;
         Platform[] supportedPlatform = value.SupportedPlatform;
         return supportedPlatform.Contains(platform) || supportedPlatform.Contains(Platform.Management)
-            ? RegisteredCommands[name]
-            : null;
+            ? value : null;
     }
 
     /// <summary>

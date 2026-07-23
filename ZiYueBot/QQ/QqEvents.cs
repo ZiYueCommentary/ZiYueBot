@@ -157,8 +157,8 @@ public static class QqEvents
                 if (explicitInvoke)
                 {
                     await context.SendMessage("未知命令。请使用 /help 查看命令列表。");
-                    return;
                 }
+                return;
             }
 
             chain.RemoveAt(0);

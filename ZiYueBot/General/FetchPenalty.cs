@@ -51,10 +51,12 @@ public class FetchPenalty : Command
             await using MySqlDataReader reader = query.ExecuteReader();
             while (reader.Read())
             {
-                penalty += $"- 时间：{reader.GetDateTime("created_at"):yyyy年MM月dd日}，原因：{reader.GetString("reason")}";
+                penalty += $"- 时间：{reader.GetDateTime("created_at"):yyyy年MM月dd日}，原因：{reader.GetString("reason")}\n";
                 penaltyCount++;
             }
         }
+
+        penalty = penalty[..^1];
 
         int publicPenaltyCount = 0;
         string publicPenalty = "";
@@ -65,10 +67,13 @@ public class FetchPenalty : Command
             await using MySqlDataReader reader = query.ExecuteReader();
             while (reader.Read())
             {
-                publicPenalty += $"- 时间：{reader.GetDateTime("created_at"):yyyy年MM月dd日}，原因：{reader.GetString("reason")}\n";
+                publicPenalty +=
+                    $"- 时间：{reader.GetDateTime("created_at"):yyyy年MM月dd日}，原因：{reader.GetString("reason")}\n";
                 publicPenaltyCount++;
             }
         }
+
+        publicPenalty = publicPenalty[..^1];
 
         await context.SendMessage($"""
                                    {context.FetchUserName(userId).Result} ({userId}) 的记过数据统计：

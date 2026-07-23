@@ -72,7 +72,7 @@ public partial class ThrowDriftbottle : Command
             await context.SendMessage($"[提权] 你的 {command.LastInsertedId} 号云瓶扔出去了！");
         else
             await context.SendMessage($"""
-                                       您的云瓶已提交待审，审核编号：{command.LastInsertedId}
+                                       您的云瓶已提交待审，审核编号：【审】{command.LastInsertedId}
                                        审核列表：https://www.ziyuebot.cn/queue.php?id={context.UserId}
                                        """);
     }
