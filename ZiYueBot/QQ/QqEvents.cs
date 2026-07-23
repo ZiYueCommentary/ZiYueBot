@@ -188,7 +188,7 @@ public static class QqEvents
         catch (HttpRequestException)
         {
             await context.SendMessage("与 QQ 通讯失败。");
-            ZiYueBot.Instance.ConnectQqWebSocket();
+            await ZiYueBot.Instance.ReconnectQqWebSocketAsync();
             Logger.Info("已重新建立与 QQ 的连接");
         }
         catch (Exception ex)

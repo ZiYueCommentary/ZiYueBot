@@ -5,7 +5,6 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <StartupObject>ZiYueBot.ZiYueBot</StartupObject>
         <ApplicationIcon>logo.ico</ApplicationIcon>
         <LangVersion>13</LangVersion>
     </PropertyGroup>
