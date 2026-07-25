@@ -39,11 +39,9 @@ public class FetchPenalty : Command
         _ = UpdateInvokeRecords(context.UserId);
 
         ulong userId = arg.Count > 0 ? ((PingMessageEntity)arg[0]).UserId : context.UserId;
-        ulong channelId = context.Platform == Platform.QQ
-            ? ((QqContext)context).SourceUni
-            : ((DiscordContext)context).Socket.GuildId!.Value;
+        ulong channelId = context is QqContext qq ? qq.SourceUni : ((DiscordContext)context).Socket.GuildId!.Value;
         int penaltyCount = 0;
-        string penalty = "";
+        string penalty = "\n";
         await using (MySqlCommand query = new MySqlCommand(
                          $"SELECT * FROM penalty WHERE userid = {userId} AND removed = false",
                          ZiYueBot.Instance.ConnectDatabase()))
@@ -59,7 +57,7 @@ public class FetchPenalty : Command
         penalty = penalty[..^1];
 
         int publicPenaltyCount = 0;
-        string publicPenalty = "";
+        string publicPenalty = "\n";
         await using (MySqlCommand query = new MySqlCommand(
                          $"SELECT * FROM penalty_public WHERE userid = {userId} AND channel_id = {channelId} AND removed = false",
                          ZiYueBot.Instance.ConnectDatabase()))
@@ -77,8 +75,8 @@ public class FetchPenalty : Command
 
         await context.SendMessage($"""
                                    {context.FetchUserName(userId).Result} ({userId}) 的记过数据统计：
-                                   {(penaltyCount == 0 ? "该用户没有全局记过记录" : $"该用户共有全局记过 {penaltyCount} 条\n{penalty}")}
-                                   {(publicPenaltyCount == 0 ? "该用户没有本群记过记录" : $"该用户共有本群记过 {publicPenaltyCount} 条\n{publicPenalty}")}
+                                   {(penaltyCount == 0 ? "该用户没有全局记过记录" : $"该用户共有全局记过 {penaltyCount} 条{penalty}")}
+                                   {(publicPenaltyCount == 0 ? "该用户没有本群记过记录" : $"该用户共有本群记过 {publicPenaltyCount} 条{publicPenalty}")}
                                    """);
     }
 

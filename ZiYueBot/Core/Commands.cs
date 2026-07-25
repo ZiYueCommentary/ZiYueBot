@@ -14,7 +14,7 @@ public static class Commands
     public static readonly Dictionary<string, Command> RegisteredCommands = [];
     private static readonly Dictionary<string, string> AliasMap = [];
 
-    public static void RegisterCommand(Command command)
+    private static void RegisterCommand(Command command)
     {
         RegisteredCommands[command.Id] = command;
     }
@@ -117,6 +117,8 @@ public static class Commands
         RegisterCommand(new RemoveDriftbottle());
         RegisterCommand(new ListDriftbottle());
         RegisterCommand(new AddStargazer());
+        RegisterCommand(new RemoveStargazer());
+        RegisterCommand(new ListStargazer());
         RegisterCommand(new ThrowStraitbottle());
         RegisterCommand(new PickStraitbottle());
         RegisterCommand(new ListStraitbottle());

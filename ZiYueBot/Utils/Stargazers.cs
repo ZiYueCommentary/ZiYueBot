@@ -34,10 +34,10 @@ public static partial class Stargazers
         {
             using MySqlConnection database = ZiYueBot.Instance.ConnectDatabase();
             using MySqlCommand command =
-                new MySqlCommand($"SELECT * FROM stargazers WHERE userid = {userId} AND bottle_id = {bottleId}",
+                new MySqlCommand($"SELECT * FROM stargazers WHERE userid = {userId} AND bottle_id = {bottleId} AND removed = false",
                     database);
             using MySqlDataReader reader = command.ExecuteReader();
-            if (reader.Read() && !reader.GetBoolean("removed"))
+            if (reader.Read())
             {
                 if (fromReaction && !RateLimit.TryPassRateLimit("stargazer", userId, TimeSpan.FromMinutes(1))) return "";
 
