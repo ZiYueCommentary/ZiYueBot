@@ -128,6 +128,7 @@ public static class Commands
         RegisterCommand(new Stat());
         RegisterCommand(new FetchPenalty());
         // 管理命令
+        RegisterCommand(new Sudo());
         RegisterCommand(new Penalty());
         RegisterCommand(new PublicPenalty());
 

@@ -6,7 +6,7 @@ using ZiYueBot.QQ;
 
 namespace ZiYueBot.Management;
 
-public class Penalty : Command
+public class Penalty : PrivilegeCommand
 {
     private static readonly ILog Logger = LogManager.GetLogger("记过");
 
@@ -20,33 +20,10 @@ public class Penalty : Command
                                           在线文档：https://docs.ziyuebot.cn/techical/manangement/penalty
                                           """;
 
-    public override Platform[] SupportedPlatform => [Platform.Management];
+    public override Privilege[] ExpectingPrivileges => [Privilege.CreatePenalty];
 
-    public override Task Invoke(Context context, MessageChain arg)
+    public override async Task PrivilegedInvoke(Context context, MessageChain arg)
     {
-        return Invoke(context, arg);
-    }
-
-    public async Task Invoke(Context context, MessageChain arg, bool sudo = false)
-    {
-        if (!Privileged.HasPrivilege(context.UserId, Privilege.CreatePenalty))
-        {
-            // if (context.EventType == EventType.DirectMessage)
-            // {
-                await context.SendMessage("权限不足。");
-                return;
-            // }
-
-            // if (context.HasChannelAdmin && !sudo)
-            // {
-            //     await context.SendMessage("""
-            //                               您不是子悦机器的管理员，应该使用“群记过”添加本群范围内的记录。
-            //                               “记过”命令用于添加机器全局记录，并且只能记录与机器相关的违规。
-            //                               如果您确认要添加全局记录，请在本条调用前添加“sudo ”，确认提权执行。
-            //                               """);
-            //     return;
-            // }
-        }
         if (arg.Count < 2)
         {
             await context.SendMessage("参数不足。");
