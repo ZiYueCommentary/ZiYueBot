@@ -18,9 +18,9 @@ public static class TaskExtension
         {
             await task.ConfigureAwait(false);
         }
-        catch (Exception e) when (exceptionHandler is not null)
+        catch (Exception e)
         {
-            exceptionHandler.Invoke(e);
+            exceptionHandler?.Invoke(e);
         }
     }
 
@@ -30,9 +30,12 @@ public static class TaskExtension
         {
             await task.ConfigureAwait(false);
         }
-        catch (Exception e) when (exceptionHandler is not null)
+        catch (Exception e)
         {
-            await exceptionHandler.Invoke(e);
+            if (exceptionHandler is not null)
+            {
+                await exceptionHandler.Invoke(e);
+            }
         }
     }
 }
