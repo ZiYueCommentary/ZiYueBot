@@ -5,6 +5,7 @@ namespace ZiYueBot.Core;
 /// <summary>
 /// 特权，管理系统的一部分。
 /// </summary>
+[Flags]
 public enum Privilege : long
 {
     RemoveDriftbottle = 0b1,
@@ -24,9 +25,9 @@ public static class Privileged
         return reader.Read() ? reader.GetInt64("flags") : 0;
     }
 
-    public static bool HasPrivilege(ulong userId, params Privilege[] privileges)
+    public static bool HasPrivilege(ulong userId, Privilege privileges)
     {
         long privileged = GetPrivilege(userId);
-        return privileges.All(privilege => (privileged & (long)privilege) != 0);
+        return (privileged & (long)privileges) != 0;
     }
 }

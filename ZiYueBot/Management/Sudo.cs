@@ -28,7 +28,7 @@ public class Sudo : Command
 
         if (!Privileged.HasPrivilege(context.UserId, privilegeCommand.ExpectingPrivileges))
         {
-            await context.SendMessage("权限不足。");
+            await context.SendMessage($"权限不足，需要 {privilegeCommand.ExpectingPrivileges:F} 特权。");
             return;
         }
 

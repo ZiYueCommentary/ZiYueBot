@@ -20,7 +20,7 @@ public class Penalty : PrivilegeCommand
                                           在线文档：https://docs.ziyuebot.cn/techical/manangement/penalty
                                           """;
 
-    public override Privilege[] ExpectingPrivileges => [Privilege.CreatePenalty];
+    public override Privilege ExpectingPrivileges => Privilege.CreatePenalty;
 
     public override async Task PrivilegedInvoke(Context context, MessageChain arg)
     {

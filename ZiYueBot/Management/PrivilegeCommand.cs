@@ -4,7 +4,7 @@ namespace ZiYueBot.Management;
 
 public abstract class PrivilegeCommand : Command
 {
-    public abstract Privilege[] ExpectingPrivileges { get; }
+    public abstract Privilege ExpectingPrivileges { get; }
     public override Platform[] SupportedPlatform => [Platform.Management];
 
     public sealed override async Task Invoke(Context context, MessageChain arg)
