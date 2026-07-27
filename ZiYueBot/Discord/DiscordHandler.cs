@@ -175,7 +175,7 @@ public static class DiscordHandler
                 new DiscordContext(command.GuildId is null ? EventType.DirectMessage : EventType.GroupMessage,
                     command.User.GlobalName, command.User.Id, command);
 
-            if (Commands.GetCommand(Platform.Discord, command.CommandName) is null)
+            if (!Commands.TryGetCommand(Platform.Discord, command.CommandName, out Command? botCommand))
             {
                 await command.RespondAsync("未知命令。请使用 /help 查看命令列表。");
                 return;
@@ -199,15 +199,11 @@ public static class DiscordHandler
                 }
             }
 
-            try
-            {
-                await Commands.GetCommand(Platform.Discord, command.CommandName)!.Invoke(context, arg);
-            }
-            catch (Exception ex)
+            botCommand.Invoke(context, arg).Forget(async ex =>
             {
                 Logger.Error(ex.Message, ex);
                 await context.SendMessage("命令内部错误。");
-            }
+            });
         }
         catch (Exception ex)
         {

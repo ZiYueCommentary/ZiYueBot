@@ -6,6 +6,8 @@ using ZiYueBot.Management;
 
 namespace ZiYueBot.Core;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>
 /// 命令管理相关。
 /// </summary>
@@ -25,6 +27,19 @@ public static class Commands
         Platform[] supportedPlatform = value.SupportedPlatform;
         return supportedPlatform.Contains(platform) || supportedPlatform.Contains(Platform.Management)
             ? value : null;
+    }
+
+    public static bool TryGetCommand(Platform platform, string name, [MaybeNullWhen(false)] out Command command)
+    {
+        if (!RegisteredCommands.TryGetValue(name, out command))
+        {
+            command = null;
+            return false;
+        }
+
+        Platform[] supportedPlatform = command.SupportedPlatform;
+
+        return supportedPlatform.Contains(platform) || supportedPlatform.Contains(Platform.Management);
     }
 
     /// <summary>
