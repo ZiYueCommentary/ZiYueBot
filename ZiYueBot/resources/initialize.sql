@@ -173,3 +173,12 @@ CREATE TABLE IF NOT EXISTS privileges
     flags         bigint null,
     active_counts int    null
 ) CHARSET = utf8mb4;
+
+# 提权日志 (Sudo log)
+CREATE TABLE IF NOT EXISTS sudo_logs
+(
+    fired_at datetime                              not null,
+    userid   bigint                                not null,
+    command  text                                  not null,
+    result   ENUM ('success', 'failed', 'invalid') not null
+) CHARSET = utf8mb4;
