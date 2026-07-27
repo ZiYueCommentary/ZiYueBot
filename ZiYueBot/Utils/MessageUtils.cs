@@ -18,7 +18,7 @@ public static partial class MessageUtils
                     builder.Append(text.Text.FormatDiscordPing(context).SafeArgument());
                     break;
                 case PingMessageEntity ping:
-                    builder.Append($"@{context.FetchUserName(ping.UserId)}");
+                    builder.Append($"@{context.FetchUserName(ping.UserId).Result}");
                     break;
                 case ImageMessageEntity image:
                     builder.Append($"\uE000{WebUtils.UploadToS3(image)}\uE001");
