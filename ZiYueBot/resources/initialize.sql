@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS win
     username              tinytext null,
     channel               bigint  default 0,
     date                  date     null,
-    score                 tinyint  null,
+    score                 smallint null,
     prospered             boolean default false,
     miniWinDays           tinyint default 0,
     invoke_days           int     default 0,
