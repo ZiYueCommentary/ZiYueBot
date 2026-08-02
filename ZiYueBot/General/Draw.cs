@@ -49,18 +49,7 @@ public class Draw : Command
             return;
         }
 
-        if (!await ValidateInvoke(context))
-        {
-            if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
-            {
-                await context.SendMessage("""
-                                          今天是子悦的生日，赞助者命令“绘画”对所有人开放。
-                                          喜欢的话请考虑在爱发电赞助“子悦机器”方案，以获得赞助者权益。
-                                          https://afdian.com/a/ziyuecommentary2020
-                                          """);
-            }
-            else return;
-        }
+        if (!await ValidateInvoke(context)) return;
 
         if (!arg.IsLiteralString())
         {
@@ -196,15 +185,11 @@ public class Draw : Command
             await using MySqlDataReader reader = command.ExecuteReader();
             if (!reader.Read())
             {
-                if (DateTime.Today.Month != 5 || DateTime.Today.Day != 3)
-                {
-                    await context.SendMessage("""
-                                              您不是子悦机器的赞助者！
-                                              本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
-                                              https://afdian.com/a/ziyuecommentary2020
-                                              """);
-                }
-
+                await context.SendMessage("""
+                                          您不是子悦机器的赞助者！
+                                          本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                                          https://afdian.com/a/ziyuecommentary2020
+                                          """);
                 return false;
             }
 
@@ -237,12 +222,6 @@ public class Draw : Command
                         updateConnection);
                 updateCommand.ExecuteNonQuery();
             }
-        }
-
-        if (DateTime.Today.Month == 5 && DateTime.Today.Day == 3)
-        {
-            await context.SendMessage("机器绘画中...");
-            return true;
         }
 
         await using (MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase())
