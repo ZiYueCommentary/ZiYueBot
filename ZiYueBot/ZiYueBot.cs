@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿
+using Discord;
 using Discord.Net.WebSockets;
 using Discord.WebSocket;
 using ZiYueBot.Discord;
@@ -33,19 +34,24 @@ public class ZiYueBot
         {
             Config = JsonSerializer.Deserialize<Config>(stream);
         }
+	
+		if(Config.PlatformQq)
+		{
+			QqEvent = new ClientWebSocket();
+			QqEvent.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqEventAuthenticate);
 
-        QqEvent = new ClientWebSocket();
-        QqEvent.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqEventAuthenticate);
-
-        QqApi = new ClientWebSocket();
-        QqApi.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqApiAuthenticate);
-
-        Discord = new DiscordSocketClient(new DiscordSocketConfig
-        {
-            RestClientProvider = DefaultRestClientProvider.Create(true),
-            WebSocketProvider =
-                DefaultWebSocketProvider.Create(new WebProxy(Environment.GetEnvironmentVariable("HTTPS_PROXY")))
-        });
+			QqApi = new ClientWebSocket();
+			QqApi.Options.SetRequestHeader("Authorization", "Bearer " + Config.QqApiAuthenticate);
+		}
+		if(Config.PlatformDiscord)
+		{
+			Discord = new DiscordSocketClient(new DiscordSocketConfig
+			{
+				RestClientProvider = DefaultRestClientProvider.Create(true),
+				WebSocketProvider =
+					DefaultWebSocketProvider.Create(new WebProxy(Environment.GetEnvironmentVariable("HTTPS_PROXY")))
+			});
+		}
     }
 
     public static ZiYueBot Create()
@@ -86,7 +92,7 @@ public class ZiYueBot
         await Discord.LoginAsync(TokenType.Bot, Config.DiscordToken);
         await Discord.StartAsync();
 
-        // Logger.Info($"Discord 登录成功：{Discord.CurrentUser.GlobalName} ({Discord.CurrentUser.Id})");
+        //Logger.Info($"Discord 登录成功：{Discord.CurrentUser.GlobalName} ({Discord.CurrentUser.Id})");
     }
 
     private async Task InitializeDatabaseAsync()
@@ -133,17 +139,30 @@ public class ZiYueBot
 
     public async Task StartAsync()
     {
-        await InitializeDatabaseAsync();
+	    await InitializeDatabaseAsync();
 
-        await Task.WhenAll(
-            ConnectQqWebSocketAsync(),
-            ConnectDiscordAsync());
+	    if (!Config.PlatformQq && !Config.PlatformDiscord)
+	    {
+		    Logger.Error("严重错误,未启用任何平台.请检查Config.json配置.");
+		    _eventTask = Task.CompletedTask;
+		    return;
+	    }
 
-        _eventTask = QqEvents.Initialize();
+	    Task qqConnectionTask = Config.PlatformQq ? ConnectQqWebSocketAsync() : Task.CompletedTask;
+	    Task discordConnectionTask = Config.PlatformDiscord ? ConnectDiscordAsync() : Task.CompletedTask;
+
+	    await Task.WhenAll(
+		    qqConnectionTask,
+		    discordConnectionTask);
+
+	    if (Config.PlatformQq)
+	    {
+		    _eventTask = QqEvents.Initialize();
+	    }
     }
 
     public Task WaitAsync()
     {
-        return _eventTask ?? Task.CompletedTask;
+        return _eventTask ?? Task.Delay(-1);
     }
 }

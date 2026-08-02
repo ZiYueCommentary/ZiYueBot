@@ -1,0 +1,23 @@
+{
+    "DiscordProxy": "",
+    "DiscordToken": "", 
+    "DatabaseSource": "",
+    "DatabasePort": 3306,
+    "DatabaseName": "",
+    "DatabaseUser": "",
+    "DatabasePassword": "",
+    "ChatAgentEndpoint": "",
+    "BailianApiEndpoint": "",
+    "BailianApiKey": "",
+    "QqEventEndpoint": "",
+    "QqEventAuthenticate": "",
+    "QqApiEndpoint": "",
+    "QqApiAuthenticate": "",
+    "AssetsEndpoint": "",
+    "AssetsUploadRegion": "",
+    "AssetsUploadBucket": "",
+    "AssetsUploadSecretId": "",
+    "AssetsUploadSecretKey": "",
+    "PlatformQq": true,
+    "PlatformDiscord": true
+}
