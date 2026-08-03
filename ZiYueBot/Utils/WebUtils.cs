@@ -59,13 +59,18 @@ public static class WebUtils
             _ => throw new NotSupportedException($"Scheme '{uri.Scheme}' is not supported")
         };
     }
-
-    public static string UploadToS3(ImageMessageEntity image)
+    
+    public static string StoreImage(ImageMessageEntity image)
     {
-        using Stream stream = image.GetStreamAsync().GetAwaiter().GetResult();
-        using SKData? data = SKData.Create(stream);
+        return ZiYueBot.Instance.Config.AssetsUploadEnabled ?? true
+            ? $"\uE000{UploadToS3(image)}\uE001"
+            : $"\u2408{SaveLocalImage(image)}\u2409";
+    }
+
+    private static string GetImageType(SKData data)
+    {
         using SKCodec? codec = SKCodec.Create(data);
-        string type = codec.EncodedFormat switch
+        return codec.EncodedFormat switch
         {
             SKEncodedImageFormat.Bmp => "bmp",
             SKEncodedImageFormat.Gif => "gif",
@@ -83,6 +88,25 @@ public static class WebUtils
             SKEncodedImageFormat.Jpegxl => "jpegxl",
             _ => "bin"
         };
+    }
+    
+    private static string SaveLocalImage(ImageMessageEntity image)
+    {
+        using Stream stream = image.GetStreamAsync().GetAwaiter().GetResult();
+        using SKData data = SKData.Create(stream);
+        string dir = $"data/images/{DateTime.Today:yyyy-MM}";
+        Directory.CreateDirectory(dir);
+        string key = $"{dir}/{Guid.NewGuid()}.{GetImageType(data)}";
+        File.WriteAllBytes(key, data.ToArray());
+        Logger.Info($"本地缓存文件保存：{key}");
+        return key;
+    }
+
+    public static string UploadToS3(ImageMessageEntity image)
+    {
+        using Stream stream = image.GetStreamAsync().GetAwaiter().GetResult();
+        using SKData? data = SKData.Create(stream);
+        string type = GetImageType(data);
 
         string key = $"images/{DateTime.Today:yyyy-MM}/{Guid.NewGuid()}.{type}";
         Logger.Info($"对象存储文件上传：{key}");

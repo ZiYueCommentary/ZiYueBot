@@ -21,7 +21,7 @@ public static partial class MessageUtils
                     builder.Append($"@{context.FetchUserName(ping.UserId).Result}");
                     break;
                 case ImageMessageEntity image:
-                    builder.Append($"\uE000{WebUtils.UploadToS3(image)}\uE001");
+                    builder.Append(WebUtils.StoreImage(image));
                     break;
             }
         }

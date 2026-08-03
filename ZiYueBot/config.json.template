@@ -18,6 +18,7 @@
     "AssetsUploadBucket": "",
     "AssetsUploadSecretId": "",
     "AssetsUploadSecretKey": "",
+    "AssetsUploadEnabled": true,
     "PlatformQq": true,
     "PlatformDiscord": true
 }

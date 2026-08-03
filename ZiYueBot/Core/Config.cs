@@ -27,6 +27,7 @@ public struct Config
     public string AssetsUploadBucket { get; set; }
     public string AssetsUploadSecretId { get; set; }
     public string AssetsUploadSecretKey { get; set; }
+    public bool? AssetsUploadEnabled { get; set; }
     public bool PlatformQq { get; set;}
     public bool PlatformDiscord { get; set;}
 }
