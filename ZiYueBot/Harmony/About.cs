@@ -1,11 +1,10 @@
-using log4net;
 using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
 public class About : Command
 {
-    private static readonly ILog Logger = LogManager.GetLogger("关于");
+    // private static readonly ILog Logger = LogManager.GetLogger("关于");
 
     public override string Id => "about";
 
@@ -21,10 +20,11 @@ public class About : Command
 
     public override async Task Invoke(Context context, MessageChain arg)
     {
-        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        // Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ = UpdateInvokeRecords(context.UserId);
         await context.SendMessage("""
-                                  子悦机器 (ZiYue Bot) 是一个由 子悦解说 开发的，用 C# 编写的 QQ 和 Discord 机器人。
+                                  子悦机器 (ZiYue Bot) 是一个由 子悦解说 开发的，用 C# 编写的机器人。
+                                  你正在使用“适配 CBMR 的子悦机器” (ZiYue Bot Adaptation for CBMR)
                                   在线文档：https://docs.ziyuebot.cn/
                                   使用教程：https://docs.ziyuebot.cn/usage
                                   用户协议：https://docs.ziyuebot.cn/tos

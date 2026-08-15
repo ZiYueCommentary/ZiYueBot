@@ -1,16 +1,15 @@
 ﻿namespace ZiYueBot;
 
 using System.Text;
-using log4net;
 
 internal static class Program
 {
-    private static readonly ILog Logger = LogManager.GetLogger("入口点");
+    // private static readonly ILog Logger = LogManager.GetLogger("入口点");
 
     private static void InitLogger()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        log4net.Config.XmlConfigurator.Configure();
+        // log4net.Config.XmlConfigurator.Configure();
     }
 
     private static void InitDirectories()
@@ -20,9 +19,9 @@ internal static class Program
         Directory.CreateDirectory("data/images");
     }
 
-    public static async Task Main()
+    public static async Task Start()
     {
-        InitLogger();
+        // InitLogger();
         InitDirectories();
 
         ZiYueBot bot = ZiYueBot.Create();
@@ -34,7 +33,7 @@ internal static class Program
         }
         catch (Exception e)
         {
-            Logger.Fatal("主程序意外退出", e);
+            // Logger.Fatal("主程序意外退出", e);
         }
     }
 }

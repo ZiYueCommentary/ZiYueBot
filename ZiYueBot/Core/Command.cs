@@ -1,10 +1,10 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Microsoft.Data.Sqlite;
 
 namespace ZiYueBot.Core;
 
 public abstract class Command
 {
-    public virtual Platform[] SupportedPlatform => [Platform.Discord, Platform.QQ];
+    public virtual Platform[] SupportedPlatform => [Platform.CBMR];
 
     /// <summary>
     /// 命令名。
@@ -40,13 +40,13 @@ public abstract class Command
     /// <summary>
     /// 更新数据库里的命令调用记录。这一函数只适用于仅记录调用次数的命令，复杂统计数据要单开数据库表。
     /// </summary>
-    protected async Task UpdateInvokeRecords(ulong userid)
+    protected async Task UpdateInvokeRecords(string userid)
     {
-        await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
-        await using MySqlCommand command = new MySqlCommand($"""
-                                                             INSERT INTO invoke_records_general VALUE ({userid}, '{Id}', now(), now(), 1)
-                                                             ON DUPLICATE KEY UPDATE last_invoke = now(), invoke_count = invoke_count + 1
-                                                             """, connection);
+        await using SqliteConnection connection = ZiYueBot.Instance.ConnectDatabase();
+        await using SqliteCommand command = new SqliteCommand($"""
+                                                               INSERT INTO invoke_records_general VALUES ({userid}, '{Id}', datetime(), datetime(), 1)
+                                                               ON CONFLICT(userid, command) DO UPDATE SET last_invoke = datetime(), invoke_count = invoke_count + 1
+                                                               """, connection);
         await command.ExecuteNonQueryAsync();
     }
 }

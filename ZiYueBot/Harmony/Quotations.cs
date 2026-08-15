@@ -1,11 +1,10 @@
-using log4net;
 using ZiYueBot.Core;
 
 namespace ZiYueBot.Harmony;
 
 public class Quotations : Command
 {
-    private static readonly ILog Logger = LogManager.GetLogger("毛主席语录");
+    // private static readonly ILog Logger = LogManager.GetLogger("毛主席语录");
     private static readonly List<string> Quotes = [];
 
     static Quotations()
@@ -25,11 +24,11 @@ public class Quotations : Command
 
             Quotes.Add(full[pos..]);
 
-            Logger.Info("毛主席语录加载完毕");
+            // Logger.Info("毛主席语录加载完毕");
         }
         catch (Exception ex)
         {
-            Logger.Error("毛主席语录加载失败！", ex);
+            // Logger.Error("毛主席语录加载失败！", ex);
         }
     }
 
@@ -47,7 +46,7 @@ public class Quotations : Command
 
     public override async Task Invoke(Context context, MessageChain arg)
     {
-        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        // Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ = UpdateInvokeRecords(context.UserId);
 
         await context.SendMessage(Quotes[Random.Shared.Next(0, Quotes.Count - 1)]);

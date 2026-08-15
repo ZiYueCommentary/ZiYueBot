@@ -1,13 +1,11 @@
-using log4net;
-using MySql.Data.MySqlClient;
+using Microsoft.Data.Sqlite;
 using ZiYueBot.Core;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.General;
 
-public partial class ThrowDriftbottle : Command
+public class ThrowDriftbottle : Command
 {
-    private static readonly ILog Logger = LogManager.GetLogger("扔云瓶");
+    // private static readonly ILog Logger = LogManager.GetLogger("扔云瓶");
 
     public override string Id => "扔云瓶";
 
@@ -37,44 +35,19 @@ public partial class ThrowDriftbottle : Command
             return;
         }
 
-        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        // Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
         _ = UpdateInvokeRecords(context.UserId);
-
-        if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！
-        {
-            if (Random.Shared.Next(3) == 1) // 25% 概率瓶子飘回来
-            {
-                await context.SendMessage("你的瓶子飘回来了，没有扔出去！");
-                return;
-            }
-        }
-
-        if (TextMessageEntity.DiscordEmotionRegex().IsMatch(arg.ToString()))
-        {
-            await context.SendMessage("云瓶内容禁止包含表情！");
-            return;
-        }
-
-        bool privileged = Privileged.HasPrivilege(context.UserId, Privilege.BypassDriftbottleQueue);
-
-        await using MySqlCommand command =
-            new MySqlCommand(
-                $"""
-                 INSERT INTO {(privileged ? "driftbottles" : " driftbottles_queue")}(userid, username, created, content) 
-                 VALUE (@userid, @username, now(), @content)
-                 """,
+        await using SqliteCommand command =
+            new SqliteCommand(
+                """
+                INSERT INTO driftbottles(userid, username, created, content) 
+                VALUE (@userid, @username, now(), @content)
+                """,
                 ZiYueBot.Instance.ConnectDatabase());
         command.Parameters.AddWithValue("@userid", context.UserId);
         command.Parameters.AddWithValue("@username", context.UserName);
-        command.Parameters.AddWithValue("@content", arg.DatabaseFriendly(context));
-        command.ExecuteNonQuery();
-        if (privileged)
-            await context.SendMessage($"[提权] 你的 {command.LastInsertedId} 号云瓶扔出去了！");
-        else
-            await context.SendMessage($"""
-                                       您的云瓶已提交待审，审核编号：【审】{command.LastInsertedId}
-                                       审核列表：https://www.ziyuebot.cn/queue.php?id={context.UserId}
-                                       """);
+        command.Parameters.AddWithValue("@content", arg.ToString(context));
+        await context.SendMessage($"你的 {command.ExecuteNonQuery()} 号云瓶扔出去了！");
     }
 
     public override TimeSpan GetRateLimit(Context context)

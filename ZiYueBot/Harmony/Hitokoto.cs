@@ -1,12 +1,11 @@
-﻿using log4net;
-using ZiYueBot.Core;
+﻿using ZiYueBot.Core;
 using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
 public class Hitokoto : Command
 {
-    private static readonly ILog Logger = LogManager.GetLogger("一言");
+    // private static readonly ILog Logger = LogManager.GetLogger("一言");
 
     public override string Id => "hitokoto";
 
@@ -22,7 +21,7 @@ public class Hitokoto : Command
 
     public override async Task Invoke(Context context, MessageChain arg)
     {
-        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        // Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ = UpdateInvokeRecords(context.UserId);
 
         try
@@ -36,7 +35,7 @@ public class Hitokoto : Command
         }
         catch (HttpRequestException e)
         {
-            Logger.Error(e.Message, e);
+            // Logger.Error(e.Message, e);
         }
 
         await context.SendMessage("一言获取失败。");

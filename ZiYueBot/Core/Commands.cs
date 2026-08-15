@@ -1,8 +1,7 @@
-using MySql.Data.MySqlClient;
 using System.Text.Json;
+using Microsoft.Data.Sqlite;
 using ZiYueBot.General;
 using ZiYueBot.Harmony;
-using ZiYueBot.Management;
 
 namespace ZiYueBot.Core;
 
@@ -25,8 +24,7 @@ public static class Commands
     {
         if (!RegisteredCommands.TryGetValue(name, out Command? value)) return null;
         Platform[] supportedPlatform = value.SupportedPlatform;
-        return supportedPlatform.Contains(platform) || supportedPlatform.Contains(Platform.Management)
-            ? value : null;
+        return supportedPlatform.Contains(platform) ? value : null;
     }
 
     public static bool TryGetCommand(Platform platform, string name, [MaybeNullWhen(false)] out Command command)
@@ -39,7 +37,7 @@ public static class Commands
 
         Platform[] supportedPlatform = command.SupportedPlatform;
 
-        return supportedPlatform.Contains(platform) || supportedPlatform.Contains(Platform.Management);
+        return supportedPlatform.Contains(platform);
     }
 
     /// <summary>
@@ -48,41 +46,41 @@ public static class Commands
     /// <returns>是否在黑名单内</returns>
     public static async Task<bool> CheckBlacklist(Context context, string command)
     {
-        await using MySqlConnection connection = ZiYueBot.Instance.ConnectDatabase();
-        await using MySqlCommand sqlCommand = new MySqlCommand(
-            "SELECT * FROM blacklists WHERE userid = @userid AND command = @command",
-            connection);
+         await using SqliteConnection connection = ZiYueBot.Instance.ConnectDatabase();
+         await using SqliteCommand sqlCommand = new SqliteCommand(
+             "SELECT time, reason FROM blacklists WHERE userid = @userid AND command = @command",
+             connection);
 
-        sqlCommand.Parameters.AddWithValue("@userid", context.UserId);
-        sqlCommand.Parameters.AddWithValue("@command", "all");
-        await using (MySqlDataReader reader = sqlCommand.ExecuteReader())
-        {
-            if (reader.Read())
-            {
-                await context.SendMessage($"""
-                                           您已被禁止使用子悦机器！
-                                           时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
-                                           原因：{reader.GetString("reason")}
-                                           用户协议：https://docs.ziyuebot.cn/tos.html
-                                           """);
-                return true;
-            }
-        }
+         sqlCommand.Parameters.AddWithValue("@userid", context.UserId);
+         sqlCommand.Parameters.AddWithValue("@command", "all");
+         await using (SqliteDataReader reader = await sqlCommand.ExecuteReaderAsync())
+         {
+             if (reader.Read())
+             {
+                 await context.SendMessage($"""
+                                            您已被禁止使用子悦机器！
+                                            时间：{reader.GetDateTime(0):yyyy年MM月dd日 HH:mm:ss}
+                                            原因：{reader.GetString(1)}
+                                            用户协议：https://docs.ziyuebot.cn/tos.html
+                                            """);
+                 return true;
+             }
+         }
 
-        sqlCommand.Parameters.Clear();
-        sqlCommand.Parameters.AddWithValue("@userid", context.UserId);
-        sqlCommand.Parameters.AddWithValue("@command", command);
-        await using (MySqlDataReader reader = sqlCommand.ExecuteReader())
-        {
-            if (!reader.Read()) return false;
-            await context.SendMessage($"""
-                                       您已被禁止使用该命令！
-                                       时间：{reader.GetDateTime("time"):yyyy年MM月dd日 HH:mm:ss}
-                                       原因：{reader.GetString("reason")}
-                                       用户协议：https://docs.ziyuebot.cn/tos.html
-                                       """);
-            return true;
-        }
+         sqlCommand.Parameters.Clear();
+         sqlCommand.Parameters.AddWithValue("@userid", context.UserId);
+         sqlCommand.Parameters.AddWithValue("@command", command);
+         await using (SqliteDataReader reader = await sqlCommand.ExecuteReaderAsync())
+         {
+             if (!reader.Read()) return false;
+             await context.SendMessage($"""
+                                        您已被禁止使用该命令！
+                                        时间：{reader.GetDateTime(0):yyyy年MM月dd日 HH:mm:ss}
+                                        原因：{reader.GetString(1)}
+                                        用户协议：https://docs.ziyuebot.cn/tos.html
+                                        """);
+             return true;
+         }
     }
 
     /// <summary>
@@ -116,36 +114,12 @@ public static class Commands
         RegisterCommand(new Hitokoto());
         RegisterCommand(new Ask());
         RegisterCommand(new About());
-        RegisterCommand(new BaLogo());
         RegisterCommand(new Quotations());
-        RegisterCommand(new Xibao());
-        RegisterCommand(new Beibao());
-        RegisterCommand(new StartRevolver());
-        RegisterCommand(new Shooting());
-        RegisterCommand(new Rotating());
-        RegisterCommand(new RestartRevolver());
         // 一般命令
         RegisterCommand(new Help());
-        RegisterCommand(new PicFace());
+        RegisterCommand(new Win());
         RegisterCommand(new ThrowDriftbottle());
         RegisterCommand(new PickDriftbottle());
-        RegisterCommand(new RemoveDriftbottle());
-        RegisterCommand(new ListDriftbottle());
-        RegisterCommand(new AddStargazer());
-        RegisterCommand(new RemoveStargazer());
-        RegisterCommand(new ListStargazer());
-        RegisterCommand(new ThrowStraitbottle());
-        RegisterCommand(new PickStraitbottle());
-        RegisterCommand(new ListStraitbottle());
-        RegisterCommand(new Win());
-        RegisterCommand(new Chat());
-        RegisterCommand(new Draw());
-        RegisterCommand(new Stat());
-        RegisterCommand(new FetchPenalty());
-        // 管理命令
-        RegisterCommand(new Sudo());
-        RegisterCommand(new Penalty());
-        RegisterCommand(new PublicPenalty());
 
         LoadAliases();
     }

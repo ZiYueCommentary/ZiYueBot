@@ -1,5 +1,4 @@
-﻿using log4net;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using ZiYueBot.Core;
 
@@ -7,7 +6,7 @@ namespace ZiYueBot.Harmony;
 
 public class Jrrp : Command
 {
-    private static readonly ILog Logger = LogManager.GetLogger("今日人品");
+    // private static readonly ILog Logger = LogManager.GetLogger("今日人品");
 
     public override string Id => "jrrp";
 
@@ -40,7 +39,7 @@ public class Jrrp : Command
 
     public override async Task Invoke(Context context, MessageChain arg)
     {
-        Logger.Info($"调用者：{context.UserName} ({context.UserId})");
+        // Logger.Info($"调用者：{context.UserName} ({context.UserId})");
         _ = UpdateInvokeRecords(context.UserId);
 
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1) // 愚人节！

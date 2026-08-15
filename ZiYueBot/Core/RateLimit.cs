@@ -5,7 +5,7 @@
 /// </summary>
 public static class RateLimit
 {
-    private static readonly Dictionary<(string, ulong userId), DateTime> LastInvoke = [];
+    private static readonly Dictionary<(string, string userId), DateTime> LastInvoke = [];
 
     /// <summary>
     /// 尝试通过频率限制检查。如果通过，该函数会自动记录最后一次调用为现在时间。
@@ -19,9 +19,9 @@ public static class RateLimit
     /// <summary>
     /// 仅通过用户 ID 尝试通过频率限制。这一函数会绕过命令设置的频率限制。
     /// </summary>
-    public static bool TryPassRateLimit(string key, ulong userId, TimeSpan rateLimit)
+    public static bool TryPassRateLimit(string key, string userId, TimeSpan rateLimit)
     {
-        if (Privileged.HasPrivilege(userId, Privilege.BypassRateLimit)) return true;
+        // if (Privileged.HasPrivilege(userId, Privilege.BypassRateLimit)) return true;
         DateTime last = LastInvoke.GetValueOrDefault((key, userId), DateTime.MinValue);
         DateTime now = DateTime.UtcNow;
         if (now - last < rateLimit) return false;

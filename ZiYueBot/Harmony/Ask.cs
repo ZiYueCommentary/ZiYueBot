@@ -1,13 +1,11 @@
-using log4net;
 using System.Text.Json;
 using ZiYueBot.Core;
-using ZiYueBot.Utils;
 
 namespace ZiYueBot.Harmony;
 
 public class Ask : Command
 {
-    private static readonly ILog Logger = LogManager.GetLogger("评价");
+    // private static readonly ILog Logger = LogManager.GetLogger("评价");
     private static readonly List<string> Reviews = [];
     private static readonly List<(string, List<string>)> AprilReviews = [];
 
@@ -22,11 +20,11 @@ public class Ask : Command
                 Reviews.Add(line);
             }
 
-            Logger.Info("张维为语录库加载完毕");
+            // Logger.Info("张维为语录库加载完毕");
         }
         catch (Exception ex)
         {
-            Logger.Error("张维为语录库加载失败！", ex);
+            // Logger.Error("张维为语录库加载失败！", ex);
         }
 
         try
@@ -47,11 +45,11 @@ public class Ask : Command
                     }
             }
 
-            Logger.Info($"愚人节语录库加载完毕，共 {AprilReviews.Count} 人");
+            // Logger.Info($"愚人节语录库加载完毕，共 {AprilReviews.Count} 人");
         }
         catch (Exception ex)
         {
-            Logger.Error("愚人节语录库加载失败！", ex);
+            // Logger.Error("愚人节语录库加载失败！", ex);
         }
     }
 
@@ -69,7 +67,7 @@ public class Ask : Command
 
     public override async Task Invoke(Context context, MessageChain arg)
     {
-        Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        // Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
         _ = UpdateInvokeRecords(context.UserId);
 
         if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)

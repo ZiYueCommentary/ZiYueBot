@@ -1,15 +1,12 @@
-# 子悦机器
+# 子悦机器 CBMR
 
 **子悦机器 (ZiYue Bot)** 是一个由 [子悦解说](https://github.com/ZiYueCommentary) 开发的，用 C# 编写的 QQ 和 Discord 机器人。
 
-* **子悦机器完全开源。** 你可以自行搭建子悦机器，也可以对子悦机器的开发做出贡献。
-* **子悦机器不是框架。** 子悦机器不支持在不改动源码的情况下添加功能。
-* **子悦机器独立自主。** 子悦机器不依赖任何机器人框架。
-* **子悦机器高度定制。** 安装子悦机器时 **必须** 配置 QQ 和 Discord 双平台，且 Discord **必须** 配置网络代理。
+该分支是 “适配 CBMR 的子悦机器” (ZiYue Bot Adaptation for CBMR)，使用 [CCB (CSharp CBMR Binding)](https://github.com/EasyT-T/ccb) 制作。
 
-## 在线文档
+## 声明
 
-https://docs.ziyuebot.cn/
+本分支用于技术测试，不是子悦机器的正式开发内容之一。若要在你的 CBMR 服务器中使用，请注意你的改版需要以 AGPL 开源。记得 fork。
 
 ## 许可证
 
