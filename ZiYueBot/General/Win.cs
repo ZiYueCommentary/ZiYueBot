@@ -112,13 +112,14 @@ public class Win : Command
 
         await GeneralWin(context, guildId);
         await TryCommonProsperity(context, guildId);
+        await SeekWinningCouple(context, guildId);
     }
 
      private async Task GeneralWin(Context context, ulong guildId)
      {
          await using SqliteConnection database = ZiYueBot.Instance.ConnectDatabase();
          await using SqliteCommand query = new SqliteCommand(
-             $"SELECT (date, score, miniWinDays) FROM win WHERE userid = {context.UserId} AND channel = {guildId} LIMIT 1",
+             $"SELECT date, score, miniWinDays FROM win WHERE userid = {context.UserId} AND channel = {guildId} LIMIT 1",
              database);
          await using SqliteDataReader reader = await query.ExecuteReaderAsync();
          bool hasRecord = reader.Read();
@@ -154,19 +155,18 @@ public class Win : Command
          if (hasRecord)
          {
              insert = new SqliteCommand(
-                 "UPDATE win SET date = date(), username = @userName, score = @rate, prospered = false WHERE userid = @userId AND channel = @channel",
+                 $"UPDATE win SET date = date(), username = @userName, score = @rate, prospered = false WHERE userid = {context.UserId} AND channel = @channel",
                  database);
          }
          else
          {
              insert = new SqliteCommand(
-                 "INSERT INTO win(userid, username, channel, date, score) VALUES(@userId, @userName, @channel, date(), @rate)",
+                 $"INSERT INTO win(userid, username, channel, date, score) VALUES({context.UserId}, @userName, @channel, date(), @rate)",
                  database);
          }
 
          insert.Parameters.AddWithValue("@userName", context.UserName);
          insert.Parameters.AddWithValue("@rate", rate);
-         insert.Parameters.AddWithValue("@userId", context.UserId);
          insert.Parameters.AddWithValue("@channel", guildId);
          insert.ExecuteNonQuery();
          int level = GetWinLevel(rate);
@@ -236,7 +236,7 @@ public class Win : Command
      private async Task TryCommonProsperity(Context context, ulong guildId)
      {
          await using SqliteCommand score = new SqliteCommand(
-             $"SELECT (prospered, score, username, userid) FROM win WHERE userid = {context.UserId} AND channel = {guildId} LIMIT 1",
+             $"SELECT prospered, score, username, userid FROM win WHERE userid = {context.UserId} AND channel = {guildId} LIMIT 1",
              ZiYueBot.Instance.ConnectDatabase()
          );
          await using SqliteDataReader scoreReader = await score.ExecuteReaderAsync();
@@ -247,7 +247,7 @@ public class Win : Command
          if (GetWinLevel(oldRate) > 2) return;
 
          await using SqliteCommand query = new SqliteCommand(
-             $"SELECT * FROM win WHERE userid != {context.UserId} AND channel = {guildId} AND `date` = current_date() ORDER BY score DESC LIMIT 1",
+             $"SELECT * FROM win WHERE userid != {context.UserId} AND channel = {guildId} AND `date` = date() ORDER BY score DESC LIMIT 1",
              ZiYueBot.Instance.ConnectDatabase()
          );
          await using SqliteDataReader queryReader = await query.ExecuteReaderAsync();
@@ -282,7 +282,7 @@ public class Win : Command
          await using SqliteCommand query = new SqliteCommand(
              $"""
               SELECT (SELECT score FROM win WHERE userid = {context.UserId} AND channel = {guildId} LIMIT 1) AS rate;
-              SELECT (userid, username) FROM win WHERE userid != {context.UserId} AND channel = {guildId} AND score + @rate = 99 AND `date` = date() LIMIT 1;
+              SELECT userid, username FROM win WHERE userid != {context.UserId} AND channel = {guildId} AND score + @rate = 99 AND `date` = date() LIMIT 1;
               """, database
          );
          await using SqliteDataReader reader = await query.ExecuteReaderAsync();

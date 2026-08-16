@@ -41,13 +41,14 @@ public class ThrowDriftbottle : Command
             new SqliteCommand(
                 """
                 INSERT INTO driftbottles(userid, username, created, content) 
-                VALUES (@userid, @username, now(), @content)
+                VALUES (@userid, @username, datetime(), @content);
+                SELECT last_insert_rowid();
                 """,
                 ZiYueBot.Instance.ConnectDatabase());
         command.Parameters.AddWithValue("@userid", ulong.Parse(context.UserId));
         command.Parameters.AddWithValue("@username", context.UserName);
         command.Parameters.AddWithValue("@content", arg.ToString(context));
-        await context.SendMessage($"你的 {command.ExecuteNonQuery()} 号云瓶扔出去了！");
+        await context.SendMessage($"你的 {command.ExecuteScalar()} 号云瓶扔出去了！");
     }
 
     public override TimeSpan GetRateLimit(Context context)

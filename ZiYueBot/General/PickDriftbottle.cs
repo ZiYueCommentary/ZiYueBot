@@ -23,76 +23,63 @@ public class PickDriftbottle : Command
 
     public override async Task Invoke(Context context, MessageChain arg)
     {
-         int id = int.MinValue;
-         if (!arg.IsEmpty())
-         {
-             try
-             {
-                 id = int.Parse(arg.ToString());
-             }
-             catch (FormatException)
-             {
-                 await context.SendMessage("请输入数字编号！");
-                 return;
-             }
-             catch (OverflowException)
-             {
-                 await context.SendMessage("编号过大！");
-                 return;
-             }
-         }
+        int id = int.MinValue;
+        if (!arg.IsEmpty())
+        {
+            try
+            {
+                id = int.Parse(arg.ToString());
+            }
+            catch (FormatException)
+            {
+                await context.SendMessage("请输入数字编号！");
+                return;
+            }
+            catch (OverflowException)
+            {
+                await context.SendMessage("编号过大！");
+                return;
+            }
+        }
 
-         if (!this.TryPassRateLimit(context))
-         {
-             await context.SendMessage("频率已达限制（每分钟 1 条）");
-             return;
-         }
+        if (!this.TryPassRateLimit(context))
+        {
+            await context.SendMessage("频率已达限制（每分钟 1 条）");
+            return;
+        }
 
-         // Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
-         _ = UpdateInvokeRecords(context.UserId);
+        // Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
+        _ = UpdateInvokeRecords(context.UserId);
 
-         await using SqliteConnection database = ZiYueBot.Instance.ConnectDatabase();
+        await using SqliteConnection database = ZiYueBot.Instance.ConnectDatabase();
 
-         string query;
-         if (id == int.MinValue)
-         {
-             await using SqliteCommand queryCount = new SqliteCommand("SELECT COUNT(*) FROM driftbottles", database);
-             await using SqliteDataReader readerCount = await queryCount.ExecuteReaderAsync();
-             readerCount.Read();
-             int counts = readerCount.GetInt32(0);
-             int begin = Random.Shared.Next(1, Math.Max(1, counts - 10));
-             await readerCount.CloseAsync();
-             query =
-                 $"SELECT (id, username, created, content) FROM driftbottles WHERE id >= {begin} AND id < {begin + 10} AND pickable = true ORDER BY random() LIMIT 1";
-         }
-         else
-         {
-             query = $"SELECT (id, username, created, content) FROM driftbottles WHERE pickable = true AND id = {id}";
-         }
+        string query = id == int.MinValue
+            ? "SELECT id, username, created, content FROM driftbottles WHERE pickable = true ORDER BY random() LIMIT 1"
+            : $"SELECT id, username, created, content FROM driftbottles WHERE pickable = true AND id = {id}";
 
-         await using SqliteCommand command = new SqliteCommand(query, database);
-         await using SqliteDataReader reader = await command.ExecuteReaderAsync();
-         if (!reader.Read())
-         {
-             await context.SendMessage("找不到瓶子！");
-             return;
-         }
+        await using SqliteCommand command = new SqliteCommand(query, database);
+        await using SqliteDataReader reader = await command.ExecuteReaderAsync();
+        if (!reader.Read())
+        {
+            await context.SendMessage("找不到瓶子！");
+            return;
+        }
 
-         string result = $"""
-                          你捞到了 {reader.GetInt32(0)} 号瓶子！
-                          来自：{reader.GetString(1)}
-                          日期：{reader.GetDateTime(2):yyyy年MM月dd日}
-                          
-                          {reader.GetString(3)}
-                          """;
+        string result = $"""
+                         你捞到了 {reader.GetInt32(0)} 号瓶子！
+                         来自：{reader.GetString(1)}
+                         日期：{reader.GetDateTime(2):yyyy年MM月dd日}
 
-         await using SqliteCommand addViews = new SqliteCommand(
-             $"UPDATE driftbottles SET views = views + 1 WHERE id = {reader.GetInt32(0)}",
-             database);
-         await reader.CloseAsync();
-         addViews.ExecuteNonQuery();
+                         {reader.GetString(3)}
+                         """;
 
-         await context.SendMessage(result);
+        await using SqliteCommand addViews = new SqliteCommand(
+            $"UPDATE driftbottles SET views = views + 1 WHERE id = {reader.GetInt32(0)}",
+            database);
+        await reader.CloseAsync();
+        addViews.ExecuteNonQuery();
+
+        await context.SendMessage(result);
     }
 
     public override TimeSpan GetRateLimit(Context context)
