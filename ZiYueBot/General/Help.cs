@@ -35,7 +35,7 @@ public class Help : Command
             .Where(command => command.SupportedPlatform.Contains(context.Platform)).Aggregate("子悦机器可用命令：\n",
                 (current, command) => current + $"    /{command.Id}    {command.Name}\n");
 
-        help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：&hyperlink[https://docs.ziyuebot.cn/,1]https://docs.ziyuebot.cn/";
+        help += "输入“/help [命令名]”可以查看命令帮助。\n详细信息请查看在线文档：https://docs.ziyuebot.cn/";
         await context.SendMessage(help);
     }
 }

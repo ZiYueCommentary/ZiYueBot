@@ -1,5 +1,6 @@
 using CCB.Internal;
 using ZiYueBot.Core;
+using ZiYueBot.Utils;
 
 namespace ZiYueBot.CCB;
 
@@ -12,7 +13,7 @@ public class CcbContext(string userName, string userId) : Context
 
     public override Task SendMessage(MessageChain messageChain)
     {
-        foreach (string line in messageChain.ToString(this).Split('\n'))
+        foreach (string line in messageChain.ToString(this).FormatUrl().Split('\n'))
         {
             GlobalProperties.Chat.Send($"&colr[80 220 255]{line}");
         }
