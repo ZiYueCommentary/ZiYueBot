@@ -7,7 +7,6 @@ public class Ask : Command
 {
     // private static readonly ILog Logger = LogManager.GetLogger("评价");
     private static readonly List<string> Reviews = [];
-    private static readonly List<(string, List<string>)> AprilReviews = [];
 
     static Ask()
     {
@@ -25,31 +24,6 @@ public class Ask : Command
         catch (Exception ex)
         {
             // Logger.Error("张维为语录库加载失败！", ex);
-        }
-
-        try
-        {
-            using FileStream stream = new FileStream("resources/april_words.json", FileMode.OpenOrCreate);
-            using StreamReader reader = new StreamReader(stream);
-            string jsonContent = reader.ReadToEnd();
-
-            if (!string.IsNullOrEmpty(jsonContent))
-            {
-                Dictionary<string, List<string>>? aprilWords =
-                    JsonSerializer.Deserialize<Dictionary<string, List<string>>>(jsonContent);
-
-                if (aprilWords != null)
-                    foreach (KeyValuePair<string, List<string>> person in aprilWords)
-                    {
-                        AprilReviews.Add((person.Key, [.. person.Value]));
-                    }
-            }
-
-            // Logger.Info($"愚人节语录库加载完毕，共 {AprilReviews.Count} 人");
-        }
-        catch (Exception ex)
-        {
-            // Logger.Error("愚人节语录库加载失败！", ex);
         }
     }
 
@@ -69,18 +43,6 @@ public class Ask : Command
     {
         // Logger.Info($"调用者：{context.UserName} ({context.UserId})，参数：{arg.Flatten()}");
         _ = UpdateInvokeRecords(context.UserId);
-
-        if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)
-        {
-            (string, List<string>) aprilReview = AprilReviews[Random.Shared.Next(0, AprilReviews.Count)];
-            if (arg.IsEmpty())
-                await context.SendMessage(
-                    $"{aprilReview.Item1}的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}");
-            else
-                await context.SendMessage($"{aprilReview.Item1}对 " + arg +
-                                          $" 的评价是：{aprilReview.Item2[Random.Shared.Next(0, aprilReview.Item2.Count - 1)]}");
-            return;
-        }
 
         if (arg.IsEmpty())
             await context.SendMessage($"张教授的评价是：{Reviews[Random.Shared.Next(0, Reviews.Count - 1)]}");
