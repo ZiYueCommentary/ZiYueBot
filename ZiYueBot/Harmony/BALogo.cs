@@ -1,3 +1,4 @@
+using System.CommandLine.Parsing;
 using log4net;
 using SkiaSharp;
 using ZiYueBot.Core;
@@ -33,9 +34,11 @@ public class BaLogo : Command
             return;
         }
 
-        string[] args = context.Platform == Platform.QQ ? Parse(arg.ToString(context)) : [arg[0].ToString(context), arg[1].ToString(context)];
+        List<string> args = context.Platform == Platform.QQ
+            ? CommandLineParser.SplitCommandLine(arg.ToString(context)).ToList()
+            : [arg[0].ToString(context), arg[1].ToString(context)];
 
-        if (args.Length < 2)
+        if (args.Count < 2)
         {
             await context.SendMessage("参数数量不足。使用“/help balogo”查看命令用法。");
             return;
@@ -53,34 +56,6 @@ public class BaLogo : Command
         await context.SendMessage([
             new ImageMessageEntity($"base64://{Convert.ToBase64String(Render(args[0], args[1]))}", "balogo.jpg")
         ]);
-    }
-
-    private static string[] Parse(string raw)
-    {
-        if (raw.Length == 0) return [""];
-        IList<string> args = [];
-        int pos = 0;
-        for (int i = pos; i < raw.Length; i++)
-        {
-            switch (raw[i])
-            {
-                case '"':
-                {
-                    int nextQuote = raw.IndexOf('"', i + 1);
-                    if (nextQuote == -1) nextQuote = raw.Length - 1;
-                    args.Add(raw.Substring(i + 1, nextQuote - i - 1));
-                    i = pos = nextQuote + 2;
-                    continue;
-                }
-                case ' ':
-                    args.Add(raw[pos..i]);
-                    pos = i + 1;
-                    break;
-            }
-        }
-
-        if (pos < raw.Length) args.Add(raw[pos..]);
-        return [.. args];
     }
 
     private static byte[] Render(string left, string right)
