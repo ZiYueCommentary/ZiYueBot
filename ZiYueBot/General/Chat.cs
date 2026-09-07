@@ -74,11 +74,6 @@ public class Chat : Command
                 ["input"] = new JsonObject
                 {
                     ["prompt"] = $"我叫 “{context.UserName}”，一名 {context.Platform} 用户。{arg.ToString(context)}"
-                },
-                ["parameters"] = new JsonObject
-                {
-                    ["enable_search"] = true,
-                    ["enable_thinking"] = false
                 }
             };
             using StringContent content =

@@ -115,7 +115,7 @@ public class Draw : Command
         // 下面这个 json 太复杂了，写成 C# 代码乱得要死，就这样吧。
         using StringContent content = new StringContent("""
                                                         {
-                                                            "model": "z-image-turbo",
+                                                            "model": "qwen-image-3.0",
                                                             "input": {
                                                                 "messages": [
                                                                     {
@@ -177,7 +177,7 @@ public class Draw : Command
                 ["enable_search"] = false,
                 ["enable_thinking"] = false
             },
-            ["model"] = "deepseek-v4-flash"
+            ["model"] = "qwen3.8-flash"
         };
         using StringContent content =
             new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
