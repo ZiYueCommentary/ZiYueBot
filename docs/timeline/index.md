@@ -58,7 +58,3 @@
 * [扔云瓶](/general/driftbottle/throw.md)
 * [开枪](/harmony/revolver/shooting.md)
 * [对话](/general/chat.md)
-
-## 子悦生日 {#ziyue-birthday}
-
-子悦生日（5 月 3 日）是子悦机器每年的固定活动节日。子悦生日时，赞助者命令 [绘画](/general/draw.md) 对所有人开放。
