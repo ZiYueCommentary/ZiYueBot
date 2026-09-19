@@ -12,7 +12,8 @@ public enum Privilege : long
     BypassRateLimit = 0b10,
     BypassDrawLimitation = 0b100,
     BypassDriftbottleQueue = 0b1000,
-    CreatePenalty = 0b10000
+    CreatePenalty = 0b10000,
+    ShutdownService = 0b100000,
 }
 
 public static class Privileged

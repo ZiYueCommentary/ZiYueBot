@@ -9,3 +9,4 @@
 | BypassDrawLimitation   | 绕过 [绘画](/general/draw.md) 命令的调用限制 |
 | BypassDriftbottleQueue | 绕过 [云瓶审核](censorship.md)          |
 | CreatePenalty          | 创建 [记过](management/penalty.md)    |
+| ShutdownService | 允许调用 [停止运行](management/shutdown.md) 命令 |

@@ -86,7 +86,7 @@ public class ZiYueBot
         await Discord.LoginAsync(TokenType.Bot, Config.DiscordToken);
         await Discord.StartAsync();
 
-        // Logger.Info($"Discord 登录成功：{Discord.CurrentUser.GlobalName} ({Discord.CurrentUser.Id})");
+        Logger.Info($"Discord 登录成功");
     }
 
     private async Task InitializeDatabaseAsync()

@@ -64,7 +64,8 @@ export default defineConfig({
                                 collapsed: false,
                                 items: [
                                     {text: '记过', link: '/technical/management/penalty'},
-                                    {text: '群记过', link: '/technical/management/public-penalty'}
+                                    {text: '群记过', link: '/technical/management/public-penalty'},
+                                    {text: '停止运行', link: '/technical/management/shutdown'}
                                 ]
                             }
                         ]

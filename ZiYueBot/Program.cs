@@ -36,5 +36,7 @@ internal static class Program
         {
             Logger.Fatal("主程序意外退出", e);
         }
+        
+        Environment.Exit(1);
     }
 }

@@ -146,6 +146,7 @@ public static class Commands
         RegisterCommand(new Sudo());
         RegisterCommand(new Penalty());
         RegisterCommand(new PublicPenalty());
+        RegisterCommand(new Shutdown());
 
         LoadAliases();
     }
