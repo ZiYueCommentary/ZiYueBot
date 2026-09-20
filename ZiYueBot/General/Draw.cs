@@ -115,7 +115,7 @@ public class Draw : Command
         // 下面这个 json 太复杂了，写成 C# 代码乱得要死，就这样吧。
         using StringContent content = new StringContent("""
                                                         {
-                                                            "model": "qwen-image-3.0",
+                                                            "model": "z-image-turbo",
                                                             "input": {
                                                                 "messages": [
                                                                     {
@@ -130,7 +130,7 @@ public class Draw : Command
                                                             },
                                                             "parameters": {
                                                                 "negative_prompt": "",
-                                                                "size": "1536*1536",
+                                                                "size": "1120*1440",
                                                                 "prompt_extend": false,
                                                                 "n": 1
                                                             }
@@ -150,34 +150,29 @@ public class Draw : Command
     private static async Task<int> JudgePrompt(string prompt)
     {
         using HttpClient client = new HttpClient();
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post,
-            "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation");
+        using HttpRequestMessage request =
+            new HttpRequestMessage(HttpMethod.Post,
+                $"https://{ZiYueBot.Instance.Config.BailianApiEndpoint}/compatible-mode/v1/chat/completions");
         request.Headers.Add("Accept", "application/json");
         request.Headers.Add("Authorization", $"Bearer {ZiYueBot.Instance.Config.BailianApiKey}");
         JsonObject jsonContent = new JsonObject
         {
-            ["input"] = new JsonObject
+            ["model"] = "qwen3.7-flash",
+            ["messages"] = new JsonArray
             {
-                ["messages"] = new JsonArray
+                new JsonObject
                 {
-                    new JsonObject
-                    {
-                        ["content"] = JudgeSystemPrompt,
-                        ["role"] = "system"
-                    },
-                    new JsonObject
-                    {
-                        ["content"] = prompt,
-                        ["role"] = "user"
-                    }
+                    ["content"] = JudgeSystemPrompt,
+                    ["role"] = "system"
+                },
+                new JsonObject
+                {
+                    ["content"] = prompt,
+                    ["role"] = "user"
                 }
             },
-            ["parameters"] = new JsonObject
-            {
-                ["enable_search"] = false,
-                ["enable_thinking"] = false
-            },
-            ["model"] = "qwen3.8-flash"
+            ["enable_search"] = false,
+            ["enable_thinking"] = false
         };
         using StringContent content =
             new StringContent(jsonContent.ToJsonString(), Encoding.UTF8, "application/json");
