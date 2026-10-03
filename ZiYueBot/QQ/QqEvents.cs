@@ -167,6 +167,7 @@ public static class QqEvents
             if (chain.IsEmpty() && forwardMessage is not null) chain = forwardMessage;
 
             if (await Commands.CheckBlacklist(context, commandName)) return;
+            await Commands.CheckPenalty(context, context.UserId);
 
             if (commandName.Contains("云瓶") && forwardMessage is not null)
             {

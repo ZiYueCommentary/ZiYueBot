@@ -182,6 +182,7 @@ public static class DiscordHandler
             }
 
             if (await Commands.CheckBlacklist(context, command.CommandName)) return;
+            await Commands.CheckPenalty(context, command.User.Id);
 
             IReadOnlyCollection<SocketSlashCommandDataOption> options = command.Data.Options;
             MessageChain arg = [];

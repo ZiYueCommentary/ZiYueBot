@@ -74,14 +74,16 @@ CREATE TABLE IF NOT EXISTS blacklists
 # 记过
 CREATE TABLE IF NOT EXISTS penalty
 (
-    id         int auto_increment primary key,
-    userid     bigint  default 0,
-    channel_id bigint  default 0,
-    created_at datetime null,
-    created_by bigint   null,
-    community  boolean default true,
-    reason     text     null,
-    removed    boolean default false,
+    id           int auto_increment primary key,
+    userid       bigint  default 0,
+    channel_id   bigint  default 0,
+    created_at   datetime null,
+    created_by   bigint   null,
+    community    boolean default false,
+    reason       text     null,
+    removed      boolean default false,
+    remark       text     null,
+    already_read boolean default false,
     INDEX index_user (userid, removed)
 ) CHARSET = utf8mb4;
 

@@ -85,6 +85,28 @@ public static class Commands
         }
     }
 
+    public static async Task CheckPenalty(Context context, ulong userId)
+    {
+        await using MySqlCommand sqlCommand = new MySqlCommand(
+            $"SELECT * FROM penalty WHERE userid = {userId} AND removed = false AND already_read = false",
+            ZiYueBot.Instance.ConnectDatabase());
+        await using MySqlDataReader reader = sqlCommand.ExecuteReader();
+        if (reader.Read())
+        {
+            await context.SendMessage($"""
+                                       您已被记过！
+                                       时间：{reader.GetDateTime("created_at"):yyyy年MM月dd日}
+                                       原因：{reader.GetString("reason")}
+                                       备注：{reader.GetString("remark") ?? "无"}
+                                       该消息只会出现一次。
+                                       """);
+            await using MySqlCommand update =
+                new MySqlCommand($"UPDATE penalty SET already_read = true WHERE id = {reader.GetInt32("id")}",
+                    ZiYueBot.Instance.ConnectDatabase());
+            await update.ExecuteNonQueryAsync();
+        }
+    }
+
     /// <summary>
     /// 检查给定的命令名是否是别名，如果是则返回真实命令名。
     /// </summary>
