@@ -180,7 +180,7 @@ public class Draw : Command
         using HttpResponseMessage response = await client.SendAsync(request);
         response.EnsureSuccessStatusCode();
         JsonNode? result = await JsonNode.ParseAsync(await response.Content.ReadAsStreamAsync());
-        return int.Parse(result!["output"]!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
+        return int.Parse(result!["choices"]![0]!["message"]!["content"]!.GetValue<string>());
     }
 
     private static async Task<bool> ValidateInvoke(Context context)
