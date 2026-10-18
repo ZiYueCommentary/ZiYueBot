@@ -27,7 +27,7 @@ public class Draw : Command
 
     public override string Description => """
                                           /draw [prompt] （赞助者命令）
-                                          通义万相文生图。“prompt”是文生图的提示词。本命令的处理需要很长时间。
+                                          通义万相文生图。“prompt”是文生图的提示词。
                                           调用此命令后，机器会生成一张1024*1024像素的图片。
                                           提示词的使用技巧另见：https://help.aliyun.com/zh/model-studio/use-cases/text-to-image-prompt
                                           该命令仅允许子悦机器的赞助者调用。
@@ -68,7 +68,7 @@ public class Draw : Command
             return;
         }
 
-        await context.SendMessage($"您的提示词评分为：{rank}/100" + (rank < 60 ? "。你有使用 chat 优化吗？" : ""));
+        await context.SendMessage($"您的提示词评分为：{rank}/100" + (rank < 60 ? "。你有优化提示词吗？" : ""));
 
         try
         {
@@ -119,7 +119,7 @@ public class Draw : Command
                                                             },
                                                             "parameters": {
                                                                 "negative_prompt": "",
-                                                                "size": "1120*1440",
+                                                                "size": "1024*1024",
                                                                 "prompt_extend": false,
                                                                 "n": 1
                                                             }
@@ -190,7 +190,7 @@ public class Draw : Command
             {
                 await context.SendMessage("""
                                           您不是子悦机器的赞助者！
-                                          本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                                          本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/季）以调用命令。
                                           https://afdian.com/a/ziyuecommentary2020
                                           """);
                 return false;
@@ -201,7 +201,7 @@ public class Draw : Command
                 await context.SendMessage($"""
                                            您的赞助已过期（{reader.GetDateTime("expiry"):yyyy年MM月dd日}）
                                            子悦机器每次赞助的有效期为 365 天。
-                                           本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/年）以调用命令。
+                                           本命令仅供赞助者使用，请在爱发电赞助“子悦机器”方案（￥10.00/季）以调用命令。
                                            https://afdian.com/a/ziyuecommentary2020
                                            """);
                 return false;
